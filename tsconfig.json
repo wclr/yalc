@@ -13,10 +13,7 @@
     "noFallthroughCasesInSwitch": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "allowJs": false,
-    "types": [
-      "node"
-    ]
+    "allowJs": false
   },
   "formatCodeOptions": {
     "indentSize": 2,

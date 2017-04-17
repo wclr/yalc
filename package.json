@@ -3,15 +3,17 @@
   "version": "1.0.0-pre.1",
   "description": "Knit yarn packages like a boss.",
   "bin": {
-    "yloc": "out/yloc.js"    
+    "yloc": "out/yloc.js"
   },
   "scripts": {
     "build": "tsc"
   },
   "license": "MIT",
   "dependencies": {
+    "@types/mocha": "^2.2.40",
     "fs-extra": "^2.1.2",
     "ignore": "^3.2.7",
+    "mocha": "^3.2.0",
     "tar-fs": "^1.15.2",
     "user-home": "^2.0.0",
     "yargs": "^6.4.0"
