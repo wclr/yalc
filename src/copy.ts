@@ -4,7 +4,7 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 import {
   PackageManifest,
-  getPackagesStoreDir,
+  getStoreDir,
   locedPackagesFolder
 } from '.'
 
@@ -44,25 +44,21 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, knit?: 
     .add(locedPackagesFolder)
     .add(getIngoreFilesContent())  
   const copyFromDir = process.cwd()
-  const locPackageStoreDir = path.join(getPackagesStoreDir(), pkg.name, pkg.version)
+  const locPackageStoreDir = path.join(getStoreDir(), pkg.name, pkg.version)
   const filesToKnit: string[] = []
   const copyFilter: fs.CopyFilter = (f) => {
     f = path.relative(copyFromDir, f)    
     const ignores = knitIgnore.ignores(f)    
-    //console.log('check f')
     if (knit && !ignores) {
       filesToKnit.push(f)
-      //return false
     }
     return !f || !ignores
   }  
   fs.removeSync(locPackageStoreDir)
-  //const copyToDir = knit ? '_' : locPackageStoreDir
   fs.copySync(copyFromDir, locPackageStoreDir, copyFilter)  
   if (knit) {    
     fs.removeSync(locPackageStoreDir)
     const ensureSymlinkSync = fs.ensureSymlinkSync as any
-    console.log('filesToKnit', filesToKnit)
     filesToKnit.forEach(f => {      
       const source = path.join(copyFromDir, f)
       if (fs.statSync(source).isDirectory()) {

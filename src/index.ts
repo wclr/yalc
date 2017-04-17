@@ -10,6 +10,9 @@ export const myNameIsCapitalized = 'Yloc'
 export const locedPackagesFolder = '.yloc'
 export const lockfileName = 'yloc.lock'
 
+export const values = {
+  installationsFile: 'installations.json'
+}
 
 export interface AddPackagesptions {
 
@@ -27,15 +30,15 @@ export interface PublishPackageOptions {
   pushSafe?: boolean
 }
 
-export function getPackagesStoreDir(): string {
+export function getStoreDir(): string {
   if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
     return path.join(process.env.LOCALAPPDATA, myNameIsCapitalized);
   }
   return path.join(userHome, '.' + myNameIs);
 }
 
-const getlocPackageDir = (packageName: string, version = '') =>
-  path.join(getPackagesStoreDir(), packageName, version)
+const getPackageStoreDir = (packageName: string, version = '') =>
+  path.join(getStoreDir(), packageName, version)
 
 export interface PackageManifest {
   name: string,
@@ -50,9 +53,8 @@ export interface PackageManifest {
   }
 }
 
-const getPackageManager = () => execSync('yarn.lock') ? 'yarn' : 'npm'
-
-
+const getPackageManager = () =>
+  execSync('yarn.lock') ? 'yarn' : 'npm'
 
 export const publishPackage = async (options: PublishPackageOptions = {}) => {
   let pkg: PackageManifest
@@ -87,7 +89,7 @@ export const publishPackage = async (options: PublishPackageOptions = {}) => {
 }
 
 const getLatestPackageVersion = (packageName: string) => {
-  const dir = getlocPackageDir(packageName)
+  const dir = getPackageStoreDir(packageName)
   const versions = fs.readdirSync(dir)
   const latest = versions.map(version => ({
     version, created: fs.statSync(path.join(dir, version)).ctime.getTime()
@@ -95,39 +97,74 @@ const getLatestPackageVersion = (packageName: string) => {
     .sort((a, b) => b.created - a.created).map(x => x.version)[0]
   return latest || ''
 }
+type AddedInstallations = ({ name: string, path: string } | null)[]
+type InstallationsConfig = { [packageName: string]: string[] }
+
+const addInstallations = (installations: AddedInstallations) => {
+  const storeDir = getStoreDir()
+  const installationFilePath = path.join(storeDir, values.installationsFile)
+  fs.ensureFileSync(installationFilePath)
+  let installationsConfig: InstallationsConfig
+  try {
+    installationsConfig = fs.readJsonSync(installationFilePath, 'utf-8')
+  } catch (e) {
+    installationsConfig = {}
+  }
+
+  let updated = false
+  installations.filter(i => !!i)
+    .forEach(newInstall => {
+      const packageInstallPaths = installationsConfig[newInstall!.name] || []
+      installationsConfig[newInstall!.name] = packageInstallPaths
+      const hasInstallation = !!packageInstallPaths
+        .filter(p => p === newInstall!.path)[0]
+      if (!hasInstallation) {
+        updated = true
+        packageInstallPaths.push(newInstall!.path)
+      }
+    })
+
+  if (updated) {
+    fs.writeJson(installationFilePath, installationsConfig)
+  }
+}
 
 export const addPackages = (packages: string[], options: PublishPackageOptions = {}) => {
-  const packagesStoreDir = getPackagesStoreDir()
-  packages.forEach((packageName) => {
-    let [name, version = ''] = packageName.split('@')
+  const packagesStoreDir = getStoreDir()
 
+  const addedInstalls: AddedInstallations = packages.map((packageName) => {
+    let [name, version = ''] = packageName.split('@')
 
     if (!version) {
       version = getLatestPackageVersion(name)
     }
-    const locPackageDir = getlocPackageDir(name, version)
-    if (!fs.existsSync(locPackageDir)) {
+    const storedPackageDir = getPackageStoreDir(name, version)
+    if (!fs.existsSync(storedPackageDir)) {
       console.log(`Could not find package \`${packageName}\` in ` + packagesStoreDir)
-      return
+      return null
     }
 
-    const pkgFile = path.join(locPackageDir, 'package.json')
+    const pkgFile = path.join(storedPackageDir, 'package.json')
     let pkg
     try {
-      pkg = JSON.parse(fs.readFileSync(path.join(locPackageDir, 'package.json'), 'utf-8'))
+      pkg = JSON.parse(fs.readFileSync(path.join(storedPackageDir, 'package.json'), 'utf-8'))
     } catch (e) {
       console.log('Could not read and parse ', pkgFile)
-      return
+      return null
     }
 
     const destLoctedCopyDir = path.join(process.cwd(),
       locedPackagesFolder, name)
     const destloctedLinkDir = path.join(process.cwd(), 'node_modules', name)
-    
-    fs.emptyDirSync(destLoctedCopyDir)    
-    fs.copySync(locPackageDir, destLoctedCopyDir)
+
+    fs.emptyDirSync(destLoctedCopyDir)
+    fs.copySync(storedPackageDir, destLoctedCopyDir)
     fs.removeSync(destloctedLinkDir)
     fs.symlinkSync(destLoctedCopyDir, destloctedLinkDir, 'dir')
     console.log(`${pkg.name}@${pkg.version} locted ==> ${destloctedLinkDir}`)
+    return { name, path: destLoctedCopyDir }
   })
+
+  addInstallations(addedInstalls)
 }
+
