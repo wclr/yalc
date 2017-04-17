@@ -1,0 +1,25 @@
+{
+  "name": "yloc",
+  "version": "1.0.0-pre.1",
+  "description": "Knit yarn packages like a boss.",
+  "bin": {
+    "yloc": "out/yloc.js"    
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^2.1.2",
+    "ignore": "^3.2.7",
+    "tar-fs": "^1.15.2",
+    "user-home": "^2.0.0",
+    "yargs": "^6.4.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^2.0.0",
+    "@types/node": "^6.0.48",
+    "@types/yargs": "^6.3.2",
+    "typescript": "^2.2.2"
+  }
+}

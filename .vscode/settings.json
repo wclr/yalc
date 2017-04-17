@@ -1,0 +1,13 @@
+
+{
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "typescript.tsserver.trace": "verbose",
+  "search.exclude": {
+    "**/out": true    
+  },    
+  "tslint.run": "onSave",
+  
+  "editor.formatOnType": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true
+}
