@@ -1,9 +1,9 @@
 {
-  "name": "yloc",
+  "name": "yaloc",
   "version": "1.0.0-pre.1",
   "description": "Knit yarn packages like a boss.",
   "bin": {
-    "yloc": "out/yloc.js"
+    "yaloc": "out/yaloc.js"
   },
   "scripts": {
     "build": "tsc"

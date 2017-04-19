@@ -1,6 +1,6 @@
 
 
-describe('YLoc package manager', () => {
+describe('Yaloc package manager', () => {
   describe('Package publish', () => {
 
     it('handles .npmignore correctly', () => {
