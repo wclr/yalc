@@ -15,7 +15,9 @@ Because uisng standard [symlinked packages](https://docs.npmjs.com/cli/link) apr
 
   This design allows to have isolated `node_modules` of *locted* `my-package` and do not worry that something happens with the folder and its content when your package manager performs its *"destructive"* routines (like `yarn --force`)
 
--  Lock?
+  `Yaloc` may also work without engaging symlinks at all. By using `file:` dependency type in your `package.json`.
+
+-  `Yaloc` creates special `yaloc.lock` file in your project where it fixates all the packages (with versions if needed). It is used to update from `yaloc` store consistently.
 
 ## Install
 
@@ -30,7 +32,6 @@ Because uisng standard [symlinked packages](https://docs.npmjs.com/cli/link) apr
 
 #### Publish
 - Run `yaloc publish` in your dependency package `my-package`.
-- You want try to `--knit` option.
 
 #### Add
 - Run `yaloc add my-package` in your dependant project
@@ -41,7 +42,7 @@ Because uisng standard [symlinked packages](https://docs.npmjs.com/cli/link) apr
 
 #### Update
   - Run `yaloc update my-package`, `yaloc update`  
-  - Use `--safe` flag
+  - Use `--safe` flag * - NOT IMPLEMENTED
   - Running simply `yaloc` in the directory will do the same as `yaloc update`
 
 #### Other
@@ -49,6 +50,15 @@ Because uisng standard [symlinked packages](https://docs.npmjs.com/cli/link) apr
 - Probably want to add `.yaloc` folder to `.gitignore`.
 - Add to package.json `file:.yaloc/my-package`
 
+## Advanced usage
+
+#### Publish with push
+
+- `yaloc publish --push`
+
+#### Publish using knitting
+
+- You want try to `--knit` option.
 
 ## Licence
 

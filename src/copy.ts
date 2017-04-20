@@ -5,7 +5,7 @@ import * as path from 'path'
 import {
   PackageManifest,
   getStoreDir,
-  locedPackagesFolder
+  values
 } from '.'
 
 const npmIgnoreDefaults = [
@@ -38,25 +38,28 @@ const getIngoreFilesContent = (): string => {
   return content
 }
 
-export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, knit?: boolean) => {  
+export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options: {
+  knit?: boolean
+  workingDir: string
+}) => {  
   const knitIgnore = ignore()
     .add(npmIgnoreDefaults)
-    .add(locedPackagesFolder)
+    .add(values.locedPackagesFolder)
     .add(getIngoreFilesContent())  
-  const copyFromDir = process.cwd()
+  const copyFromDir = options.workingDir
   const locPackageStoreDir = path.join(getStoreDir(), pkg.name, pkg.version)
   const filesToKnit: string[] = []
   const copyFilter: fs.CopyFilter = (f) => {
     f = path.relative(copyFromDir, f)    
     const ignores = knitIgnore.ignores(f)    
-    if (knit && !ignores) {
+    if (options.knit && !ignores) {
       filesToKnit.push(f)
     }
     return !f || !ignores
   }  
   fs.removeSync(locPackageStoreDir)
   fs.copySync(copyFromDir, locPackageStoreDir, copyFilter)  
-  if (knit) {    
+  if (options.knit) {    
     fs.removeSync(locPackageStoreDir)
     const ensureSymlinkSync = fs.ensureSymlinkSync as any
     filesToKnit.forEach(f => {      

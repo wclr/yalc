@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as yargs from 'yargs'
+import { join } from 'path'
 import { myNameIs, publishPackage, addPackages, updatePackages, removePackages } from '.'
 
 const cliCommand = myNameIs
@@ -11,15 +12,33 @@ yargs
     command: 'publish',
     describe: 'Publish',
     builder: () => {
-      return yargs.help(true)
+      return yargs
+        .boolean(['push', 'knit', 'force', 'push-safe'])
     },
     handler: (argv) => {
       publishPackage({
-        workingDir: process.cwd(),
-        force: argv.knit,
+        workingDir: join(process.cwd(), argv._[1] || ''),
+        force: argv.force,
         knit: argv.knit,
-        push: argv.knit,
-        pushSafe: argv.knit
+        push: argv.push,
+        pushSafe: argv.pushSafe
+      })
+    }
+  })
+  .command({
+    command: 'push',
+    describe: 'Push',
+    builder: () => {
+      return yargs
+        .boolean(['knit', 'force', 'safe'])
+    },
+    handler: (argv) => {      
+      publishPackage({
+        workingDir: join(process.cwd(), argv._[1] || ''),
+        force: argv.force,
+        knit: argv.knit,
+        push: true,
+        pushSafe: argv.safe
       })
     }
   })
@@ -61,6 +80,6 @@ yargs
   // 'current folder package without running `pre` and `post` scripts ')
   // .example(cliCommand + ' my-module', '- copies `my-module` from yknit store')
   // .example(cliCommand + ' --empty mongoose express', '- empty destignation directory before and copies two modules')
-  .help(true)
+  //.help(true)
   .argv
 

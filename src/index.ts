@@ -3,18 +3,28 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 import { copyWithIgnorePackageToStore } from './copy'
 import {
-  AddedInstallations, InstallationsConfig,
+  PackageInstallation, InstallationsConfig,
   readInstallationsFile,
-  addInstallations
+  addInstallations,
+  removeInstallations
 } from './installations'
+import {
+  Lockfile,
+  readLockfile,
+  addPackageToLockfile
+} from './lockfile'
 
 const userHome = require('user-home')
 
+const { join } = path
+
+const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
+
 export const myNameIs = 'yaloc'
 export const myNameIsCapitalized = 'Yaloc'
-export const lockfileName = 'yaloc.lock'
 
 export const values = {
+  lockfileName: 'yaloc.lock',
   locedPackagesFolder: '.yaloc',
   installationsFile: 'installations.json'
 }
@@ -72,13 +82,13 @@ export interface PackageManifest {
 const getPackageManager = () =>
   execSync('yarn.lock') ? 'yarn' : 'npm'
 
-export const publishPackage = async (options: PublishPackageOptions) => {
+export const publishPackage = async (options: PublishPackageOptions) => {  
   let pkg: PackageManifest
   try {
     pkg = fs.readJsonSync(
       path.join(options.workingDir, 'package.json')) as PackageManifest;
   } catch (e) {
-    console.error('Could not read package.json')
+    console.error('Could not read package.json in', options.workingDir)
     return
   }
   const scriptRunCmd = !options.force && pkg.scripts
@@ -90,8 +100,8 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       execSync(scriptRunCmd + 'prepublish')
     }
   }
-
-  copyWithIgnorePackageToStore(pkg, options.knit)
+  
+  copyWithIgnorePackageToStore(pkg, options)
 
   if (scriptRunCmd) {
     if (pkg.scripts!.postloc) {
@@ -100,12 +110,14 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       execSync(scriptRunCmd + 'prepublish')
     }
   }
-  if (options.push || options.pushSafe) {
-    const installationPaths =
-      readInstallationsFile()[pkg.name] || []
 
-    installationPaths.forEach(() => {
-      // TO implement
+  if (options.push || options.pushSafe) {
+    const installationsConfig = readInstallationsFile()
+    const installationPaths =
+      installationsConfig[pkg.name] || []
+    installationPaths.forEach((workingDir) => {
+      console.log(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
+      updatePackages([pkg.name], { workingDir })
     })
   }
   console.log(`${pkg.name}@${pkg.version} published in store.`)
@@ -129,17 +141,18 @@ const parsePackageName = (packageName: string) => {
   return { name: (match[1] || '') + match[2], version: match[3] || '' }
 }
 
+
 export const addPackages = (packages: string[], options: AddPackagesOptions) => {
   const packagesStoreDir = getStoreDir()
-  const addedInstalls: AddedInstallations = packages.map((packageName) => {
-    let { name, version = '' } = parsePackageName(packageName)
-    if (!version) {
-      version = getLatestPackageVersion(name)
-    }
+  const addedInstalls = packages.map((packageName) => {
+    const { name, version = '' } = parsePackageName(packageName)
+
+    const versionToInstall = version || getLatestPackageVersion(name)
+
     if (!name) {
       console.log('Could not parse package name', packageName)
     }
-    const storedPackageDir = getPackageStoreDir(name, version)
+    const storedPackageDir = getPackageStoreDir(name, versionToInstall)
     if (!fs.existsSync(storedPackageDir)) {
       console.log(`Could not find package \`${packageName}\` ` + storedPackageDir)
       return null
@@ -153,7 +166,6 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       console.log('Could not read and parse ', pkgFile)
       return null
     }
-
     const destLoctedCopyDir = path.join(options.workingDir,
       values.locedPackagesFolder, name)
     const destloctedLinkDir = path.join(options.workingDir, 'node_modules', name)
@@ -161,6 +173,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
     fs.emptyDirSync(destLoctedCopyDir)
     fs.copySync(storedPackageDir, destLoctedCopyDir)
     fs.removeSync(destloctedLinkDir)
+    
     if (options.file) {
       fs.copySync(destLoctedCopyDir, destloctedLinkDir)
       const localManifestFile = path.join(options.workingDir, 'package.json')
@@ -191,19 +204,68 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
         fs.writeJsonSync(localManifestFile, localPkg)
       }
     } else {
-      fs.symlinkSync(destLoctedCopyDir, destloctedLinkDir, 'dir')
+      console.log('here')
+      ensureSymlinkSync(destLoctedCopyDir, destloctedLinkDir, 'dir')
     }
     console.log(`${pkg.name}@${pkg.version} locted ==> ${destloctedLinkDir}`)
-    return { name, path: destLoctedCopyDir }
-  })
+    return { name, version, path: options.workingDir }
+  }).filter(_ => _) as PackageInstallation[]
+
+  addPackageToLockfile(
+    addedInstalls
+      .map((i) => ({
+        name: i!.name,
+        version: i!.version,
+        file: options.file
+      })), { workingDir: options.workingDir }
+  )
 
   addInstallations(addedInstalls)
 }
 
+export const showInstallations = (options: { workingDir: string }) => {
+
+}
 
 export const updatePackages = (packages: string[], options: UpdatePackagesOptions) => {
+  const lockfile = readLockfile({ workingDir: options.workingDir })
+  let packagesToUpdate: string[] = []
+  let installationsToRemove: PackageInstallation[] = []
+  if (packages.length) {
 
+    packages.forEach((packageName) => {
+      const { name, version } = parsePackageName(packageName)
+      if (lockfile[name]) {
+        if (version) {
+          lockfile[name].version = version
+        }
+        packagesToUpdate.push(name)
+      } else {
+        installationsToRemove.push({ name, version, path: options.workingDir })
+        console.log(`Did not find package ${name} in lockfile, ` +
+          `please use 'add' command to add it explicitly.`
+        )
+      }
+    })
+  } else {
+    packagesToUpdate = Object.keys(lockfile)
+  }
+  
+  const lockPackages = packagesToUpdate
+    .map(name => ({
+      name: lockfile[name].version
+        ? name + '@' + lockfile[name].version : name,
+      file: lockfile[name].file
+    }))
+  const packagesAsFile = lockPackages
+    .filter(p => p.file).map(p => p.name)
+  addPackages(packagesAsFile, { workingDir: options.workingDir, file: true })
 
+  const packagesNotFile = lockPackages
+    .filter(p => !p.file).map(p => p.name)
+  addPackages(packagesNotFile, { workingDir: options.workingDir })
+
+  removeInstallations(installationsToRemove)
 }
 
 export const removePackages = (packages: string[], options: RemovePackagesOptions) => {
