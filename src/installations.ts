@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
-import { getStoreDir, values } from '.'
+import { getStoreMainDir, values } from '.'
 
 export type PackageName = string & {__packageName: true}
 
@@ -12,8 +12,9 @@ export type PackageInstallation = ({
 
 export type InstallationsFile = { [packageName: string]: string[] }
 
+
 export const readInstallationsFile = (): InstallationsFile => {
-  const storeDir = getStoreDir()
+  const storeDir = getStoreMainDir()
   const installationFilePath = path.join(storeDir, values.installationsFile)
   fs.ensureFileSync(installationFilePath)
   let installationsConfig: InstallationsFile
@@ -27,7 +28,7 @@ export const readInstallationsFile = (): InstallationsFile => {
 }
 
 export const saveInstallationsFile = (installationsConfig: InstallationsFile) => {
-  const storeDir = getStoreDir()
+  const storeDir = getStoreMainDir()
   const installationFilePath = path.join(storeDir, values.installationsFile)
   fs.writeJson(installationFilePath, installationsConfig)
 }

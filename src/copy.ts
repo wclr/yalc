@@ -4,7 +4,7 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 import {
   PackageManifest,
-  getStoreDir,
+  getStorePackagesDir,
   values
 } from '.'
 
@@ -47,7 +47,7 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options
     .add(values.locedPackagesFolder)
     .add(getIngoreFilesContent())  
   const copyFromDir = options.workingDir
-  const locPackageStoreDir = path.join(getStoreDir(), pkg.name, pkg.version)
+  const locPackageStoreDir = path.join(getStorePackagesDir(), pkg.name, pkg.version)
   const filesToKnit: string[] = []
   const copyFilter: fs.CopyFilter = (f) => {
     f = path.relative(copyFromDir, f)    

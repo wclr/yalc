@@ -9,7 +9,7 @@ import {
   removeInstallations,
   PackageName
 } from './installations'
-import {  
+import {
   readLockfile,
   addPackageToLockfile
 } from './lockfile'
@@ -55,15 +55,20 @@ export interface PublishPackageOptions {
   pushSafe?: boolean
 }
 
-export function getStoreDir(): string {
+export function getStoreMainDir(): string {
   if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
-    return path.join(process.env.LOCALAPPDATA, myNameIsCapitalized);
+    return join(process.env.LOCALAPPDATA, myNameIsCapitalized, );
   }
-  return path.join(userHome, '.' + myNameIs);
+  return join(userHome, '.' + myNameIs, 'packages');
+}
+
+
+export function getStorePackagesDir(): string {
+  return join(getStoreMainDir(), 'packages');
 }
 
 const getPackageStoreDir = (packageName: string, version = '') =>
-  path.join(getStoreDir(), packageName, version)
+  path.join(getStorePackagesDir(), packageName, version)
 
 export interface PackageManifest {
   name: string,
@@ -152,16 +157,22 @@ const parsePackageName = (packageName: string) => {
 
 
 export const addPackages = (packages: string[], options: AddPackagesOptions) => {
-  const packagesStoreDir = getStoreDir()
+  const packagesStoreDir = getStorePackagesDir()
   const addedInstalls = packages.map((packageName) => {
     const { name, version = '' } = parsePackageName(packageName)
-
-    const versionToInstall = version || getLatestPackageVersion(name)
-
+    
     if (!name) {
       console.log('Could not parse package name', packageName)
     }
+
+    if (!fs.existsSync(getPackageStoreDir(name))) {
+      console.log(`Could not find package \`${name}\` in store.`)
+      return null
+    }
+    const versionToInstall = version || getLatestPackageVersion(name)
+
     const storedPackageDir = getPackageStoreDir(name, versionToInstall)
+    
     if (!fs.existsSync(storedPackageDir)) {
       console.log(`Could not find package \`${packageName}\` ` + storedPackageDir)
       return null
@@ -214,7 +225,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
         localPkg.dependencies = dependencies
         localPkg.devDependencies = devDependencies
         fs.writeJsonSync(localManifestFile, localPkg)
-      }      
+      }
     }
     console.log(`${pkg.name}@${pkg.version} locted ==> ${destloctedLinkDir}`)
     return { name, version, path: options.workingDir }
@@ -244,7 +255,7 @@ export const showInstallations = (options: { workingDir: string }) => {
 
 export const updatePackages = (packages: string[], options: UpdatePackagesOptions) => {
   const lockfile = readLockfile({ workingDir: options.workingDir })
-  
+
   let packagesToUpdate: string[] = []
   let installationsToRemove: PackageInstallation[] = []
   if (packages.length) {
