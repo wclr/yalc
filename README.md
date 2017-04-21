@@ -1,6 +1,6 @@
 # Yalc  (WIP)
 
-> Better workflow than **npm | yarn link**.
+> Better workflow than **npm | yarn link** for package authors.
 
 ## Why
 
@@ -38,14 +38,13 @@ it will copy current version frome store to your project's `.yalc` folder and in
 - After it copies package content to local `.yalc` folder it will create symlink:
 `project/.yalc/my-package ==> project/node_modules/my-package`. It will not touch `package.json`.
 
-#### Remove
+#### Remove (NOT IMPLEMENTED)
  - Run `yalc remove my-package`
 
 #### Update
   - Run `yalc update my-package`, `yalc update`  
   - Use `--safe` flag * - NOT IMPLEMENTED
-  - Running simply `yalc` in the directory will do the same as `yalc update` * - NOT IMPLEMENTED
-
+  - Running simply `yalc` in the directory will do the same as `yalc update` *
 #### Other
 
 - Add `.yalc` folder to `.gitignore` and hide it from view, you probably never need it.

@@ -3,3 +3,5 @@
 /src
 tsconfig.json
 .vscode
+yalc.lock
+.yalc

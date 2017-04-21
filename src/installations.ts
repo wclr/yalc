@@ -2,8 +2,10 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 import { getStoreDir, values } from '.'
 
+export type PackageName = string & {__packageName: true}
+
 export type PackageInstallation = ({
-  name: string,
+  name: PackageName,
   version: string,
   path: string
 })

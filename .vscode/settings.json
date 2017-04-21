@@ -1,7 +1,7 @@
 
 {
   "typescript.tsdk": "./node_modules/typescript/lib",
-  "typescript.tsserver.trace": "verbose",
+  "typescript.tsserver.trace": "verbose",  
   "search.exclude": {
     "**/out": true    
   },    

@@ -6,7 +6,8 @@ import {
   PackageInstallation, InstallationsFile,
   readInstallationsFile,
   addInstallations,
-  removeInstallations
+  removeInstallations,
+  PackageName
 } from './installations'
 import {  
   readLockfile,
@@ -144,9 +145,9 @@ const getLatestPackageVersion = (packageName: string) => {
 const parsePackageName = (packageName: string) => {
   const match = packageName.match(/(^@[^/]+\/)?([^@]+)@?(.*)/) || []
   if (!match) {
-    return { name: '', version: '' }
+    return { name: '' as PackageName, version: '' }
   }
-  return { name: (match[1] || '') + match[2], version: match[3] || '' }
+  return { name: (match[1] || '') + match[2] as PackageName, version: match[3] || '' }
 }
 
 
@@ -243,10 +244,10 @@ export const showInstallations = (options: { workingDir: string }) => {
 
 export const updatePackages = (packages: string[], options: UpdatePackagesOptions) => {
   const lockfile = readLockfile({ workingDir: options.workingDir })
+  
   let packagesToUpdate: string[] = []
   let installationsToRemove: PackageInstallation[] = []
   if (packages.length) {
-
     packages.forEach((packageName) => {
       const { name, version } = parsePackageName(packageName)
       if (lockfile.packages[name]) {
@@ -262,7 +263,7 @@ export const updatePackages = (packages: string[], options: UpdatePackagesOption
       }
     })
   } else {
-    packagesToUpdate = Object.keys(lockfile)
+    packagesToUpdate = Object.keys(lockfile.packages)
   }
 
   const lockPackages = packagesToUpdate
