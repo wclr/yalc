@@ -5,7 +5,7 @@ import { myNameIs, publishPackage, addPackages, updatePackages, removePackages }
 
 const cliCommand = myNameIs
 
-console.log(`Loc npm/yarn packages like a boss.\n`)
+console.log(`Work with npm/yarn local packages like a boss.\n`)
 yargs
   .usage(cliCommand + '[command] [options] [package1 [package2...]]')
   .command({
@@ -30,12 +30,13 @@ yargs
     describe: 'Push',
     builder: () => {
       return yargs
-        .boolean(['knit', 'force', 'safe'])
+        .default('force', undefined)  
+        .boolean(['knit', 'safe', 'force'])
     },
     handler: (argv) => {      
       publishPackage({
         workingDir: join(process.cwd(), argv._[1] || ''),
-        force: argv.force,
+        force: argv.force !== undefined ? argv.force : true,
         knit: argv.knit,
         push: true,
         pushSafe: argv.safe
@@ -47,14 +48,29 @@ yargs
     describe: 'Add',
     builder: () => {
       return yargs
-        .usage('Add usage here')
-        .boolean(['file', 'dev'])
+        .default('yarn', false)
+        .boolean(['file', 'dev', 'yarn'])
         .help(true)
     },
     handler: (argv) => {
       addPackages(argv._.slice(1), {
         dev: argv.dev,
-        file: argv.file,
+        yarn: argv.yarn,
+        workingDir: process.cwd()
+      })
+    }
+  })
+  .command({
+    command: 'link',
+    describe: 'Link',
+    builder: () => {
+      return yargs
+        .default('yarn', true)
+        .help(true)
+    },
+    handler: (argv) => {
+      addPackages(argv._.slice(1), {
+        link: true,
         workingDir: process.cwd()
       })
     }

@@ -7,13 +7,14 @@ export type PackageInstallation = ({
   version: string,
   path: string
 })
-export type InstallationsConfig = { [packageName: string]: string[] }
 
-export const readInstallationsFile = (): InstallationsConfig => {
+export type InstallationsFile = { [packageName: string]: string[] }
+
+export const readInstallationsFile = (): InstallationsFile => {
   const storeDir = getStoreDir()
   const installationFilePath = path.join(storeDir, values.installationsFile)
   fs.ensureFileSync(installationFilePath)
-  let installationsConfig: InstallationsConfig
+  let installationsConfig: InstallationsFile
   try {
     installationsConfig = fs.readJsonSync(installationFilePath, 'utf-8')
   } catch (e) {
@@ -23,7 +24,7 @@ export const readInstallationsFile = (): InstallationsConfig => {
   return installationsConfig
 }
 
-export const saveInstallationsFile = (installationsConfig: InstallationsConfig) => {
+export const saveInstallationsFile = (installationsConfig: InstallationsFile) => {
   const storeDir = getStoreDir()
   const installationFilePath = path.join(storeDir, values.installationsFile)
   fs.writeJson(installationFilePath, installationsConfig)

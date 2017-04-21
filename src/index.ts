@@ -3,13 +3,12 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 import { copyWithIgnorePackageToStore } from './copy'
 import {
-  PackageInstallation, InstallationsConfig,
+  PackageInstallation, InstallationsFile,
   readInstallationsFile,
   addInstallations,
   removeInstallations
 } from './installations'
-import {
-  Lockfile,
+import {  
   readLockfile,
   addPackageToLockfile
 } from './lockfile'
@@ -20,18 +19,19 @@ const { join } = path
 
 const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
 
-export const myNameIs = 'yaloc'
-export const myNameIsCapitalized = 'Yaloc'
+export const myNameIs = 'yalc'
+export const myNameIsCapitalized = 'Yalc'
 
 export const values = {
-  lockfileName: 'yaloc.lock',
-  locedPackagesFolder: '.yaloc',
+  lockfileName: 'yalc.lock',
+  locedPackagesFolder: '.yalc',
   installationsFile: 'installations.json'
 }
 
 export interface AddPackagesOptions {
   dev?: boolean,
-  file?: boolean,
+  link?: boolean,
+  yarn?: boolean,
   safe?: boolean
   workingDir: string,
 }
@@ -82,7 +82,9 @@ export interface PackageManifest {
 const getPackageManager = () =>
   execSync('yarn.lock') ? 'yarn' : 'npm'
 
-export const publishPackage = async (options: PublishPackageOptions) => {  
+const execLoudOptions = { stdio: 'inherit' }
+
+export const publishPackage = async (options: PublishPackageOptions) => {
   let pkg: PackageManifest
   try {
     pkg = fs.readJsonSync(
@@ -91,23 +93,29 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     console.error('Could not read package.json in', options.workingDir)
     return
   }
+  const changeDirCmd = 'cd ' + options.workingDir + ' && '
   const scriptRunCmd = !options.force && pkg.scripts
-    ? getPackageManager() + ' run ' : ''
+    ? changeDirCmd + getPackageManager() + ' run ' : ''
+
   if (scriptRunCmd) {
     if (pkg.scripts!.preloc) {
-      execSync(scriptRunCmd + 'preloc')
+      console.log('Running preloc script: ' + pkg.scripts!.preloc)
+      execSync(scriptRunCmd + 'preloc', execLoudOptions)
     } else if (pkg.scripts!.prepublish) {
-      execSync(scriptRunCmd + 'prepublish')
+      console.log('Running prepublish script: ' + pkg.scripts!.prepublish)
+      execSync(scriptRunCmd + 'prepublish', execLoudOptions)
     }
   }
-  
+
   copyWithIgnorePackageToStore(pkg, options)
 
   if (scriptRunCmd) {
     if (pkg.scripts!.postloc) {
-      execSync(scriptRunCmd + 'preloc')
+      console.log('Running postloc script: ' + pkg.scripts!.postloc)
+      execSync(scriptRunCmd + 'postloc', execLoudOptions)
     } else if (pkg.scripts!.postpublish) {
-      execSync(scriptRunCmd + 'prepublish')
+      console.log('Running pospublish script: ' + pkg.scripts!.postpublish)
+      execSync(scriptRunCmd + 'postpublish', execLoudOptions)
     }
   }
 
@@ -173,8 +181,11 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
     fs.emptyDirSync(destLoctedCopyDir)
     fs.copySync(storedPackageDir, destLoctedCopyDir)
     fs.removeSync(destloctedLinkDir)
-    
-    if (options.file) {
+
+    if (options.link) {
+      ensureSymlinkSync(destLoctedCopyDir, destloctedLinkDir, 'dir')
+    } else {
+      const localAddress = 'file:' + values.locedPackagesFolder + '/' + pkg.name
       fs.copySync(destLoctedCopyDir, destloctedLinkDir)
       const localManifestFile = path.join(options.workingDir, 'package.json')
       const localPkg = fs.readJsonSync(localManifestFile) as PackageManifest
@@ -196,16 +207,13 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
         }
       }
 
-      const localAddress = 'file:' + values.locedPackagesFolder + '/' + pkg.name
+
       if (whereToAdd[pkg.name] !== localAddress) {
         whereToAdd[pkg.name] = localAddress
         localPkg.dependencies = dependencies
         localPkg.devDependencies = devDependencies
         fs.writeJsonSync(localManifestFile, localPkg)
-      }
-    } else {
-      console.log('here')
-      ensureSymlinkSync(destLoctedCopyDir, destloctedLinkDir, 'dir')
+      }      
     }
     console.log(`${pkg.name}@${pkg.version} locted ==> ${destloctedLinkDir}`)
     return { name, version, path: options.workingDir }
@@ -216,11 +224,17 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       .map((i) => ({
         name: i!.name,
         version: i!.version,
-        file: options.file
+        file: !options.link
       })), { workingDir: options.workingDir }
   )
 
   addInstallations(addedInstalls)
+
+  if (options.yarn) {
+    const changeDirCmd = 'cd ' + options.workingDir + ' && '
+    execSync(changeDirCmd + 'yarn')
+  }
+
 }
 
 export const showInstallations = (options: { workingDir: string }) => {
@@ -235,9 +249,9 @@ export const updatePackages = (packages: string[], options: UpdatePackagesOption
 
     packages.forEach((packageName) => {
       const { name, version } = parsePackageName(packageName)
-      if (lockfile[name]) {
+      if (lockfile.packages[name]) {
         if (version) {
-          lockfile[name].version = version
+          lockfile.packages[name].version = version
         }
         packagesToUpdate.push(name)
       } else {
@@ -250,20 +264,20 @@ export const updatePackages = (packages: string[], options: UpdatePackagesOption
   } else {
     packagesToUpdate = Object.keys(lockfile)
   }
-  
+
   const lockPackages = packagesToUpdate
     .map(name => ({
-      name: lockfile[name].version
-        ? name + '@' + lockfile[name].version : name,
-      file: lockfile[name].file
+      name: lockfile.packages[name].version
+        ? name + '@' + lockfile.packages[name].version : name,
+      file: lockfile.packages[name].file
     }))
-  const packagesAsFile = lockPackages
+  const packagesFiles = lockPackages
     .filter(p => p.file).map(p => p.name)
-  addPackages(packagesAsFile, { workingDir: options.workingDir, file: true })
+  addPackages(packagesFiles, { workingDir: options.workingDir })
 
-  const packagesNotFile = lockPackages
+  const packagesLinks = lockPackages
     .filter(p => !p.file).map(p => p.name)
-  addPackages(packagesNotFile, { workingDir: options.workingDir })
+  addPackages(packagesLinks, { workingDir: options.workingDir, link: true })
 
   removeInstallations(installationsToRemove)
 }

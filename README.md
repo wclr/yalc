@@ -1,6 +1,6 @@
-# Yaloc  (WIP)
+# Yalc  (WIP)
 
-> Kind of better workflow than **npm | yarn link**.
+> Better workflow than **npm | yarn link**.
 
 ## Why
 
@@ -8,57 +8,81 @@ Because uisng standard [symlinked packages](https://docs.npmjs.com/cli/link) apr
 
 ## What
 
-- `Yaloc` acts like very simple local repository of your shared/in-progress packages. 
-- When you  you do `yaloc publish` in the package directory it grabs only files that should be published to NPM and *puts* them into special global store located for example in  `~/.yaloc`. 
-- When you do `yaloc add my-package` in your `project` it *pulls* package source to `.yaloc` in current folder and creates symlink: 
-`project/.yaloc/my-package ==> project/node_modules/my-package`
-
-  This design allows to have isolated `node_modules` of *locted* `my-package` and do not worry that something happens with the folder and its content when your package manager performs its *"destructive"* routines (like `yarn --force`)
-
-  `Yaloc` may also work without engaging symlinks at all. By using `file:` dependency type in your `package.json`.
-
--  `Yaloc` creates special `yaloc.lock` file in your project where it fixates all the packages (with versions if needed). It is used to update from `yaloc` store consistently.
+- `yalc` acts like very simple local repository of your localy developed packages that you want to share across your local environment. 
+- When you  you do `yalc publish` in the package directory it grabs only files that should be published to NPM and *puts* them into special global store located for example in  `~/.yalc`. 
+- When you do `yalc add my-package` (or `yalc link my-package` - see below) in your `project` it *pulls* package content to `.yalc` in current folder and either injects `file:` dependency in `package.json` or creates symlink in `node_modules`.
+-  `yalc` creates special `yalc.lock` file in your project (near `yarn.lock` and `package.json`) that be used to ensure consistentcy while performing `yalc's` routines.
 
 ## Install
 
-![npm (scoped)](https://img.shields.io/npm/v/yaloc.svg?maxAge=86400)
+![npm (scoped)](https://img.shields.io/npm/v/yalc.svg?maxAge=86400)
 
 ```
-  npm i yaloc -g
+  npm i yalc -g
 ```
 
 
 ## Usage 
 
 #### Publish
-- Run `yaloc publish` in your dependency package `my-package`.
+- Run `yalc publish` in your dependency package `my-package`. 
+- It will run `preloc` or `prepublish` scripts before, and `postloc` or `postpublish` after. Use `--force` to publish without running scripts.
 
 #### Add
-- Run `yaloc add my-package` in your dependant project
-- You may add particular versoin `yaloc add my-package@version`. 
+- Run `yalc add my-package` in your dependant project, 
+it will copy current version frome store to your project's `.yalc` folder and inject `file:.yalc/my-package` dependency in package.json.
+- You may add particular versoin `yalc add my-package@version`, this version will be fixed in `yalc.lock` file and while updates it will not update to newly published versions.
+
+#### Link
+- Alternativly to `add` you may use `link` operation. Which should work for you actually the same way as `yarn link` does, the only difference is that source for symllink will be not global yarn's link directory but lolcal `.yalc`. 
+- After it copies package content to local `.yalc` folder it will create symlink:
+`project/.yalc/my-package ==> project/node_modules/my-package`. It will not touch `package.json`.
 
 #### Remove
- - Run `yalock remove my-package`
+ - Run `yalc remove my-package`
 
 #### Update
-  - Run `yaloc update my-package`, `yaloc update`  
+  - Run `yalc update my-package`, `yalc update`  
   - Use `--safe` flag * - NOT IMPLEMENTED
-  - Running simply `yaloc` in the directory will do the same as `yaloc update`
+  - Running simply `yalc` in the directory will do the same as `yalc update` * - NOT IMPLEMENTED
 
 #### Other
 
-- Probably want to add `.yaloc` folder to `.gitignore`.
-- Add to package.json `file:.yaloc/my-package`
+- Add `.yalc` folder to `.gitignore` and hide it from view, you probably never need it.
+- You probably wan't to add `yalc.lock` to `.gitignore` too.
 
 ## Advanced usage
 
-#### Publish with push
+#### Pusing updates automaticly to all installations
 
-- `yaloc publish --push`
+- When do `yalc add/link` locations where packages added are saved, 
+so `yalc` tries to know where each package from store is being used.
+- `yalc publish --push` will publish package to store and propagate all changes to existing `yalc's` package installations (will actually do `update` operation on the location).
+- You may just use shortcut for push operation `yloc push`, **which will likely become your primarily used command** for publication :
+  - it support `--knit`, `--safe`, options
+  - `force` options is `true` by default, so it won't run scripts `publish/loc` scripts.
 
-#### Publish using knitting
+#### Publish/push sub-projects
 
-- You want try to `--knit` option.
+Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package` will perform publish operation in nested `package` folder of current working dir.
+
+#### Try to use [knitting](https://github.com/yarnpkg/rfcs/blob/master/text/0000-yarn-knit.md)
+
+- You want try to `--knit` option. Instead of just copying files from original package location to store it will create symlinks for each individual file in the package.
+  
+- Changes to files will be propagated immidiately to all locations as you make updates to linked files.
+
+- It is still symlinks. Modules will be resolving their dependencies relative to their original location. [Until you use available workarounds for loaders/resolvers.](https://nodejs.org/api/cli.html#cli_preserve_symlinks)
+
+- Excluded folders from publications like `node_modules` stay isolated to the area of use.
+
+- When add new files you still need *may need* to push updated version to `yalc` store (for new links to be created).
+
+
+## Related Yarn Issues
+
+- [yarn probably shouldn't cache packages resolved with a file path](https://github.com/yarnpkg/yarn/issues/2165)
+
 
 ## Licence
 
