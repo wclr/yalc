@@ -1,10 +1,10 @@
-# Yalc  (WIP)
+# Yalc (WIP)
 
 > Better workflow than **npm | yarn link** for package authors.
 
 ## Why
 
-When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in your other projects in your local environment without publishing those packages to remote registry. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this approach can solve the problem and work for you, it also often imposes unpleasant constrains and issues with dependencies resolution, symlinks interoperability between file systems, etc.
+When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in your other projects in your local environment without publishing those packages to remote registry. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this approach often may work and solve the problem, it too often imposes **unpleasant constrains and issues** with dependencies resolution, symlinks interoperability between file systems, et.
 
 ## What
 
@@ -12,6 +12,8 @@ When developing and authoring multiple packages (private or public) you often fi
 - When you  you do `yalc publish` in the package directory it grabs only files that should be published to NPM and *puts* them into special global store located for example in  `~/.yalc`. 
 - When you do `yalc add my-package` (or `yalc link my-package` - see below) in your `project` it *pulls* package content to `.yalc` in current folder and either injects `file:` dependency in `package.json` or creates symlink in `node_modules`.
 -  `yalc` creates special `yalc.lock` file in your project (near `yarn.lock` and `package.json`) that be used to ensure consistentcy while performing `yalc's` routines.
+- `Yalc` is not tired to `yarn` it can be used in projects where `npm` client is used 
+for managing `package.json` dependencies.
 
 ## Install
 
@@ -21,6 +23,7 @@ When developing and authoring multiple packages (private or public) you often fi
   npm i yalc -g
 ```
 
+*Work in progress. It is a pre-release. BREAKING CHANGES may be expected.*
 
 ## Usage 
 
@@ -79,9 +82,11 @@ Useful for monorepos (projects with multiple sub-projects/packages): `yalc publi
 - When add new files you still need *may need* to push updated version to `yalc` store (for new links to be created).
 
 
-## Related Yarn Issues
+## Related links
 
 - [yarn probably shouldn't cache packages resolved with a file path](https://github.com/yarnpkg/yarn/issues/2165)
+- ["yarn knit": a better "yarn link"](https://github.com/yarnpkg/yarn/issues/1213)
+- [npm-link-shared](https://github.com/OrKoN/npm-link-shared)
 
 
 ## Licence
