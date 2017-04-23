@@ -4,7 +4,7 @@
 
 ## Why
 
-When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in your other projects in your local environment, without publishing those packages to remote registry. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this brings potential goodness and profit, it also often imposes unpleasant constrains and issues with dependencies resolution, symlinks interoperability between file systems, etc.
+When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in your other projects in your local environment without publishing those packages to remote registry. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this approach can solve the problem and work for you, it also often imposes unpleasant constrains and issues with dependencies resolution, symlinks interoperability between file systems, etc.
 
 ## What
 
@@ -34,21 +34,22 @@ it will copy current version frome store to your project's `.yalc` folder and in
 - You may add particular versoin `yalc add my-package@version`, this version will be fixed in `yalc.lock` file and while updates it will not update to newly published versions.
 
 #### Link
-- Alternativly to `add` you may use `link` operation. Which should work for you actually the same way as `yarn link` does, the only difference is that source for symllink will be not global yarn's link directory but lolcal `.yalc`. 
-- After it copies package content to local `.yalc` folder it will create symlink:
-`project/.yalc/my-package ==> project/node_modules/my-package`. It will not touch `package.json`.
+-  Alternatively to `add` you may use `link` operation which should actually work for you the same way as `npm/yarn link` does, the only difference is that source for symllink will be not global link directory but lolcal `.yalc` folder. 
+- After `yalc` copies package content to `.yalc` folder it will create symlink:
+`project/.yalc/my-package ==> project/node_modules/my-package`. It will not touch `package.json` in this case.
 
 #### Remove (NOT IMPLEMENTED)
  - Run `yalc remove my-package`
 
 #### Update
-  - Run `yalc update my-package`, `yalc update`  
-  - Use `--safe` flag * - NOT IMPLEMENTED
-  - Running simply `yalc` in the directory will do the same as `yalc update` *
+  - Run `yalc update my-package` to update the latest version from store, 
+  or `yalc update` to update all the packages found in `yalc.lock`.
+  - Running simply `yalc` in the directory will do the same as `yalc update`
+  
 #### Other
 
-- Add `.yalc` folder to `.gitignore` and hide it from view, you probably never need it.
-- You probably wan't to add `yalc.lock` to `.gitignore` too.
+- Add `.yalc` folder to `.gitignore` (and `.npmignore`, etc) and hide it from your view.
+- You probably want to add `yalc.lock` to `.gitignore` too.
 
 ## Advanced usage
 

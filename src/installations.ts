@@ -4,11 +4,12 @@ import { getStoreMainDir, values } from '.'
 
 export type PackageName = string & {__packageName: true}
 
-export type PackageInstallation = ({
+export type PackageInstallation = {
   name: PackageName,
   version: string,
+  replaced?: string,
   path: string
-})
+}
 
 export type InstallationsFile = { [packageName: string]: string[] }
 

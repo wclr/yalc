@@ -9,13 +9,16 @@ export type LockFileConfigV0 = {
   }
 }
 
+export type LockFilePackageEntry = {
+  version?: string
+  file?: boolean,
+  replaced?: string
+}
+
 export type LockFileConfigV1 = {
   version: 'v1',
   packages: {
-    [packageName: string]: {
-      version?: string
-      file?: boolean
-    }
+    [packageName: string]: LockFilePackageEntry
   }
 }
 type LockFileVersions = 'v1' | 'v0'
@@ -72,13 +75,14 @@ export const writeLockfile = (lockfile: LockFileConfig, options: { workingDir: s
 }
 
 export const addPackageToLockfile = (
-  packages: { name: string, version: string, file?: boolean }[],
+  packages: ({ name: string } & LockFilePackageEntry)[],
   options: { workingDir: string }) => {
   const lockfile = readLockfile(options)
-  packages.forEach(({ name, version, file }) => {
+  packages.forEach(({ name, version, file, replaced }) => {
     lockfile.packages[name] = {}
     version && (lockfile.packages[name].version = version)
     file && (lockfile.packages[name].file = true)
+    replaced && (lockfile.packages[name].replaced = replaced)
   })
   writeLockfile(lockfile, options)
 }
