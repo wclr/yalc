@@ -49,18 +49,26 @@ export interface RemovePackagesOptions {
 
 export { publishPackage } from './publish'
 
+export interface YalcGlobal extends NodeJS.Global {
+  yalcStoreMainDir: string
+}
+export const yalcGlobal = global as YalcGlobal
+
 export function getStoreMainDir(): string {
-  if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
-    return join(process.env.LOCALAPPDATA, myNameIsCapitalized, );
+  if (yalcGlobal.yalcStoreMainDir) {    
+    return yalcGlobal.yalcStoreMainDir
   }
-  return join(userHome, '.' + myNameIs, 'packages');
+  if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
+    return join(process.env.LOCALAPPDATA, myNameIsCapitalized);
+  }
+  return join(userHome, '.' + myNameIs);
 }
 
 export function getStorePackagesDir(): string {
   return join(getStoreMainDir(), 'packages');
 }
 
-const getPackageStoreDir = (packageName: string, version = '') =>
+export const getPackageStoreDir = (packageName: string, version = '') =>
   path.join(getStorePackagesDir(), packageName, version)
 
 export interface PackageManifest {
@@ -155,7 +163,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
         ? devDependencies : dependencies
 
       if (options.dev) {
-        if (dependencies[pkg.name]) {          
+        if (dependencies[pkg.name]) {
           replacedVersion = dependencies[pkg.name]
           delete dependencies[pkg.name]
         }
