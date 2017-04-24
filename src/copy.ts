@@ -1,4 +1,3 @@
-import { symlink } from 'fs';
 const ignore = require('ignore')
 import * as fs from 'fs-extra'
 import * as path from 'path'

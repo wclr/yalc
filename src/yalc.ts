@@ -1,7 +1,17 @@
 #!/usr/bin/env node
 import * as yargs from 'yargs'
 import { join } from 'path'
-import { myNameIs, publishPackage, addPackages, updatePackages, removePackages } from '.'
+import {
+  myNameIs,
+  publishPackage,
+  addPackages,
+  updatePackages,
+  removePackages
+} from '.'
+import {
+  checkManifest
+} from './check'
+
 
 const cliCommand = myNameIs
 
@@ -16,8 +26,9 @@ yargs
         .boolean(['push', 'knit', 'force', 'push-safe'])
     },
     handler: (argv) => {
+      const folder = argv._[1]
       publishPackage({
-        workingDir: join(process.cwd(), argv._[1] || ''),
+        workingDir: join(process.cwd(), folder || ''),
         force: argv.force,
         knit: argv.knit,
         push: argv.push,
@@ -88,5 +99,27 @@ yargs
         workingDir: process.cwd()
       })
     }
-  }).argv
+  })
+  .command({
+    command: 'check',        
+    describe: 'Check package.json on yalc entries',
+    builder: () => {
+      return yargs.boolean(['commit'])
+        .usage('check usage here')
+        .help(true)
+    },
+    handler: (argv) => {
+      const gitParams = process.env.GIT_PARAMS
+      const folder = argv._[1]
+      checkManifest({
+        commit: argv.commit,
+        all: argv.all,
+        workingDir: process.cwd()
+      })
+      // updatePackages(, {
+      //   workingDir: process.cwd()
+      // })
+    }
+  })
+  .argv
    
