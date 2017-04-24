@@ -10,4 +10,3 @@ branches:
   - master
 cache: 
   yarn: true
-  bundler: true
