@@ -17,7 +17,7 @@ const cliCommand = myNameIs
 
 console.log(`Work with npm/yarn local packages like a boss.\n`)
 yargs
-  .usage(cliCommand + '[command] [options] [package1 [package2...]]')  
+  .usage(cliCommand + '[command] [options] [package1 [package2...]]')
   .command({
     command: 'publish',
     describe: 'Publish',
@@ -41,10 +41,10 @@ yargs
     describe: 'Push',
     builder: () => {
       return yargs
-        .default('force', undefined)  
+        .default('force', undefined)
         .boolean(['knit', 'safe', 'force'])
     },
-    handler: (argv) => {      
+    handler: (argv) => {
       publishPackage({
         workingDir: join(process.cwd(), argv._[1] || ''),
         force: argv.force !== undefined ? argv.force : true,
@@ -87,7 +87,7 @@ yargs
     }
   })
   .command({
-    command: ['*', 'update'],    
+    command: ['*', 'update'],
     describe: 'Update packages',
     builder: () => {
       return yargs
@@ -101,7 +101,7 @@ yargs
     }
   })
   .command({
-    command: 'check',        
+    command: 'check',
     describe: 'Check package.json on yalc entries',
     builder: () => {
       return yargs.boolean(['commit'])
@@ -110,16 +110,15 @@ yargs
     },
     handler: (argv) => {
       const gitParams = process.env.GIT_PARAMS
+      if (argv.commit) {
+        console.log('gitParams', gitParams)
+      }
       const folder = argv._[1]
       checkManifest({
         commit: argv.commit,
         all: argv.all,
         workingDir: process.cwd()
       })
-      // updatePackages(, {
-      //   workingDir: process.cwd()
-      // })
     }
   })
   .argv
-   
