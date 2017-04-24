@@ -1,0 +1,13 @@
+
+# sudo: false
+sudo: required
+language: node_js
+node_js:
+- 6.9.1
+script: yarn test
+branches:
+  only:
+  - master
+cache: 
+  yarn: true
+  bundler: true
