@@ -79,10 +79,13 @@ export const addPackageToLockfile = (
   options: { workingDir: string }) => {
   const lockfile = readLockfile(options)
   packages.forEach(({ name, version, file, replaced }) => {
+    let old = lockfile.packages[name] || {}
     lockfile.packages[name] = {}
     version && (lockfile.packages[name].version = version)
     file && (lockfile.packages[name].file = true)
-    replaced && (lockfile.packages[name].replaced = replaced)
+    if (replaced || old.replaced) {
+      lockfile.packages[name].replaced = replaced || old.replaced
+    }
   })
   writeLockfile(lockfile, options)
 }
