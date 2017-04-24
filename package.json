@@ -7,7 +7,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "precommit": "yalc check"
+    "precommit": "yalc check",
+    "test": "mocha out/test",
+    "watch": "mocha out/test --watch"
   },
   "license": "MIT",
   "dependencies": {
