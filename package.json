@@ -10,7 +10,7 @@
     "precommit": "yalc check",
     "test": "mocha out/test",
     "watch": "mocha out/test --watch",
-    "ci": "tsc & yarn test"
+    "ci": "tsc && yarn test"
   },
   "license": "MIT",
   "dependencies": {
