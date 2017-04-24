@@ -2,7 +2,7 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 import { getStoreMainDir, values } from '.'
 
-export type PackageName = string & {__packageName: true}
+export type PackageName = string & { __packageName: true }
 
 export type PackageInstallation = {
   name: PackageName,
@@ -13,18 +13,23 @@ export type PackageInstallation = {
 
 export type InstallationsFile = { [packageName: string]: string[] }
 
-
 export const readInstallationsFile = (): InstallationsFile => {
   const storeDir = getStoreMainDir()
-  const installationFilePath = path.join(storeDir, values.installationsFile)
-  fs.ensureFileSync(installationFilePath)
+  const installationFilePath = path.join(storeDir, values.installationsFile)  
   let installationsConfig: InstallationsFile
-  try {
-    installationsConfig = fs.readJsonSync(installationFilePath, 'utf-8')
-  } catch (e) {
-    console.log('Error reading installations file', installationFilePath, e)
+  
+  try {    
+    fs.accessSync(installationFilePath)  
+    try {
+      installationsConfig = fs.readJsonSync(installationFilePath, 'utf-8')
+    } catch (e) {
+      console.log('Error reading installations file', installationFilePath, e)
+      installationsConfig = {}
+    }
+  } catch (e) {    
     installationsConfig = {}
   }
+
   return installationsConfig
 }
 
