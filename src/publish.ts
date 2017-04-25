@@ -70,10 +70,14 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     const installationsConfig = readInstallationsFile()
     const installationPaths =
       installationsConfig[pkg.name] || []
+    const installationsToRemove: PackageInstallation[] = []
     installationPaths.forEach((workingDir) => {
       console.log(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
-      updatePackages([pkg.name], { workingDir })
+      installationsToRemove.concat(
+        updatePackages([pkg.name], { workingDir, noInstallationsRemove: true })
+      )      
     })
+    removeInstallations(installationsToRemove)
   }
   // workaround yarn bug with file: deps
   try {

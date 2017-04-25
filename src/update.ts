@@ -2,7 +2,8 @@ import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import { join } from 'path'
 import {
-  PackageInstallation, InstallationsFile,
+  PackageInstallation,
+  InstallationsFile,
   readInstallationsFile,
   addInstallations,
   removeInstallations,
@@ -26,6 +27,7 @@ import {
 
 export interface UpdatePackagesOptions {
   safe?: boolean,
+  noInstallationsRemove?: boolean,
   workingDir: string,
 }
 export const updatePackages = (packages: string[], options: UpdatePackagesOptions) => {
@@ -66,5 +68,8 @@ export const updatePackages = (packages: string[], options: UpdatePackagesOption
     .filter(p => !p.file).map(p => p.name)
   addPackages(packagesLinks, { workingDir: options.workingDir, link: true })
 
-  removeInstallations(installationsToRemove)
+  if (!options.noInstallationsRemove) {
+    removeInstallations(installationsToRemove)
+  }
+  return installationsToRemove
 }
