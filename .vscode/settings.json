@@ -1,12 +1,13 @@
-
 {
   "typescript.tsdk": "./node_modules/typescript/lib",
-  "typescript.tsserver.trace": "verbose",  
-  "search.exclude": {
-    "**/out": true    
-  },    
+  "typescript.tsserver.trace": "verbose",
+  "search.exclude": {},
+  "files.exclude": {
+    "**/*.js": true,
+    "**/*.js.map": true,
+    "**/*.d.ts": true
+  },
   "tslint.run": "onSave",
-  
   "editor.formatOnType": true,
   "editor.tabSize": 2,
   "editor.insertSpaces": true

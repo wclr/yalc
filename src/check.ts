@@ -17,6 +17,7 @@ export type CheckOptions = {
 const stagedChangesCmd = 'git diff --cached --name-only'
 const allChangesCmd = 'git diff HEAD --name-only'
 const notStagedChangesCmd = 'git diff --name-only'
+//git ls-files --others --exclude-standard
 //const filesInCommitCmd = 'git diff-tree --no-commit-id --name-only -r bd61ad98'
 
 const isPackageManifest = (fileName: string) =>

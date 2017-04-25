@@ -9,7 +9,6 @@
     "noImplicitAny": true,
     "noImplicitThis": true, 
     "noImplicitReturns": true,
-    "outDir": "./out",
     "noFallthroughCasesInSwitch": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -19,5 +18,5 @@
     "indentSize": 2,
     "tabSize": 2
   },  
-  "exclude": ["**/node_modules/*", "out/*"]
+  "exclude": ["**/node_modules/*"]
 }

@@ -2,7 +2,7 @@
 import * as yargs from 'yargs'
 import { join } from 'path'
 import {
-  myNameIs,
+  values,
   publishPackage,
   addPackages,
   updatePackages,
@@ -13,7 +13,7 @@ import {
 } from './check'
 
 
-const cliCommand = myNameIs
+const cliCommand = values.myNameIs
 
 console.log(`Work with npm/yarn local packages like a boss.\n`)
 yargs

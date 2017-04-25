@@ -3,13 +3,14 @@
   "version": "1.0.0-pre.0",
   "description": "Work yarn packages locally like a boss.",
   "bin": {
-    "yalc": "out/yalc.js"
+    "yalc": "src/yalc.js"
   },
+  "main": "src/index.js",
   "scripts": {
     "build": "tsc",
     "precommit": "yalc check",
-    "test": "mocha out/test",
-    "watch": "mocha out/test --watch",
+    "test": "mocha test",
+    "watch": "mocha test --watch",
     "ci": "tsc && yarn test"
   },
   "license": "MIT",
