@@ -117,9 +117,9 @@ export function readPackageManifest({ workingDir }: { workingDir: string }) {
       console.log('Package manifest', packagePath, 'should contain name and version.')
       return null
     }
-    const formatSpaces = getJSONSpaces(fileData) || 2    
+    const formatSpaces = getJSONSpaces(fileData) || 2
     if (!formatSpaces) {
-      
+
       console.log('Could not get JSON formatting for', packagePath, 'using 2')
     }
     pkg.__JSONSpaces = formatSpaces
@@ -130,9 +130,21 @@ export function readPackageManifest({ workingDir }: { workingDir: string }) {
   }
 }
 
+const sortDependencies = (dependencies: { [name: string]: string }) => {
+  return Object.keys(dependencies).sort().reduce((deps, key) =>
+    Object.assign(deps, { [key]: dependencies[key] })
+    , {})
+}
+
 export function writePackageManifest(
   pkg: PackageManifest, { workingDir }: { workingDir: string }) {
   pkg = Object.assign({}, pkg)
+  if (pkg.dependencies) {
+    pkg.dependencies = sortDependencies(pkg.dependencies)
+  }
+  if (pkg.devDependencies) {
+    pkg.devDependencies = sortDependencies(pkg.devDependencies)
+  }
   const formatSpaces = pkg.__JSONSpaces
   delete pkg.__JSONSpaces
   const packagePath = join(workingDir, 'package.json')
