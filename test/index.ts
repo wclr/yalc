@@ -84,8 +84,11 @@ describe('Yalc package manager', () => {
       })
       setTimeout(done, 100)
     })
-    it('copies to .yalc folder', () => {
+    it('copies package to .yalc folder', () => {
       checkExists(join(projectDir, '.yalc', values.depPackage))
+    })
+    it('copies remove package to node_modules', () => {
+      checkExists(join(projectDir, 'node_modules', values.depPackage))
     })
     it('creates to yalc.lock', () => {
       checkExists(join(projectDir, 'yalc.lock'))
@@ -164,6 +167,14 @@ describe('Yalc package manager', () => {
         [values.depPackage]: [projectDir]
       })
     })
+
+    it('should not remove package from .yalc', () => {
+      checkExists(join(projectDir, '.yalc', values.depPackage))
+    })
+    
+    it('should remove package from node_modules', () => {
+      checkNotExists(join(projectDir, 'node_modules', values.depPackage))
+    })
   })
 
   describe('Update (restore after retreat) package', () => {
@@ -179,7 +190,7 @@ describe('Yalc package manager', () => {
       deepEqual(pkg.dependencies, {
         [values.depPackage]: 'file:.yalc/' + values.depPackage
       })
-    })
+    })    
   })
 
   describe('Remove package', () => {
@@ -208,6 +219,13 @@ describe('Yalc package manager', () => {
       const installtions = readInstallationsFile()
       deepEqual(installtions, {
       })
+    })
+    it('should remove package from .yalc', () => {
+      checkNotExists(join(projectDir, '.ylc', values.depPackage))
+    })
+
+    it('should remove package from node_modules', () => {
+      checkNotExists(join(projectDir, 'node_modules', values.depPackage))
     })
   })
 })
