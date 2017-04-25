@@ -8,15 +8,15 @@ import {
   yalcGlobal,
   getStorePackagesDir,
   getPackageStoreDir
-} from '..'
+} from '../src'
 
 import {
   readInstallationsFile
-} from '../installations'
+} from '../src/installations'
 
 import {
   readLockfile
-} from '../lockfile'
+} from '../src/lockfile'
 
 
 const values = {
@@ -26,7 +26,7 @@ const values = {
   project: 'project'
 }
 
-const fixtureDir = join(__dirname, '../../src/test/fixture')
+const fixtureDir = join(__dirname, 'fixture')
 const tmpDir = join(__dirname, 'tmp')
 
 const storeMainDr = join(tmpDir, values.storeDir)
