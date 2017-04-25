@@ -101,6 +101,35 @@ yargs
     }
   })
   .command({
+    command: 'remove',
+    describe: 'Remove packages',
+    builder: () => {
+      return yargs
+        .boolean(['retreat'])
+        .help(true)
+    },
+    handler: (argv) => {
+      removePackages(argv._.slice(1), {
+        retreat: argv.retreat,
+        workingDir: process.cwd()
+      })
+    }
+  })
+  .command({
+    command: 'retreat',
+    describe: 'Retreat packages',
+    builder: () => {
+      return yargs
+        .help(true)
+    },
+    handler: (argv) => {
+      removePackages(argv._.slice(1), {
+        retreat: true,
+        workingDir: process.cwd()
+      })
+    }
+  })
+  .command({
     command: 'check',
     describe: 'Check package.json on yalc entries',
     builder: () => {

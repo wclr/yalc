@@ -26,6 +26,8 @@ export const values = {
   myNameIsCapitalized: 'Yalc',
   lockfileName: 'yalc.lock',
   locedPackagesFolder: '.yalc',
+  prescript: 'preyalc',
+  postscript: 'postyalc',
   installationsFile: 'installations.json'
 }
 
@@ -54,7 +56,7 @@ export interface YalcGlobal extends NodeJS.Global {
 export const yalcGlobal = global as YalcGlobal
 
 export function getStoreMainDir(): string {
-  if (yalcGlobal.yalcStoreMainDir) {    
+  if (yalcGlobal.yalcStoreMainDir) {
     return yalcGlobal.yalcStoreMainDir
   }
   if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
@@ -80,9 +82,10 @@ export interface PackageManifest {
     install?: string,
     prepublish?: string
     postpublish?: string
-    preloc?: string
-    postloc?: string
-  }
+    preyalc?: string
+    postyalc?: string
+  },
+  __JSONSpaces: number
 }
 
 export const getPackageManager = () =>
@@ -97,3 +100,46 @@ export const parsePackageName = (packageName: string) => {
   }
   return { name: (match[1] || '') + match[2] as PackageName, version: match[3] || '' }
 }
+
+const getJSONSpaces = (jsonStr: string) => {
+  let match = jsonStr.match(/^[^{]*{.*\n([ ]+?)\S/)
+  return match && match[1] ? match[1].length : null
+}
+
+export function readPackageManifest({ workingDir }: { workingDir: string }) {
+  let pkg: PackageManifest
+  const packagePath = join(workingDir, 'package.json')
+  try {
+    const fileData = fs.readFileSync(
+      packagePath, 'utf-8')
+    pkg = JSON.parse(fileData) as PackageManifest
+    if (!pkg.name && pkg.version) {
+      console.log('Package manifest', packagePath, 'should contain name and version.')
+      return null
+    }
+    const formatSpaces = getJSONSpaces(fileData) || 2    
+    if (!formatSpaces) {
+      
+      console.log('Could not get JSON formatting for', packagePath, 'using 2')
+    }
+    pkg.__JSONSpaces = formatSpaces
+    return pkg
+  } catch (e) {
+    console.error('Could not read', packagePath)
+    return null
+  }
+}
+
+export function writePackageManifest(
+  pkg: PackageManifest, { workingDir }: { workingDir: string }) {
+  pkg = Object.assign({}, pkg)
+  const formatSpaces = pkg.__JSONSpaces
+  delete pkg.__JSONSpaces
+  const packagePath = join(workingDir, 'package.json')
+  try {
+    fs.writeFileSync(packagePath, JSON.stringify(pkg, null, formatSpaces))
+  } catch (e) {
+    console.error('Could not write ', packagePath)
+  }
+}
+

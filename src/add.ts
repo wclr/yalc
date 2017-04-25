@@ -20,7 +20,9 @@ import {
   PackageManifest,
   getPackageStoreDir,
   values,
-  parsePackageName
+  parsePackageName,
+  readPackageManifest,
+  writePackageManifest
 } from '.'
 
 const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
@@ -45,6 +47,12 @@ const getLatestPackageVersion = (packageName: string) => {
 
 export const addPackages = (packages: string[], options: AddPackagesOptions) => {
   const packagesStoreDir = getStorePackagesDir()
+  const workingDir = options.workingDir
+  const localPkg = readPackageManifest({ workingDir: workingDir })
+  let localPkgUpdated = false
+  if (!localPkg) {
+    return
+  }
   const addedInstalls = packages.map((packageName) => {
     const { name, version = '' } = parsePackageName(packageName)
 
@@ -53,7 +61,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
     }
 
     if (!fs.existsSync(getPackageStoreDir(name))) {
-      console.log(`Could not find package \`${name}\` in store.`)
+      console.log(`Could not find package \`${name}\` in store, skipping.`)
       return null
     }
     const versionToInstall = version || getLatestPackageVersion(name)
@@ -61,21 +69,17 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
     const storedPackageDir = getPackageStoreDir(name, versionToInstall)
 
     if (!fs.existsSync(storedPackageDir)) {
-      console.log(`Could not find package \`${packageName}\` ` + storedPackageDir)
+      console.log(`Could not find package \`${packageName}\` ` + storedPackageDir, ', skipping.')
       return null
     }
 
-    const pkgFile = join(storedPackageDir, 'package.json')
-    let pkg
-    try {
-      pkg = fs.readJsonSync(join(storedPackageDir, 'package.json'))
-    } catch (e) {
-      console.log('Could not read and parse ', pkgFile)
-      return null
+    const pkg = readPackageManifest({ workingDir: storedPackageDir })
+    if (!pkg) {
+      return
     }
-    const destLoctedCopyDir = join(options.workingDir,
+    const destLoctedCopyDir = join(workingDir,
       values.locedPackagesFolder, name)
-    const destloctedLinkDir = join(options.workingDir, 'node_modules', name)
+    const destloctedLinkDir = join(workingDir, 'node_modules', name)
 
     fs.emptyDirSync(destLoctedCopyDir)
     fs.copySync(storedPackageDir, destLoctedCopyDir)
@@ -87,8 +91,6 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
     } else {
       const localAddress = 'file:' + values.locedPackagesFolder + '/' + pkg.name
       fs.copySync(destLoctedCopyDir, destloctedLinkDir)
-      const localManifestFile = join(options.workingDir, 'package.json')
-      const localPkg = fs.readJsonSync(localManifestFile) as PackageManifest
 
       const dependencies = localPkg.dependencies || {}
       const devDependencies = localPkg.devDependencies || {}
@@ -113,7 +115,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
         whereToAdd[pkg.name] = localAddress
         localPkg.dependencies = dependencies
         localPkg.devDependencies = devDependencies
-        fs.writeJsonSync(localManifestFile, localPkg)
+        localPkgUpdated = true
       }
       replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
     }
@@ -125,6 +127,10 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       path: options.workingDir
     }
   }).filter(_ => _) as PackageInstallation[]
+
+  if (localPkgUpdated) {
+    writePackageManifest(localPkg, { workingDir })
+  }
 
   addPackageToLockfile(
     addedInstalls

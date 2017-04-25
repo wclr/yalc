@@ -16,11 +16,13 @@ import {
 } from './lockfile'
 
 import {
-  values, PackageManifest, execLoudOptions,
+  values, PackageManifest,
+  execLoudOptions,
   getPackageManager,
-  updatePackages
+  updatePackages,
+  readPackageManifest,
+  writePackageManifest
 } from '.'
-
 export interface PublishPackageOptions {
   workingDir: string,
   knit?: boolean
@@ -32,22 +34,20 @@ export interface PublishPackageOptions {
 const { join } = path
 
 export const publishPackage = async (options: PublishPackageOptions) => {
-  let pkg: PackageManifest
-  try {
-    pkg = fs.readJsonSync(
-      path.join(options.workingDir, 'package.json')) as PackageManifest;
-  } catch (e) {
-    console.error('Could not read package.json in', options.workingDir)
+  const workingDir = options.workingDir
+  const pkg = readPackageManifest({ workingDir })
+  if (!pkg) {
     return
   }
+
   const changeDirCmd = 'cd ' + options.workingDir + ' && '
   const scriptRunCmd = !options.force && pkg.scripts
     ? changeDirCmd + getPackageManager() + ' run ' : ''
 
   if (scriptRunCmd) {
-    if (pkg.scripts!.preloc) {
-      console.log('Running preloc script: ' + pkg.scripts!.preloc)
-      execSync(scriptRunCmd + 'preloc', execLoudOptions)
+    if (pkg.scripts!.preyalc) {
+      console.log('Running preloc script: ' + pkg.scripts!.preyalc)
+      execSync(scriptRunCmd + values.prescript, execLoudOptions)
     } else if (pkg.scripts!.prepublish) {
       console.log('Running prepublish script: ' + pkg.scripts!.prepublish)
       execSync(scriptRunCmd + 'prepublish', execLoudOptions)
@@ -57,9 +57,9 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   copyWithIgnorePackageToStore(pkg, options)
 
   if (scriptRunCmd) {
-    if (pkg.scripts!.postloc) {
-      console.log('Running postloc script: ' + pkg.scripts!.postloc)
-      execSync(scriptRunCmd + 'postloc', execLoudOptions)
+    if (pkg.scripts!.postyalc) {
+      console.log('Running postloc script: ' + pkg.scripts!.postyalc)
+      execSync(scriptRunCmd + values.postscript, execLoudOptions)
     } else if (pkg.scripts!.postpublish) {
       console.log('Running pospublish script: ' + pkg.scripts!.postpublish)
       execSync(scriptRunCmd + 'postpublish', execLoudOptions)
@@ -75,5 +75,13 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       updatePackages([pkg.name], { workingDir })
     })
   }
+  // workaround yarn bug with file: deps
+  try {
+    const yarnCacheDir = execSync('yarn cache dir').toString().trim()
+    const cachedVersionPath =
+      join(yarnCacheDir, ['npm', pkg.name, pkg.version].join('-'))
+    fs.removeSync(cachedVersionPath)
+  } catch (e) {}
+
   console.log(`${pkg.name}@${pkg.version} published in store.`)
 }

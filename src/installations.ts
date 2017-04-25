@@ -70,6 +70,9 @@ export const removeInstallations = (installations: (PackageInstallation)[]) => {
         packageInstallPaths.splice(index, 1)
         updated = true
       }
+      if (!packageInstallPaths.length) {
+        delete installationsConfig[install.name]
+      }
     })
   if (updated) {
     saveInstallationsFile(installationsConfig)

@@ -4,7 +4,7 @@
 
 ## Why
 
-When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in other projects that you are working on in your local environment without publishing the packages to remote registry. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this may often work and solve the problem, it too often brings and imposes **unpleasant constrains and issues** with dependencies resolution, symlinks interoperability between file systems, ect.
+When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in other projects that you are working on in your local environment without publishing the packages to remote registry. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this may work in many cases, it often brings **nasty constrains and problems** with dependencies resolution, symlinks interoperability between file systems, ect.
 
 ## What
 
@@ -30,7 +30,7 @@ for managing `package.json` dependencies.
 
 #### Publish
 - Run `yalc publish` in your dependency package `my-package`. 
-- It will run `preloc` or `prepublish` scripts before, and `postloc` or `postpublish` after. Use `--force` to publish without running scripts.
+- It will run `preyalc` or `prepublish` scripts before, and `postyalc` or `postpublish` after. Use `--force` to publish without running scripts.
 
 #### Add
 - Run `yalc add my-package` in your dependant project, 
@@ -42,19 +42,14 @@ it will copy current version frome store to your project's `.yalc` folder and in
 - After `yalc` copies package content to `.yalc` folder it will create symlink:
 `project/.yalc/my-package ==> project/node_modules/my-package`. It will not touch `package.json` in this case.
 
-#### Remove (NOT IMPLEMENTED)
- - Run `yalc remove my-package`
+#### Remove
+ - Run `yalc remove my-package`, it will remove package info from `package.json` and `yalc.lock`
 
 #### Update
   - Run `yalc update my-package` to update the latest version from store, 
   or `yalc update` to update all the packages found in `yalc.lock`.
   - Running simply `yalc` in the directory will do the same as `yalc update`
   
-#### Other
-
-- Add `.yalc` folder to `.gitignore` (and `.npmignore`, etc) and hide it from your view.
-- You probably want to add `yalc.lock` to `.gitignore` too.
-
 ## Advanced usage
 
 #### Pusing updates automaticly to all installations

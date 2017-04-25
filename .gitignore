@@ -1,6 +1,5 @@
 node_modules
 tmp
-/out
 *.js
 *.d.ts
 *.js.map

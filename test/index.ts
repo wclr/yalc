@@ -5,9 +5,12 @@ import {
   addPackages,
   updatePackages,
   publishPackage,
+  removePackages,
   yalcGlobal,
   getStorePackagesDir,
-  getPackageStoreDir
+  getPackageStoreDir,
+  readPackageManifest
+
 } from '../src'
 
 import {
@@ -96,6 +99,12 @@ describe('Yalc package manager', () => {
         }
       })
     })
+    it('updates package.json', () => {
+      const pkg = readPackageManifest({workingDir: projectDir})!
+      deepEqual(pkg.dependencies, {
+        [values.depPackage]: 'file:.yalc/' + values.depPackage
+      })
+    })
     it('create and updates installations file', () => {
       const installtions = readInstallationsFile()
       deepEqual(installtions, {
@@ -111,7 +120,7 @@ describe('Yalc package manager', () => {
       })
       setTimeout(done, 100)
     })
-    
+
     it('does not change yalc.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
@@ -123,7 +132,82 @@ describe('Yalc package manager', () => {
     })
   })
 
-  describe('Remove package', () => {
+  describe('Reatreat package', () => {
+    before((done) => {
+      removePackages([values.depPackage], {
+        workingDir: projectDir,
+        retreat: true
+      })
+      setTimeout(done, 100)
+    })
 
+    it('does not updates yalc.lock', () => {
+      const lockFile = readLockfile({ workingDir: projectDir })
+      deepEqual(lockFile.packages, {
+        [values.depPackage]: {
+          file: true,
+          replaced: '1.0.0'
+        }
+      })
+    })
+
+    it('updates package.json', () => {
+      const pkg = readPackageManifest({ workingDir: projectDir })!
+      deepEqual(pkg.dependencies, {
+        [values.depPackage]: values.depPackageVersion
+      })
+    })
+
+    it('does not update installations file', () => {
+      const installtions = readInstallationsFile()
+      deepEqual(installtions, {
+        [values.depPackage]: [projectDir]
+      })
+    })
+  })
+
+  describe('Update (restore after retreat) package', () => {
+    before((done) => {
+      updatePackages([values.depPackage], {
+        workingDir: projectDir
+      })
+      setTimeout(done, 100)
+    })
+
+    it('updates package.json', () => {
+      const pkg = readPackageManifest({workingDir: projectDir})!
+      deepEqual(pkg.dependencies, {
+        [values.depPackage]: 'file:.yalc/' + values.depPackage
+      })
+    })
+  })
+
+  describe('Remove package', () => {
+    before((done) => {
+      removePackages([values.depPackage], {
+        workingDir: projectDir
+      })
+      setTimeout(done, 100)
+    })
+
+    it('updates yalc.lock', () => {
+      const lockFile = readLockfile({ workingDir: projectDir })
+      deepEqual(lockFile.packages, {
+
+      })
+    })
+
+    it('updates package.json', () => {
+      const pkg = readPackageManifest({ workingDir: projectDir })!
+      deepEqual(pkg.dependencies, {
+        [values.depPackage]: values.depPackageVersion
+      })
+    })
+
+    it('updates installations file', () => {
+      const installtions = readInstallationsFile()
+      deepEqual(installtions, {
+      })
+    })
   })
 })
