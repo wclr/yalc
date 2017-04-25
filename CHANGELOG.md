@@ -1,6 +1,8 @@
 # Yalc changelog
 
-## 1.0.0.pre.1
+## 1.0.0.pre.2
+
+## 1.0.0.pre.1 (2017-04-25)
 
 - fix installation file first read
 - `check` command
