@@ -1,11 +1,27 @@
 const ignore = require('ignore')
 import * as fs from 'fs-extra'
-import * as path from 'path'
+import { join, relative } from 'path'
 import {
   PackageManifest,
   getStorePackagesDir,
   values
 } from '.'
+
+const npmIncludeDefaults = [
+  'package.json',
+  'README.*',
+  'CHANGES.*',
+  'HISTORY.*',
+  'LICENSE.*',
+  'LICENCE.*',
+  'NOTICE.*',
+  'README',
+  'CHANGES',
+  'HISTORY',
+  'LICENSE',
+  'LICENCE',
+  'NOTICE'
+]
 
 const npmIgnoreDefaults = [
   '.*.swp',
@@ -23,16 +39,21 @@ const npmIgnoreDefaults = [
   'node_modules'
 ]
 
-const getIngoreFilesContent = (): string => {
+const getIngoreFilesContent = (workingDir: string): string => {
   let content: string = ''
-  if (fs.existsSync('.npmignore')) {
-    content += fs.readFileSync('.npmignore', 'utf-8') + '\n'
+  const ignoreFiles = {
+    npm: join(workingDir, '.npmignore'),
+    yarn: join(workingDir, '.yarnignore'),
+    git: join(workingDir, '.gitignore'),
   }
-  if (fs.existsSync('.yarnignore')) {
-    content += fs.readFileSync('.npmignore', 'utf-8') + '\n'
+  if (fs.existsSync(ignoreFiles.npm)) {
+    content += fs.readFileSync(ignoreFiles.npm, 'utf-8') + '\n'
   }
-  if (content.length === 0 && fs.existsSync('.gitignore')) {
-    content += fs.readFileSync('.gitignore', 'utf-8')
+  if (fs.existsSync(ignoreFiles.yarn)) {
+    content += fs.readFileSync(ignoreFiles.yarn, 'utf-8') + '\n'
+  }
+  if (!content.length && fs.existsSync(ignoreFiles.git)) {
+    content += fs.readFileSync(ignoreFiles.git, 'utf-8')
   }
   return content
 }
@@ -40,35 +61,43 @@ const getIngoreFilesContent = (): string => {
 export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options: {
   knit?: boolean
   workingDir: string
-}) => {  
-  const knitIgnore = ignore()
+}) => {
+  const { workingDir } = options
+  
+  const ignoreRule = ignore()
     .add(npmIgnoreDefaults)
     .add(values.locedPackagesFolder)
-    .add(getIngoreFilesContent())  
+    .add(getIngoreFilesContent(workingDir))
+
+  const includeRule = pkg.files ? ignore()
+    .add(npmIncludeDefaults)
+    .add(pkg.files || []) : null
+
   const copyFromDir = options.workingDir
-  const locPackageStoreDir = path.join(getStorePackagesDir(), pkg.name, pkg.version)
+  const locPackageStoreDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const filesToKnit: string[] = []
   const copyFilter: fs.CopyFilter = (f) => {
-    f = path.relative(copyFromDir, f)    
-    const ignores = knitIgnore.ignores(f)    
+    f = relative(copyFromDir, f)
+    const ignores = ignoreRule.ignores(f)
+      || (includeRule && !includeRule.ignores(f))      
     if (options.knit && !ignores) {
       filesToKnit.push(f)
     }
     return !f || !ignores
-  }  
+  }
   fs.removeSync(locPackageStoreDir)
-  fs.copySync(copyFromDir, locPackageStoreDir, copyFilter)  
-  if (options.knit) {    
+  fs.copySync(copyFromDir, locPackageStoreDir, copyFilter)
+  if (options.knit) {
     fs.removeSync(locPackageStoreDir)
     const ensureSymlinkSync = fs.ensureSymlinkSync as any
-    filesToKnit.forEach(f => {      
-      const source = path.join(copyFromDir, f)
+    filesToKnit.forEach(f => {
+      const source = join(copyFromDir, f)
       if (fs.statSync(source).isDirectory()) {
         return
       }
       ensureSymlinkSync(
         source,
-        path.join(locPackageStoreDir, f)
+        join(locPackageStoreDir, f)
       )
     })
   }

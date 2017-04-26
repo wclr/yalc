@@ -2,9 +2,13 @@
 
 ## 1.0.0.pre.2
 
+- `remove` removes from `.yalc` and `node_modules`
+- fixed installtion file write bug when publish
+- handle `files` field in manifest
+
 ## 1.0.0.pre.1 (2017-04-25)
 
-- fix installation file first read
+- fixed installation file first read
 - `check` command
 - `remove` and `retreat` commands
 

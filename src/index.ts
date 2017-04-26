@@ -75,6 +75,7 @@ export const getPackageStoreDir = (packageName: string, version = '') =>
 export interface PackageManifest {
   name: string,
   version: string,
+  files: string[],
   dependencies?: { [name: string]: string },
   devDependencies?: { [name: string]: string },
   scripts?: {

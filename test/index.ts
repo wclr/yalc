@@ -41,12 +41,11 @@ const projectDir = join(tmpDir, values.project)
 const publishedPackagePath =
   join(storeMainDr, 'packages', values.depPackage, values.depPackageVersion)
 
-const checkExists = (path: string) =>
-  doesNotThrow(() => fs.accessSync(path))
+const checkExists = (path: string, message?: string) =>
+  doesNotThrow(() => fs.accessSync(path), message)
 
-const checkNotExists = (path: string) =>
-  throws(() => fs.accessSync(path))
-
+const checkNotExists = (path: string, message?: string) =>
+  throws(() => fs.accessSync(path), message)
 
 describe('Yalc package manager', () => {
   before(() => {
@@ -64,15 +63,27 @@ describe('Yalc package manager', () => {
       checkExists(publishedPackagePath)
     })
 
+    it('copies standard npm includes', () => {
+      checkExists(join(publishedPackagePath, 'package.json'))
+      checkExists(join(publishedPackagePath, 'LICENCE'))
+    })
+
+    it('handles "files" manifest entry correctly', () => {
+      checkExists(
+        join(publishedPackagePath, 'src', 'file.txt'),
+        'includes src folder')
+      checkNotExists(
+        join(publishedPackagePath, 'test'),
+        'excludes test folder')
+    })
+
     it('handles .npmignore correctly', () => {
-
+      checkNotExists(
+        join(publishedPackagePath, 'src', 'file-npm-ignored.txt'),
+        'includes src folder')
     })
 
-    it('handles `files` manifest entry correctly', () => {
-
-    })
-
-    it('.gitignore', () => {
+    it('does not respect .gitignore, if .npmignore presents', () => {
 
     })
   })
@@ -103,7 +114,7 @@ describe('Yalc package manager', () => {
       })
     })
     it('updates package.json', () => {
-      const pkg = readPackageManifest({workingDir: projectDir})!
+      const pkg = readPackageManifest({ workingDir: projectDir })!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: 'file:.yalc/' + values.depPackage
       })
@@ -171,7 +182,7 @@ describe('Yalc package manager', () => {
     it('should not remove package from .yalc', () => {
       checkExists(join(projectDir, '.yalc', values.depPackage))
     })
-    
+
     it('should remove package from node_modules', () => {
       checkNotExists(join(projectDir, 'node_modules', values.depPackage))
     })
@@ -186,11 +197,11 @@ describe('Yalc package manager', () => {
     })
 
     it('updates package.json', () => {
-      const pkg = readPackageManifest({workingDir: projectDir})!
+      const pkg = readPackageManifest({ workingDir: projectDir })!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: 'file:.yalc/' + values.depPackage
       })
-    })    
+    })
   })
 
   describe('Remove package', () => {

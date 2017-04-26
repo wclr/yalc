@@ -1,0 +1,9 @@
+{
+  "name": "yalc-test-project-nested",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "dep-package": "1.0.0"
+  }
+}

@@ -4,7 +4,7 @@
 
 ## Why
 
-When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in other projects that you are working on in your local environment without publishing the packages to remote registry. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this may work in many cases, it often brings **nasty constrains and problems** with dependencies resolution, symlinks interoperability between file systems, ect.
+When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in other projects that you are working on in your local environment **without publishing the packages to remote registry**. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this approach may work in many cases, it often brings **nasty constrains and problems** with dependencies resolution, symlinks interoperability between file systems, ect.
 
 ## What
 
@@ -24,35 +24,42 @@ for managing `package.json` dependencies.
   npm i yalc -g
 ```
 
-*Work in progress. It is a pre-release. BREAKING CHANGES may be expected.*
+*Work in progress. It is a pre-release.*
 
 ## Usage 
 
-#### Publish
+### Publish
 - Run `yalc publish` in your dependency package `my-package`. 
 - It will run `preyalc` or `prepublish` scripts before, and `postyalc` or `postpublish` after. Use `--force` to publish without running scripts.
 
-#### Add
+### Add
 - Run `yalc add my-package` in your dependant project, 
 it will copy current version frome store to your project's `.yalc` folder and inject `file:.yalc/my-package` dependency in package.json.
 - You may add particular versoin `yalc add my-package@version`, this version will be fixed in `yalc.lock` file and while updates it will not update to newly published versions.
 
-#### Link
+### Link
 -  Alternatively to `add` you may use `link` operation which should actually work for you the same way as `npm/yarn link` does, the only difference is that source for symllink will be not global link directory but lolcal `.yalc` folder. 
 - After `yalc` copies package content to `.yalc` folder it will create symlink:
 `project/.yalc/my-package ==> project/node_modules/my-package`. It will not touch `package.json` in this case.
 
-#### Remove
- - Run `yalc remove my-package`, it will remove package info from `package.json` and `yalc.lock`
-
-#### Update
+### Update
   - Run `yalc update my-package` to update the latest version from store, 
   or `yalc update` to update all the packages found in `yalc.lock`.
   - Running simply `yalc` in the directory will do the same as `yalc update`
-  
+
+### Remove
+ - Run `yalc remove my-package`, it will remove package info from `package.json` and `yalc.lock`
+
+----
+
+**NB!** Currenlty `yalc` doesn't call `yarn` commands to install/update dependencies after
+package is added or removed, so have to do it manually.
+
+----
+
 ## Advanced usage
 
-#### Pusing updates automaticly to all installations
+### Pusing updates automaticly to all installations
 
 - When do `yalc add/link` locations where packages added are saved, 
 so `yalc` tries to know where each package from store is being used.
@@ -61,11 +68,11 @@ so `yalc` tries to know where each package from store is being used.
   - it support `--knit`, `--safe`, options
   - `force` options is `true` by default, so it won't run scripts `publish/loc` scripts.
 
-#### Publish/push sub-projects
+### Publish/push sub-projects
 
 Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package` will perform publish operation in nested `package` folder of current working dir.
 
-#### Try to use [knitting](https://github.com/yarnpkg/rfcs/blob/master/text/0000-yarn-knit.md)
+### Try to use [knitting](https://github.com/yarnpkg/rfcs/blob/master/text/0000-yarn-knit.md)
 
 - You want try to `--knit` option. Instead of just copying files from original package location to store it will create symlinks for each individual file in the package.
   
