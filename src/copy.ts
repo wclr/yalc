@@ -83,7 +83,6 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options
     if (options.knit && !ignores) {
       filesToKnit.push(f)
     }
-    console.log('copyFiler for', f, 'returns', !f || !ignores)
     return !f || !ignores
   }
   fs.removeSync(locPackageStoreDir)
