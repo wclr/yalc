@@ -39,7 +39,7 @@ const npmIgnoreDefaults = [
   'node_modules'
 ]
 
-const getIngoreFilesContent = (workingDir: string): string => {
+const getIngoreFilesContent = (workingDir: string, hasFilesEntry: boolean): string => {
   let content: string = ''
   const ignoreFiles = {
     npm: join(workingDir, '.npmignore'),
@@ -52,7 +52,7 @@ const getIngoreFilesContent = (workingDir: string): string => {
   if (fs.existsSync(ignoreFiles.yarn)) {
     content += fs.readFileSync(ignoreFiles.yarn, 'utf-8') + '\n'
   }
-  if (!content.length && fs.existsSync(ignoreFiles.git)) {
+  if (!content.length && !hasFilesEntry && fs.existsSync(ignoreFiles.git)) {
     content += fs.readFileSync(ignoreFiles.git, 'utf-8')
   }
   return content
@@ -67,7 +67,7 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options
   const ignoreRule = ignore()
     .add(npmIgnoreDefaults)
     .add(values.locedPackagesFolder)
-    .add(getIngoreFilesContent(workingDir))
+    .add(getIngoreFilesContent(workingDir, !!pkg.files))
 
   const includeRule = pkg.files ? ignore()
     .add(npmIncludeDefaults)

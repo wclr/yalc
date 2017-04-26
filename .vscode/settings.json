@@ -1,6 +1,5 @@
 {
   "typescript.tsdk": "./node_modules/typescript/lib",
-  "typescript.tsserver.trace": "verbose",
   "search.exclude": {},
   "files.exclude": {
     "**/*.js": true,
