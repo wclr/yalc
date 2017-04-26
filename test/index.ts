@@ -42,9 +42,7 @@ const publishedPackagePath =
   join(storeMainDr, 'packages', values.depPackage, values.depPackageVersion)
 
 const checkExists = (path: string, message?: string) =>
-  doesNotThrow(() => fs.accessSync(path), (err: any) => {
-    console.log('checkExists err', err)
-  }, message)
+  doesNotThrow(() => fs.accessSync(path), message)
 
 const checkNotExists = (path: string, message?: string) =>
   throws(() => fs.accessSync(path), message)
