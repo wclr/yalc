@@ -1,6 +1,8 @@
 # Yalc changelog
 
-## 1.0.0.pre.3
+## 1.0.0.pre.4
+
+## 1.0.0.pre.3 (2017-04-28)
 - use .gitignore if no `files` entry in manifest
 
 ## 1.0.0.pre.2 (2017-04-26)

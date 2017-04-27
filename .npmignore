@@ -1,7 +1,6 @@
 *.ts
 !*.d.ts
-/src
 tsconfig.json
-.vscode
-yalc.lock
-.yalc
+/test
+*.lock
+.*
