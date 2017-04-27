@@ -88,7 +88,8 @@ Useful for monorepos (projects with multiple sub-projects/packages): `yalc publi
 - If you use `yalc add` it will change `package.json`, and ads `file:` dependencies, if you may want to use `yalc check` in the [precommit hook](https://github.com/typicode/husky) which will check package.json for `yalc'ed` dependencies and exits with error, if you forgot to remove them.
 
 ### Keep in git
-- You may want to keep shared `yalk'ed` stuff within the projects you are working on and treat it as a part of the project's codebase. This may really simplify management and usage of shared *work in progress* packages within your projects. So, then just do it, keep `.yalc` folder and `yalc.lock` in git. Replace it with published versions from remote repos when ready.
+- You may want to keep shared `yalk'ed` stuff within the projects you are working on and treat it as a part of the project's codebase. This may really simplify management and usage of shared *work in progress* packages within your projects and help to make things consistent. So, then just do it, keep `.yalc` folder and `yalc.lock` in git. 
+- Replace it with published versions from remote repository when ready.
 
 
 ## Related links
