@@ -58,7 +58,7 @@ package is added or removed, so have to do it manually.
 
 ## Advanced usage
 
-### Pusing updates automaticly to all installations
+### Pushing updates automaticly to all installations
 
 - When do `yalc add/link/update`, project's locations where packages added are tracked and saved, thus `yalc` tries to know where each package from store is being used in your local environment.
 - `yalc publish --push` will publish package to store and propagate all changes to existing `yalc's` package installations (will actually do `update` operation on the location).
@@ -68,7 +68,7 @@ package is added or removed, so have to do it manually.
 
 ### Publish/push sub-projects
 
-Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package` will perform publish operation in nested `package` folder of current working dir.
+- Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package` will perform publish operation in nested `package` folder of current working dir.
 
 ### Try to use [knitting](https://github.com/yarnpkg/rfcs/blob/master/text/0000-yarn-knit.md)
 
