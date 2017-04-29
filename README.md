@@ -4,7 +4,7 @@
 
 ## Why
 
-When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in other projects that you are working on in your local environment **without publishing the packages to remote registry**. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this approach may work in many cases, it often brings **nasty constrains and problems** with dependencies resolution, symlinks interoperability between file systems, ect.
+When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in other projects that you are working on in your local environment **without publishing those packages to remote registry**. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this may work in many cases, it often brings **nasty constrains and problems** with dependencies resolution, symlinks interoperability between file systems, ect.
 
 ## What
 
@@ -30,6 +30,9 @@ for managing `package.json` dependencies.
 ### Publish
 - Run `yalc publish` in your dependency package `my-package`. 
 - It will run `preyalc` or `prepublish` scripts before, and `postyalc` or `postpublish` after. Use `--force` to publish without running scripts.
+
+**NB!** Windows users should ensure files `LF` new line symbol is used in files copied to 
+store, in some cases it may be needed for package to work correctly (for example if there are `bin` scripts), currenlty `yalc` won't convert line endings for you.
 
 ### Add
 - Run `yalc add my-package` in your dependant project, 

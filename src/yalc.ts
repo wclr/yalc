@@ -6,7 +6,8 @@ import {
   publishPackage,
   addPackages,
   updatePackages,
-  removePackages
+  removePackages,
+  getStoreMainDir
 } from '.'
 import {
   checkManifest
@@ -14,8 +15,7 @@ import {
 
 
 const cliCommand = values.myNameIs
-
-console.log(`Work with npm/yarn local packages like a boss.\n`)
+// console.log(`Work with npm/yarn local packages like a boss.\n`)
 yargs
   .usage(cliCommand + '[command] [options] [package1 [package2...]]')
   .command({
@@ -99,7 +99,7 @@ yargs
         workingDir: process.cwd()
       })
     }
-  })
+  })  
   .command({
     command: 'remove',
     describe: 'Remove packages',
@@ -148,6 +148,14 @@ yargs
         all: argv.all,
         workingDir: process.cwd()
       })
+    }
+  })
+  .command({
+    command: 'dir',
+    describe: 'Show yalc system directory',
+
+    handler: (argv) => {
+      console.log(getStoreMainDir())
     }
   })
   .argv

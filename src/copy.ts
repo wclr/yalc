@@ -75,22 +75,24 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options
 
   const copyFromDir = options.workingDir
   const locPackageStoreDir = join(getStorePackagesDir(), pkg.name, pkg.version)
-  const filesToKnit: string[] = []
+  const filesToCopied: string[] = []
+  
   const copyFilter: fs.CopyFilter = (f) => {
     f = relative(copyFromDir, f)
+    if (!f) return true
     const ignores = ignoreRule.ignores(f)
       || (includeRule && !includeRule.ignores(f))      
-    if (options.knit && !ignores) {
-      filesToKnit.push(f)
-    }
-    return !f || !ignores
+    if (!ignores) {
+      filesToCopied.push(f)
+    }    
+    return !ignores
   }
   fs.removeSync(locPackageStoreDir)
   fs.copySync(copyFromDir, locPackageStoreDir, copyFilter)
   if (options.knit) {
     fs.removeSync(locPackageStoreDir)
     const ensureSymlinkSync = fs.ensureSymlinkSync as any
-    filesToKnit.forEach(f => {
+    filesToCopied.forEach(f => {
       const source = join(copyFromDir, f)
       if (fs.statSync(source).isDirectory()) {
         return
