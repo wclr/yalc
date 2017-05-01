@@ -29,10 +29,10 @@ for managing `package.json` dependencies.
 
 ### Publish
 - Run `yalc publish` in your dependency package `my-package`. 
+- It will copy [all the files that should be published in remote NPM registry](https://docs.npmjs.com/files/package.json#files), but will not include standard non-code files like `README`, `LICENCE` etc.
 - It will run `preyalc` or `prepublish` scripts before, and `postyalc` or `postpublish` after. Use `--force` to publish without running scripts.
 
-**NB!** Windows users should ensure files `LF` new line symbol is used in files copied to 
-store, in some cases it may be needed for package to work correctly (for example if there are `bin` scripts), currenlty `yalc` won't convert line endings for you.
+**NB!** Windows users should ensure `LF` new line symbol is used in published sources, it may be needed for package to work correctly (for example it is must for `bin` scripts). `Yalc` won't convert line endings for you (because `npm` and `yarn` won't too).
 
 ### Add
 - Run `yalc add my-package` in your dependant project, 

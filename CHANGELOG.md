@@ -1,6 +1,8 @@
 # Yalc changelog
 
 ## 1.0.0.pre.4
+- do not publish standard non-code files (README, LICENCE, etc.)
+- remove lockfile and .yalc dir if empty
 
 ## 1.0.0.pre.3 (2017-04-28)
 - use .gitignore if no `files` entry in manifest
