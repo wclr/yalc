@@ -8,19 +8,7 @@ import {
 } from '.'
 
 const npmIncludeDefaults = [
-  'package.json',
-  'README.*',
-  'CHANGES.*',
-  'HISTORY.*',
-  'LICENSE.*',
-  'LICENCE.*',
-  'NOTICE.*',
-  'README',
-  'CHANGES',
-  'HISTORY',
-  'LICENSE',
-  'LICENCE',
-  'NOTICE'
+  'package.json'
 ]
 
 const npmIgnoreDefaults = [
@@ -37,7 +25,22 @@ const npmIgnoreDefaults = [
   'CVS',
   'npm-debug.log',
   'node_modules'
-]
+].concat([  
+  'CHANGELOG.*',  
+  'README.*',
+  'CHANGES.*',
+  'HISTORY.*',
+  'LICENSE.*',
+  'LICENCE.*',
+  'NOTICE.*',
+  'CHANGELOG',
+  'README',
+  'CHANGES',
+  'HISTORY',
+  'LICENSE',
+  'LICENCE',
+  'NOTICE'
+])
 
 const getIngoreFilesContent = (workingDir: string, hasFilesEntry: boolean): string => {
   let content: string = ''
@@ -63,7 +66,7 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options
   workingDir: string
 }) => {
   const { workingDir } = options
-  
+
   const ignoreRule = ignore()
     .add(npmIgnoreDefaults)
     .add(values.locedPackagesFolder)
@@ -76,15 +79,15 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options
   const copyFromDir = options.workingDir
   const locPackageStoreDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const filesToCopied: string[] = []
-  
+
   const copyFilter: fs.CopyFilter = (f) => {
     f = relative(copyFromDir, f)
     if (!f) return true
     const ignores = ignoreRule.ignores(f)
-      || (includeRule && !includeRule.ignores(f))      
+      || (includeRule && !includeRule.ignores(f))
     if (!ignores) {
       filesToCopied.push(f)
-    }    
+    }
     return !ignores
   }
   fs.removeSync(locPackageStoreDir)
