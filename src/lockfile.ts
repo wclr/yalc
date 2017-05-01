@@ -53,6 +53,11 @@ const getLockFileCurrentConfig = (lockFileConfig: any) => {
 }
 
 
+export const removeLockfile = (options: { workingDir: string }) => {
+  const lockfilePath = join(options.workingDir, values.lockfileName)
+  fs.removeSync(lockfilePath)
+}
+
 export const readLockfile = (options: { workingDir: string }) => {
   const lockfilePath = join(options.workingDir, values.lockfileName)
   fs.ensureFileSync(lockfilePath)

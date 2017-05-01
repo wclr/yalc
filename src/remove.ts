@@ -13,7 +13,8 @@ import {
   readLockfile,
   writeLockfile,
   addPackageToLockfile,
-  LockFilePackageEntry
+  LockFilePackageEntry,
+  removeLockfile
 } from './lockfile'
 
 import {
@@ -87,6 +88,11 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
   if (lockfileUpdated) {
     writeLockfile(lockFileConfig, { workingDir })
   }
+  
+  if (!lockFileConfig.packages.length) {
+    fs.removeSync(join(workingDir, values.locedPackagesFolder))
+    removeLockfile({workingDir})
+  }
 
   if (pkgUpdated) {
     writePackageManifest(pkg, { workingDir })
@@ -96,15 +102,14 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
     packagesToRemove.map(name => ({
       name, version: '', path: workingDir
     }))
-  console.log('packagesToRemove', packagesToRemove)
-  packagesToRemove.forEach((name) => {
-    
+  
+  packagesToRemove.forEach((name) => {    
     fs.removeSync(join(workingDir, 'node_modules', name))
     if (!options.retreat) {
-      console.log('removing', join(workingDir, values.locedPackagesFolder, name))
       fs.removeSync(join(workingDir, values.locedPackagesFolder, name))
     }
   })
+  
   if (!options.retreat) {
     removeInstallations(installationsToRemove)
   }
