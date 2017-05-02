@@ -2,13 +2,19 @@
 # yarn lockfile v1
 
 
+"@types/del@^2.2.32":
+  version "2.2.32"
+  resolved "https://registry.yarnpkg.com/@types/del/-/del-2.2.32.tgz#4d54df0ed3017435e6b1995df0292957787fc6b2"
+  dependencies:
+    "@types/glob" "*"
+
 "@types/fs-extra@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/fs-extra/-/fs-extra-2.0.0.tgz#1e305d412c4e9e17e5553f59f143e4a49c5573a4"
   dependencies:
     "@types/node" "*"
 
-"@types/glob@^5.0.30":
+"@types/glob@*", "@types/glob@^5.0.30":
   version "5.0.30"
   resolved "https://registry.yarnpkg.com/@types/glob/-/glob-5.0.30.tgz#1026409c5625a8689074602808d082b2867b8a51"
   dependencies:

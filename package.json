@@ -16,6 +16,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "del": "^2.2.2",
     "fs-extra": "^2.1.2",
     "glob": "^7.1.1",
     "ignore": "^3.2.7",
@@ -23,6 +24,7 @@
     "yargs": "^7.1.0"
   },
   "devDependencies": {
+    "@types/del": "^2.2.32",
     "@types/fs-extra": "^2.0.0",
     "@types/glob": "^5.0.30",
     "@types/mocha": "^2.2.40",

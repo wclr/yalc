@@ -1,6 +1,7 @@
 import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import { join } from 'path'
+import * as del from 'del'
 import {
   PackageInstallation, InstallationsFile,
   readInstallationsFile,
@@ -45,6 +46,14 @@ const getLatestPackageVersion = (packageName: string) => {
   return latest || ''
 }
 
+const removeDirExcludeNodeModules = (path: string) => {
+  // TODO: maybe use fs.remove + readdir for speed.
+  del.sync('**', {
+    cwd: path,
+    ignore: '**/node_modules/**'
+  })
+}
+
 export const addPackages = (packages: string[], options: AddPackagesOptions) => {
   const packagesStoreDir = getStorePackagesDir()
   const workingDir = options.workingDir
@@ -77,20 +86,21 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
     if (!pkg) {
       return
     }
-    const destLoctedCopyDir = join(workingDir,
+    const destYalcCopyDir = join(workingDir,
       values.locedPackagesFolder, name)
-    const destloctedLinkDir = join(workingDir, 'node_modules', name)
+    const destModulesDir = join(workingDir, 'node_modules', name)
 
-    fs.emptyDirSync(destLoctedCopyDir)
-    fs.copySync(storedPackageDir, destLoctedCopyDir)
-    fs.removeSync(destloctedLinkDir)
+    removeDirExcludeNodeModules(destYalcCopyDir)
+    fs.copySync(storedPackageDir, destYalcCopyDir)    
 
     let replacedVersion = ''
     if (options.link) {
-      ensureSymlinkSync(destLoctedCopyDir, destloctedLinkDir, 'dir')
+      fs.removeSync(destModulesDir)
+      ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'dir')
     } else {
+      removeDirExcludeNodeModules(destModulesDir)      
       const localAddress = 'file:' + values.locedPackagesFolder + '/' + pkg.name
-      fs.copySync(destLoctedCopyDir, destloctedLinkDir)
+      fs.copySync(destYalcCopyDir, destModulesDir)
 
       const dependencies = localPkg.dependencies || {}
       const devDependencies = localPkg.devDependencies || {}
@@ -119,7 +129,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       }
       replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
     }
-    console.log(`${pkg.name}@${pkg.version} locted ==> ${destloctedLinkDir}`)
+    console.log(`${pkg.name}@${pkg.version} locted ==> ${destModulesDir}`)
     return {
       name,
       version,

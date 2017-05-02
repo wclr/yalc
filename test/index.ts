@@ -128,7 +128,10 @@ describe('Yalc package manager', () => {
   })
 
   describe('Update package', () => {
+    const innterNodeModulesFile =
+      join(projectDir, 'node_modules', values.depPackage, 'node_modules/file.txt')
     before((done) => {
+      fs.ensureFileSync(innterNodeModulesFile)
       updatePackages([values.depPackage], {
         workingDir: projectDir
       })
@@ -143,6 +146,9 @@ describe('Yalc package manager', () => {
           replaced: '1.0.0'
         }
       })
+    })
+    it('does not remove inner node_modules', () => {
+      checkExists(innterNodeModulesFile)
     })
   })
 

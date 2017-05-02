@@ -1,6 +1,7 @@
 # Yalc changelog
 
 ## 1.0.0.pre.5
+- copy to dest package dir not removing inner `node_modules`
 
 ## 1.0.0.pre.4 (2017-05-02)
 - do not publish standard non-code files (README, LICENCE, etc.)
