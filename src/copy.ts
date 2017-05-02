@@ -26,20 +26,13 @@ const npmIgnoreDefaults = [
   'npm-debug.log',
   'node_modules'
 ].concat([  
-  'CHANGELOG.*',  
-  'README.*',
-  'CHANGES.*',
-  'HISTORY.*',
-  'LICENSE.*',
-  'LICENCE.*',
-  'NOTICE.*',
-  'CHANGELOG',
-  'README',
-  'CHANGES',
-  'HISTORY',
-  'LICENSE',
-  'LICENCE',
-  'NOTICE'
+  'CHANGELOG*',  
+  'README*',
+  'CHANGES*',
+  'HISTORY*',
+  'LICENSE*',
+  'LICENCE*',
+  'NOTICE*',  
 ])
 
 const getIngoreFilesContent = (workingDir: string, hasFilesEntry: boolean): string => {
