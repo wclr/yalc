@@ -89,7 +89,7 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
     writeLockfile(lockFileConfig, { workingDir })
   }
   
-  if (!lockFileConfig.packages.length) {
+  if (!lockFileConfig.packages.length && !options.retreat) {
     fs.removeSync(join(workingDir, values.locedPackagesFolder))
     removeLockfile({workingDir})
   }

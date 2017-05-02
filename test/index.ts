@@ -41,11 +41,11 @@ const projectDir = join(tmpDir, values.project)
 const publishedPackagePath =
   join(storeMainDr, 'packages', values.depPackage, values.depPackageVersion)
 
-const checkExists = (path: string, message?: string) =>
-  doesNotThrow(() => fs.accessSync(path), message)
+const checkExists = (path: string) =>
+  doesNotThrow(() => fs.accessSync(path), path + 'does not exit')
 
-const checkNotExists = (path: string, message?: string) =>
-  throws(() => fs.accessSync(path), message)
+const checkNotExists = (path: string) =>
+  throws(() => fs.accessSync(path), path + 'exits')
 
 describe('Yalc package manager', () => {
   before(() => {
@@ -63,24 +63,24 @@ describe('Yalc package manager', () => {
       checkExists(publishedPackagePath)
     })
 
-    it('copies standard npm includes', () => {
+    it('copies package.json npm includes', () => {
       checkExists(join(publishedPackagePath, 'package.json'))
-      checkExists(join(publishedPackagePath, 'LICENCE'))
+    })
+
+    it('ignores standard non-code', () => {      
+      checkNotExists(join(publishedPackagePath, 'LICENCE'))
     })
 
     it('handles "files" manifest entry correctly', () => {
       checkExists(
-        join(publishedPackagePath, 'src', 'file.txt'),
-        'includes src folder')
+        join(publishedPackagePath, 'src', 'file.txt'))
       checkNotExists(
-        join(publishedPackagePath, 'test'),
-        'excludes test folder')
+        join(publishedPackagePath, 'test'))
     })
 
     it('handles .npmignore correctly', () => {
       checkNotExists(
-        join(publishedPackagePath, 'src', 'file-npm-ignored.txt'),
-        'includes src folder')
+        join(publishedPackagePath, 'src', 'file-npm-ignored.txt'))
     })
 
     it('does not respect .gitignore, if .npmignore presents', () => {
