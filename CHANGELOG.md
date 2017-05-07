@@ -1,6 +1,8 @@
 # Yalc changelog
 
-## 1.0.0.pre.5
+## 1.0.0.pre.6
+
+## 1.0.0.pre.5 (2017-05-07)
 - copy to dest package dir not removing inner `node_modules`
 
 ## 1.0.0.pre.4 (2017-05-02)
