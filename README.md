@@ -65,9 +65,9 @@ package is added or removed, so have to do it manually.
 
 - When do `yalc add/link/update`, project's locations where packages added are tracked and saved, thus `yalc` tries to know where each package from store is being used in your local environment.
 - `yalc publish --push` will publish package to store and propagate all changes to existing `yalc's` package installations (will actually do `update` operation on the location).
-- You may just use shortcut for push operation `yloc push`, **which will likely become your primarily used command** for publication :
-  - it support `--knit` options
-  - `force` options is `true` by default, so it won't run scripts `publish/loc` scripts (may change with `--no-force` flag).
+- You may just use shortcut for push operation `yloc push`, which will likely become your primarily used command for publication :
+  - it supports `--knit` option
+  - `force` options is `true` by default, so it won't run `pre/post` scripts (may change this with `--no-force` flag).
 
 ### Publish/push sub-projects
 

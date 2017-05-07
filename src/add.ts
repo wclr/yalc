@@ -46,9 +46,10 @@ const getLatestPackageVersion = (packageName: string) => {
   return latest || ''
 }
 
-const removeDirExcludeNodeModules = (path: string) => {
+const emptyDirExcludeNodeModules = (path: string) => {
   // TODO: maybe use fs.remove + readdir for speed.
   del.sync('**', {
+    dot: true,
     cwd: path,
     ignore: '**/node_modules/**'
   })
@@ -90,7 +91,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       values.locedPackagesFolder, name)
     const destModulesDir = join(workingDir, 'node_modules', name)
 
-    removeDirExcludeNodeModules(destYalcCopyDir)
+    emptyDirExcludeNodeModules(destYalcCopyDir)
     fs.copySync(storedPackageDir, destYalcCopyDir)    
 
     let replacedVersion = ''
@@ -98,7 +99,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       fs.removeSync(destModulesDir)
       ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'dir')
     } else {
-      removeDirExcludeNodeModules(destModulesDir)      
+      emptyDirExcludeNodeModules(destModulesDir)      
       const localAddress = 'file:' + values.locedPackagesFolder + '/' + pkg.name
       fs.copySync(destYalcCopyDir, destModulesDir)
 
