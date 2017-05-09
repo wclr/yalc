@@ -39,10 +39,11 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   if (!pkg) {
     return
   }
-
+  //const yarnCacheDir = execSync('yarn cache dir').toString().trim()
+  
   const changeDirCmd = 'cd ' + options.workingDir + ' && '
   const scriptRunCmd = !options.force && pkg.scripts
-    ? changeDirCmd + getPackageManager() + ' run ' : ''
+    ? changeDirCmd + getPackageManager(workingDir) + ' run ' : ''
 
   if (scriptRunCmd) {
     if (pkg.scripts!.preyalc) {

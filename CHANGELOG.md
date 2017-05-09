@@ -1,6 +1,9 @@
 # Yalc changelog
 
-## 1.0.0.pre.6
+## 1.0.0.pre.7
+
+## 1.0.0.pre.6 (2017-05-09)
+- fixed `yarn.lock` bug
 
 ## 1.0.0.pre.5 (2017-05-07)
 - copy to dest package dir not removing inner `node_modules`

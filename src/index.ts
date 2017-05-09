@@ -89,8 +89,8 @@ export interface PackageManifest {
   __JSONSpaces: number
 }
 
-export const getPackageManager = () =>
-  execSync('yarn.lock') ? 'yarn' : 'npm'
+export const getPackageManager = (workingDir: string) =>
+  fs.existsSync('yarn.lock') ? 'yarn' : 'npm'
 
 export const execLoudOptions = { stdio: 'inherit' }
 
