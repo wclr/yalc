@@ -64,24 +64,31 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options
     .add(npmIgnoreDefaults)
     .add(values.locedPackagesFolder)
     .add(getIngoreFilesContent(workingDir, !!pkg.files))
+  const ignores = (f: string, isDir: boolean) =>
+    ignoreRule.ignores(f) || (isDir && ignoreRule.ignores(f + '/'))
 
   const includeRule = pkg.files ? ignore()
     .add(npmIncludeDefaults)
     .add(pkg.files || []) : null
+  const includes = (f: string, isDir: boolean) =>
+    includeRule ?
+      includeRule.ignores(f) || (isDir && includeRule.ignores(f + '/'))
+      : false
 
   const copyFromDir = options.workingDir
   const locPackageStoreDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const filesToCopied: string[] = []
+  const isDirectory = (filePath: string) => fs.statSync(filePath).isDirectory()
 
-  const copyFilter: fs.CopyFilter = (f) => {
-    f = relative(copyFromDir, f)
+  const copyFilter: fs.CopyFilter = (filePath) => {
+    const f = relative(copyFromDir, filePath)
     if (!f) return true
-    const ignores = ignoreRule.ignores(f)
-      || (includeRule && !includeRule.ignores(f))
-    if (!ignores) {
+    const isDir = isDirectory(filePath)
+    const ignored = (ignores(f, isDir)) || !(includes(f, isDir))
+    if (!ignored) {
       filesToCopied.push(f)
     }
-    return !ignores
+    return !ignored
   }
   fs.removeSync(locPackageStoreDir)
   fs.copySync(copyFromDir, locPackageStoreDir, copyFilter)

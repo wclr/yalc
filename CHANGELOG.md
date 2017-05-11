@@ -1,6 +1,9 @@
 # Yalc changelog
 
-## 1.0.0.pre.7
+## 1.0.0.pre.8
+
+## 1.0.0.pre.7 (2017-05-11)
+- fixes files inclusion (#2)
 
 ## 1.0.0.pre.6 (2017-05-09)
 - fixed `yarn.lock` bug

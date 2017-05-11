@@ -42,10 +42,10 @@ const publishedPackagePath =
   join(storeMainDr, 'packages', values.depPackage, values.depPackageVersion)
 
 const checkExists = (path: string) =>
-  doesNotThrow(() => fs.accessSync(path), path + 'does not exit')
+  doesNotThrow(() => fs.accessSync(path), path + ' does not exit')
 
 const checkNotExists = (path: string) =>
-  throws(() => fs.accessSync(path), path + 'exits')
+  throws(() => fs.accessSync(path), path + ' exits')
 
 describe('Yalc package manager', () => {
   before(() => {
@@ -73,7 +73,9 @@ describe('Yalc package manager', () => {
 
     it('handles "files" manifest entry correctly', () => {
       checkExists(
-        join(publishedPackagePath, 'src', 'file.txt'))
+        join(publishedPackagePath, 'src'))
+      checkExists(
+        join(publishedPackagePath, 'dist/file.txt'))
       checkNotExists(
         join(publishedPackagePath, 'test'))
     })
