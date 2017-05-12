@@ -1,2 +1,3 @@
-# note: you should manually include files in git ignored by this files!
-file.txt
+# note: you should manually include files in git ignored by this files:
+# git add -f test/fixture/dep-package/src/src-file.txt
+src-file.txt
