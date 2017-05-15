@@ -73,7 +73,7 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options
   const includes = (f: string, isDir: boolean) =>
     includeRule ?
       includeRule.ignores(f) || (isDir && includeRule.ignores(f + '/'))
-      : false
+      : true
 
   const copyFromDir = options.workingDir
   const locPackageStoreDir = join(getStorePackagesDir(), pkg.name, pkg.version)

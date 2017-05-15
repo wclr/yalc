@@ -25,6 +25,8 @@ import {
 const values = {
   depPackage: 'dep-package',
   depPackageVersion: '1.0.0',
+  depPackage2: 'dep-package2',
+  depPackage2Version: '1.0.0',
   storeDir: 'yalc-store',
   project: 'project'
 }
@@ -36,10 +38,15 @@ const storeMainDr = join(tmpDir, values.storeDir)
 yalcGlobal.yalcStoreMainDir = storeMainDr
 
 const depPackageDir = join(tmpDir, values.depPackage)
+const depPackage2Dir = join(tmpDir, values.depPackage2)
 const projectDir = join(tmpDir, values.project)
 
 const publishedPackagePath =
   join(storeMainDr, 'packages', values.depPackage, values.depPackageVersion)
+
+const publishedPackage2Path =
+  join(storeMainDr, 'packages', values.depPackage2, values.depPackage2Version)
+
 
 const checkExists = (path: string) =>
   doesNotThrow(() => fs.accessSync(path), path + ' does not exit')
@@ -67,8 +74,12 @@ describe('Yalc package manager', () => {
       checkExists(join(publishedPackagePath, 'package.json'))
     })
 
-    it('ignores standard non-code', () => {      
+    it('ignores standard non-code', () => {
       checkNotExists(join(publishedPackagePath, 'LICENCE'))
+    })
+
+    it('ignores .gitignore', () => {
+      checkNotExists(join(publishedPackagePath, '.gitignore'))
     })
 
     it('handles "files" manifest entry correctly', () => {
@@ -90,6 +101,18 @@ describe('Yalc package manager', () => {
     })
   })
 
+  describe('Package 2 (without `files` in manifest) publish', () => {
+
+    before((done) => {
+      publishPackage({ workingDir: depPackage2Dir })
+      setTimeout(done, 100)
+    })
+
+    it('publishes package to store', () => {
+      checkExists(join(publishedPackage2Path, 'file.txt'))
+      checkExists(join(publishedPackage2Path, 'package.json'))
+    })  
+  })
   describe('Add package', () => {
     before((done) => {
       addPackages([values.depPackage], {
