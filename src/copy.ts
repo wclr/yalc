@@ -72,7 +72,7 @@ const copyFile = (srcPath: string, destPath: string, relPath: string) => {
     await ensureDir(dirname(destPath))
     const stream = fs.createReadStream(srcPath)
     const md5sum = crypto.createHash("md5")
-    md5sum.update(relPath)
+    md5sum.update(relPath.replace(/\\/g, '/'))    
     stream.on('data', (data: string) =>
       md5sum.update(data)
     )

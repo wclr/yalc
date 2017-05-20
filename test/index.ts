@@ -25,7 +25,7 @@ import {
 const values = {
   depPackage: 'dep-package',
   depPackageVersion: '1.0.0',
-  depPackageSignature: '123136036068ab84b01a6b30d65e4af2',
+  depPackageSignature: 'd77868c68f5324bcd59e36f0963a27e8',
   depPackage2: 'dep-package2',
   depPackage2Version: '1.0.0',
   storeDir: 'yalc-store',
