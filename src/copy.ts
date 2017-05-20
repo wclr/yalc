@@ -67,11 +67,12 @@ const ensureDir = (dirPath: string) => new Promise((resolve, reject) =>
   fs.ensureDir(dirPath, (err) => err ? reject(err) : resolve())
 )
 
-const copyFile = (srcPath: string, destPath: string) => {
+const copyFile = (srcPath: string, destPath: string, relPath: string) => {
   return new Promise(async (resolve, reject) => {
     await ensureDir(dirname(destPath))
     const stream = fs.createReadStream(srcPath)
     const md5sum = crypto.createHash("md5")
+    md5sum.update(relPath)
     stream.on('data', (data: string) =>
       md5sum.update(data)
     )
@@ -133,7 +134,7 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
 
   const filesToCopy = await getFilesToCopy(workingDir, isIncluded)
   const hashes = await Promise.all(filesToCopy.sort().map((relPath) =>
-    copyFile(join(copyFromDir, relPath), join(locPackageStoreDir, relPath))
+    copyFile(join(copyFromDir, relPath), join(locPackageStoreDir, relPath), relPath)
   ))
   const signature = crypto.createHash('md5')
     .update(hashes.join('')).digest('hex')
@@ -157,7 +158,7 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
   if (options.signature && !options.knit) {
     const pkg = readPackageManifest(locPackageStoreDir)
     if (pkg) {
-      pkg.version = [pkg.version, shortSignature].join('-')     
+      pkg.version = [pkg.version, shortSignature].join('-')
       writePackageManifest(locPackageStoreDir, pkg)
     }
   }
