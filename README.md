@@ -36,6 +36,8 @@ for managing `package.json` dependencies.
 
 - While copying package content `yalc` calculates hash signature of all files and by default adds this signature to package manifest `version`. You can disable this by using `--no-sig` option.
 
+- [Easily propagate package updates everywhere.](#pushing-updates-automaticaly-to-all-installations)
+
 ### Add
 - Run `yalc add my-package` in your dependant project, 
 it will copy current version frome store to your project's `.yalc` folder and inject `file:.yalc/my-package` dependency in package.json.
@@ -47,12 +49,12 @@ it will copy current version frome store to your project's `.yalc` folder and in
 `project/.yalc/my-package ==> project/node_modules/my-package`. It will not touch `package.json` in this case.
 
 ### Update
-  - Run `yalc update my-package` to update the latest version from store, 
-  or `yalc update` to update all the packages found in `yalc.lock`.
-  - Running simply `yalc` in the directory will do the same as `yalc update`
-
+  - Run `yalc update my-package` to update the latest version from store.
+  - Run `yalc update` to update all the packages found in `yalc.lock`.
+  
 ### Remove
  - Run `yalc remove my-package`, it will remove package info from `package.json` and `yalc.lock`
+ - Run `yalc remove --all` to remove all packages from project.
 
 ----
 
@@ -62,7 +64,7 @@ it will copy current version frome store to your project's `.yalc` folder and in
 
 ## Advanced usage
 
-### Pushing updates automaticly to all installations
+### Pushing updates automaticaly to all installations
 
 - When do `yalc add/link/update`, project's locations where packages added are tracked and saved, thus `yalc` tries to know where each package from store is being used in your local environment.
 - `yalc publish --push` will publish package to store and propagate all changes to existing `yalc's` package installations (will actually do `update` operation on the location).
