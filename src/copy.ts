@@ -1,11 +1,19 @@
 const ignore = require('ignore')
 import * as fs from 'fs-extra'
-import { join, relative } from 'path'
+import * as crypto from 'crypto'
+import * as klaw from 'klaw'
+
+import { join, relative, dirname } from 'path'
 import {
   PackageManifest,
   getStorePackagesDir,
-  values
+  values,
+  readPackageManifest,
+  writePackageManifest,
+  writeSignatureFile
 } from '.'
+
+const shortSignatureLength = 8
 
 const npmIncludeDefaults = [
   'package.json'
@@ -25,15 +33,56 @@ const npmIgnoreDefaults = [
   'CVS',
   'npm-debug.log',
   'node_modules'
-].concat([  
-  'CHANGELOG*',  
+].concat([
+  'CHANGELOG*',
   'README*',
   'CHANGES*',
   'HISTORY*',
   'LICENSE*',
   'LICENCE*',
-  'NOTICE*',  
+  'NOTICE*',
 ])
+
+const getFilesToCopy = (workingDir: string, isIncluded: (path: string, isDir: boolean) => boolean) => {
+  const filter = (filePath: string) => {
+    const f = relative(workingDir, filePath)
+    if (!f) return true
+    const isDir = fs.statSync(filePath).isDirectory()
+    return isIncluded(f, isDir)
+  }
+  return new Promise<string[]>((resolve, reject) => {
+    const items: string[] = []
+    klaw(workingDir, { filter: filter })
+      .on('data', (item) => {
+        if (!item.stats.isDirectory()) {
+          items.push(relative(workingDir, item.path))
+        }
+      }).on('end', () => {
+        resolve(items)
+      }).on('error', reject)
+  })
+}
+
+const ensureDir = (dirPath: string) => new Promise((resolve, reject) =>
+  fs.ensureDir(dirPath, (err) => err ? reject(err) : resolve())
+)
+
+const copyFile = (srcPath: string, destPath: string) => {
+  return new Promise(async (resolve, reject) => {
+    await ensureDir(dirname(destPath))
+    const stream = fs.createReadStream(srcPath)
+    const md5sum = crypto.createHash("md5")
+    stream.on('data', (data: string) =>
+      md5sum.update(data)
+    )
+    stream
+      .pipe(fs.createWriteStream(destPath))
+      .on('error', reject)
+      .on('close', () => {
+        resolve(md5sum.digest('hex'))
+      })
+  })
+}
 
 const getIngoreFilesContent = (workingDir: string, hasFilesEntry: boolean): string => {
   let content: string = ''
@@ -54,9 +103,10 @@ const getIngoreFilesContent = (workingDir: string, hasFilesEntry: boolean): stri
   return content
 }
 
-export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options: {
+export const copyPackageToStore = async (pkg: PackageManifest, options: {
+  workingDir: string,
+  signature?: boolean,
   knit?: boolean
-  workingDir: string
 }) => {
   const { workingDir } = options
 
@@ -74,28 +124,25 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options
     includeRule ?
       includeRule.ignores(f) || (isDir && includeRule.ignores(f + '/'))
       : true
-
+  const isIncluded = (f: string, isDir: boolean) =>
+    !((ignores(f, isDir)) || !(includes(f, isDir)))
   const copyFromDir = options.workingDir
   const locPackageStoreDir = join(getStorePackagesDir(), pkg.name, pkg.version)
-  const filesToCopied: string[] = []
-  const isDirectory = (filePath: string) => fs.statSync(filePath).isDirectory()
 
-  const copyFilter: fs.CopyFilter = (filePath) => {
-    const f = relative(copyFromDir, filePath)
-    if (!f) return true
-    const isDir = isDirectory(filePath)
-    const ignored = (ignores(f, isDir)) || !(includes(f, isDir))
-    if (!ignored) {
-      filesToCopied.push(f)
-    }
-    return !ignored
-  }
   fs.removeSync(locPackageStoreDir)
-  fs.copySync(copyFromDir, locPackageStoreDir, copyFilter)
+
+  const filesToCopy = await getFilesToCopy(workingDir, isIncluded)
+  const hashes = await Promise.all(filesToCopy.sort().map((relPath) =>
+    copyFile(join(copyFromDir, relPath), join(locPackageStoreDir, relPath))
+  ))
+  const signature = crypto.createHash('md5')
+    .update(hashes.join('')).digest('hex')
+  const shortSignature = signature.substr(0, shortSignatureLength)
+
   if (options.knit) {
     fs.removeSync(locPackageStoreDir)
     const ensureSymlinkSync = fs.ensureSymlinkSync as any
-    filesToCopied.forEach(f => {
+    filesToCopy.forEach(f => {
       const source = join(copyFromDir, f)
       if (fs.statSync(source).isDirectory()) {
         return
@@ -106,4 +153,13 @@ export const copyWithIgnorePackageToStore = async (pkg: PackageManifest, options
       )
     })
   }
+  writeSignatureFile(locPackageStoreDir, signature)
+  if (options.signature && !options.knit) {
+    const pkg = readPackageManifest(locPackageStoreDir)
+    if (pkg) {
+      pkg.version = [pkg.version, shortSignature].join('-')     
+      writePackageManifest(locPackageStoreDir, pkg)
+    }
+  }
+  return signature
 }

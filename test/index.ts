@@ -25,6 +25,7 @@ import {
 const values = {
   depPackage: 'dep-package',
   depPackageVersion: '1.0.0',
+  depPackageSignature: '026aeb1f5b989611b00f65d5dd93471e',
   depPackage2: 'dep-package2',
   depPackage2Version: '1.0.0',
   storeDir: 'yalc-store',
@@ -33,6 +34,8 @@ const values = {
 
 const fixtureDir = join(__dirname, 'fixture')
 const tmpDir = join(__dirname, 'tmp')
+
+const shortSignatureLength = 8
 
 const storeMainDr = join(tmpDir, values.storeDir)
 yalcGlobal.yalcStoreMainDir = storeMainDr
@@ -62,7 +65,10 @@ describe('Yalc package manager', () => {
   describe('Package publish', () => {
 
     before((done) => {
-      publishPackage({ workingDir: depPackageDir })
+      publishPackage({
+        workingDir: depPackageDir,
+        signature: true
+      })
       setTimeout(done, 100)
     })
 
@@ -96,23 +102,43 @@ describe('Yalc package manager', () => {
         join(publishedPackagePath, 'src', 'file-npm-ignored.txt'))
     })
 
+    it('it creates signature file', () => {
+      const sigFileName = join(publishedPackagePath, 'yalc.sig')
+      checkExists(sigFileName)
+      ok(fs.statSync(sigFileName).size  === 32, 'signature file size')
+    })
+
+    it('Adds signature to package.json version', () => {
+      const pkg = readPackageManifest(publishedPackagePath)!      
+      const versionLength = values.depPackageVersion.length + shortSignatureLength + 1
+      ok(pkg.version.length === versionLength)
+    })
+
     it('does not respect .gitignore, if .npmignore presents', () => {
 
     })
   })
 
-  describe('Package 2 (without `files` in manifest) publish', () => {
-
+  describe('Package 2 (without `files` in manifest) publish, knit', () => {
+    const publishedFilePath =
+      join(publishedPackage2Path, 'file.txt')
+    
+    const originalFilePath = join(depPackage2Dir, 'file.txt')
     before((done) => {
-      publishPackage({ workingDir: depPackage2Dir })
+      publishPackage({ workingDir: depPackage2Dir, knit: true })
       setTimeout(done, 100)
     })
 
     it('publishes package to store', () => {
-      checkExists(join(publishedPackage2Path, 'file.txt'))
+      checkExists(publishedFilePath)
       checkExists(join(publishedPackage2Path, 'package.json'))
-    })  
+    })
+
+    it('publishes symlinks (knitting)', () => {
+      ok(fs.readlinkSync(publishedFilePath) === originalFilePath)      
+    })
   })
+
   describe('Add package', () => {
     before((done) => {
       addPackages([values.depPackage], {
@@ -134,12 +160,13 @@ describe('Yalc package manager', () => {
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
           file: true,
-          replaced: '1.0.0'
+          replaced: '1.0.0',
+          signature: values.depPackageSignature,
         }
       })
     })
     it('updates package.json', () => {
-      const pkg = readPackageManifest({ workingDir: projectDir })!
+      const pkg = readPackageManifest(projectDir)!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: 'file:.yalc/' + values.depPackage
       })
@@ -168,12 +195,32 @@ describe('Yalc package manager', () => {
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
           file: true,
-          replaced: '1.0.0'
+          replaced: '1.0.0',
+          signature: values.depPackageSignature,
         }
       })
     })
     it('does not remove inner node_modules', () => {
       checkExists(innterNodeModulesFile)
+    })
+  })
+
+  describe('Remove not existing package', () => {
+    before((done) => {
+      removePackages(['xxxx'], {
+        workingDir: projectDir
+      })
+      setTimeout(done, 100)
+    })
+    it('does not updates yalc.lock', () => {
+      const lockFile = readLockfile({ workingDir: projectDir })
+      deepEqual(lockFile.packages, {
+        [values.depPackage]: {
+          file: true,
+          replaced: '1.0.0',
+          signature: values.depPackageSignature,
+        }
+      })
     })
   })
 
@@ -191,13 +238,14 @@ describe('Yalc package manager', () => {
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
           file: true,
-          replaced: '1.0.0'
+          replaced: '1.0.0',
+          signature: values.depPackageSignature,
         }
       })
     })
 
     it('updates package.json', () => {
-      const pkg = readPackageManifest({ workingDir: projectDir })!
+      const pkg = readPackageManifest(projectDir)!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: values.depPackageVersion
       })
@@ -228,7 +276,7 @@ describe('Yalc package manager', () => {
     })
 
     it('updates package.json', () => {
-      const pkg = readPackageManifest({ workingDir: projectDir })!
+      const pkg = readPackageManifest(projectDir)!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: 'file:.yalc/' + values.depPackage
       })
@@ -251,7 +299,7 @@ describe('Yalc package manager', () => {
     })
 
     it('updates package.json', () => {
-      const pkg = readPackageManifest({ workingDir: projectDir })!
+      const pkg = readPackageManifest(projectDir)!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: values.depPackageVersion
       })

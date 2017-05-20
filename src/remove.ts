@@ -27,8 +27,9 @@ import {
 } from '.'
 
 export interface RemovePackagesOptions {
-  retreat?: boolean
-  workingDir: string,
+  all?: boolean,
+  retreat?: boolean,
+  workingDir: string
 }
 
 const isYalcFileAddress = (address: string, name: string,
@@ -40,7 +41,7 @@ const isYalcFileAddress = (address: string, name: string,
 export const removePackages = (packages: string[], options: RemovePackagesOptions) => {
   const { workingDir } = options
   const lockFileConfig = readLockfile({ workingDir: workingDir })
-  const pkg = readPackageManifest({ workingDir: workingDir })
+  const pkg = readPackageManifest(workingDir)
   if (!pkg) return
   let packagesToRemove: PackageName[] = []
 
@@ -52,12 +53,19 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
           packagesToRemove.push(name)
         }
       } else {
+        console.log(`Package ${packageName} not found in ${values.lockfileName}` +
+          `, still will try to remove.`)
         packagesToRemove.push(name)
       }
     })
   } else {
-    packagesToRemove = Object.keys(lockFileConfig.packages) as PackageName[]
+    if (options.all) {
+      packagesToRemove = Object.keys(lockFileConfig.packages) as PackageName[]
+    } else {
+      console.log(`Use --all option to remove all packages.`)
+    }
   }
+
   let pkgUpdated = false
   let lockfileUpdated = false
   packagesToRemove.forEach((name) => {
@@ -88,28 +96,28 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
   if (lockfileUpdated) {
     writeLockfile(lockFileConfig, { workingDir })
   }
-  
-  if (!lockFileConfig.packages.length && !options.retreat) {
+
+  if (!Object.keys(lockFileConfig.packages).length && !options.retreat) {
     fs.removeSync(join(workingDir, values.locedPackagesFolder))
-    removeLockfile({workingDir})
+    removeLockfile({ workingDir })
   }
 
   if (pkgUpdated) {
-    writePackageManifest(pkg, { workingDir })
+    writePackageManifest(workingDir, pkg)
   }
 
   const installationsToRemove: PackageInstallation[] =
     packagesToRemove.map(name => ({
       name, version: '', path: workingDir
     }))
-  
-  packagesToRemove.forEach((name) => {    
+
+  packagesToRemove.forEach((name) => {
     fs.removeSync(join(workingDir, 'node_modules', name))
     if (!options.retreat) {
       fs.removeSync(join(workingDir, values.locedPackagesFolder, name))
     }
   })
-  
+
   if (!options.retreat) {
     removeInstallations(installationsToRemove)
   }

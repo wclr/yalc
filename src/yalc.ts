@@ -17,13 +17,24 @@ import {
 const cliCommand = values.myNameIs
 // console.log(`Work with npm/yarn local packages like a boss.\n`)
 yargs
-  .usage(cliCommand + '[command] [options] [package1 [package2...]]')
+  .usage(cliCommand + ' [command] [options] [package1 [package2...]]')
+  .demand(1)
+  .command({
+    command: '*',
+    handler: (argv) => {
+      if (argv._[0]) {
+        console.log('Unknown commmand', argv._[0],
+          'use just `yalc` to see available commands.')        
+      }      
+    }
+  })
   .command({
     command: 'publish',
-    describe: 'Publish',
+    describe: 'Publish package in yalc local repo',
     builder: () => {
       return yargs
-        .boolean(['push', 'knit', 'force', 'push-safe'])
+        .default('sig', true)  
+        .boolean(['push', 'knit', 'force', 'push-safe', 'sig'])
     },
     handler: (argv) => {
       const folder = argv._[1]
@@ -32,17 +43,19 @@ yargs
         force: argv.force,
         knit: argv.knit,
         push: argv.push,
-        pushSafe: argv.pushSafe
+        pushSafe: argv.pushSafe,
+        signature: argv.sig
       })
     }
   })
   .command({
     command: 'push',
-    describe: 'Push',
+    describe: 'Publish package in yalc local repo and push to all installactions',
     builder: () => {
       return yargs
         .default('force', undefined)
-        .boolean(['knit', 'safe', 'force'])
+        .default('sig', true)
+        .boolean(['knit', 'safe', 'force', 'sig'])
     },
     handler: (argv) => {
       publishPackage({
@@ -50,13 +63,14 @@ yargs
         force: argv.force !== undefined ? argv.force : true,
         knit: argv.knit,
         push: true,
-        pushSafe: argv.safe
+        pushSafe: argv.safe,
+        signature: argv.sig
       })
     }
   })
   .command({
     command: 'add',
-    describe: 'Add',
+    describe: 'Add package from yalc repo to the project',
     builder: () => {
       return yargs
         .default('yarn', false)
@@ -72,8 +86,8 @@ yargs
     }
   })
   .command({
-    command: 'link',
-    describe: 'Link',
+    command: 'link ',
+    describe: 'Link package from yalc repo to the project',
     builder: () => {
       return yargs
         .default('yarn', true)
@@ -87,11 +101,10 @@ yargs
     }
   })
   .command({
-    command: ['*', 'update'],
-    describe: 'Update packages',
+    command: ['update'],
+    describe: 'Update packages from yalc repo',
     builder: () => {
-      return yargs
-        .usage('Update usage here')
+      return yargs        
         .help(true)
     },
     handler: (argv) => {
@@ -102,22 +115,23 @@ yargs
   })  
   .command({
     command: 'remove',
-    describe: 'Remove packages',
+    describe: 'Remove packages from the project',
     builder: () => {
-      return yargs
-        .boolean(['retreat'])
+      return yargs          
+        .boolean(['retreat', 'all'])
         .help(true)
     },
     handler: (argv) => {
       removePackages(argv._.slice(1), {
         retreat: argv.retreat,
-        workingDir: process.cwd()
+        workingDir: process.cwd(),
+        all: argv.all
       })
     }
   })
   .command({
     command: 'retreat',
-    describe: 'Retreat packages',
+    describe: 'Remove packages from project, but leave in lock file (to be restored later)',
     builder: () => {
       return yargs
         .help(true)
@@ -131,7 +145,7 @@ yargs
   })
   .command({
     command: 'check',
-    describe: 'Check package.json on yalc entries',
+    describe: 'Check package.json for yalc packages',
     builder: () => {
       return yargs.boolean(['commit'])
         .usage('check usage here')
@@ -153,9 +167,9 @@ yargs
   .command({
     command: 'dir',
     describe: 'Show yalc system directory',
-
     handler: (argv) => {
       console.log(getStoreMainDir())
     }
-  })
+  }) 
+  .help('help')
   .argv

@@ -32,7 +32,9 @@ for managing `package.json` dependencies.
 - It will copy [all the files that should be published in remote NPM registry](https://docs.npmjs.com/files/package.json#files), but will not include standard non-code files like `README`, `LICENCE` etc.
 - It will run `preyalc` or `prepublish` scripts before, and `postyalc` or `postpublish` after. Use `--force` to publish without running scripts.
 
-**NB!** Windows users should ensure `LF` new line symbol is used in published sources, it may be needed for package to work correctly (for example it is must for `bin` scripts). `Yalc` won't convert line endings for you (because `npm` and `yarn` won't too).
+- **NB!** Windows users should ensure `LF` new line symbol is used in published sources, it may be needed for package to work correctly (for example it is must for `bin` scripts). `Yalc` won't convert line endings for you (because `npm` and `yarn` won't too).
+
+- While copying package content `yalc` calculates hash signature of all files and by default adds this signature to package manifest `version`. You can disable this by using `--no-sig` option.
 
 ### Add
 - Run `yalc add my-package` in your dependant project, 
@@ -54,8 +56,7 @@ it will copy current version frome store to your project's `.yalc` folder and in
 
 ----
 
-**NB!** Currenlty `yalc` doesn't call `yarn` commands to install/update dependencies after
-package is added or removed, so have to do it manually.
+**NB!** Currenlty `yalc` copies (or links) added/updated package content to `node_modules` folder, but it doesn't execute `yarn/npm` install/update comands after this, so have dependencies updated have to do it manually.
 
 ----
 
@@ -65,25 +66,21 @@ package is added or removed, so have to do it manually.
 
 - When do `yalc add/link/update`, project's locations where packages added are tracked and saved, thus `yalc` tries to know where each package from store is being used in your local environment.
 - `yalc publish --push` will publish package to store and propagate all changes to existing `yalc's` package installations (will actually do `update` operation on the location).
-- You may just use shortcut for push operation `yloc push`, which will likely become your primarily used command for publication :
+- `yalc push` - is a use shortcut command for push operation (which will likely become your primarily used command for publication):
   - it supports `--knit` option
   - `force` options is `true` by default, so it won't run `pre/post` scripts (may change this with `--no-force` flag).
 
-### Publish/push sub-projects
+### Try to use [knitting](https://github.com/yarnpkg/rfcs/blob/master/text/0000-yarn-knit.md) (really experimental)
 
-- Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package` will perform publish operation in nested `package` folder of current working dir.
+- You want try to `--knit` option. Instead of just copying files from original package location to store it will create symlinks for each individual file in the package. 
 
-### Try to use [knitting](https://github.com/yarnpkg/rfcs/blob/master/text/0000-yarn-knit.md)
-
-- You want try to `--knit` option. Instead of just copying files from original package location to store it will create symlinks for each individual file in the package.
-  
-- Changes to files will be propagated immidiately to all locations as you make updates to linked files.
+- Thus changes to the files will "be propagated" immidiately to all locations as you make updates to linked files.
 
 - It is still symlinks. Modules will be resolving their dependencies relative to their original location. [Until you use available workarounds for loaders/resolvers.](https://nodejs.org/api/cli.html#cli_preserve_symlinks)
 
 - Excluded folders from publications like `node_modules` stay isolated to the area of use.
 
-- When add new files you still need *may need* to push updated version to `yalc` store (for new links to be created).
+- When add new files you still need *may need* to push updated version to `yalc` store (to create symlinks to new files).
 
 ### Keep it out of git
 - If you are using `yalc'ed` modules temporary while development, first add `.yalc` and `yalc.lock` to `.gitignore`.
@@ -93,6 +90,10 @@ package is added or removed, so have to do it manually.
 ### Keep it in git
 - You may want to keep shared `yalc'ed` stuff within the projects you are working on and treat it as a part of the project's codebase. This may really simplify management and usage of shared *work in progress* packages within your projects and help to make things consistent. So, then just do it, keep `.yalc` folder and `yalc.lock` in git. 
 - Replace it with published versions from remote repository when ready.
+
+### Publish/push sub-projects
+
+- Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package` will perform publish operation in nested `package` folder of current working dir.
 
 
 ## Related links

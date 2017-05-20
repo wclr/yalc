@@ -1,7 +1,7 @@
 import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import * as path from 'path'
-import { copyWithIgnorePackageToStore } from './copy'
+import { copyPackageToStore } from './copy'
 import {
   PackageInstallation, InstallationsFile,
   readInstallationsFile,
@@ -107,7 +107,7 @@ const getJSONSpaces = (jsonStr: string) => {
   return match && match[1] ? match[1].length : null
 }
 
-export function readPackageManifest({ workingDir }: { workingDir: string }) {
+export function readPackageManifest(workingDir: string) {
   let pkg: PackageManifest
   const packagePath = join(workingDir, 'package.json')
   try {
@@ -131,14 +131,38 @@ export function readPackageManifest({ workingDir }: { workingDir: string }) {
   }
 }
 
+const signatureFileName = 'yalc.sig'
+
+export function readSignatureFile(workingDir: string) {
+  let pkg: PackageManifest
+  const signatureFilePath = join(workingDir, signatureFileName)
+  try {
+    const fileData = fs.readFileSync(signatureFilePath, 'utf-8')
+    return fileData
+  } catch (e) {    
+    return ''
+  }
+}
+
+export function writeSignatureFile(workingDir: string, signature: string) {
+  let pkg: PackageManifest
+  const signatureFilePath = join(workingDir, signatureFileName)
+  try {
+    fs.writeFileSync(signatureFilePath, signature, 'utf-8')    
+  } catch (e) {    
+    console.log('Could not write signature file')
+    throw e
+  }
+}
+
+
 const sortDependencies = (dependencies: { [name: string]: string }) => {
   return Object.keys(dependencies).sort().reduce((deps, key) =>
     Object.assign(deps, { [key]: dependencies[key] })
     , {})
 }
 
-export function writePackageManifest(
-  pkg: PackageManifest, { workingDir }: { workingDir: string }) {
+export function writePackageManifest(workingDir: string, pkg: PackageManifest) {
   pkg = Object.assign({}, pkg)
   if (pkg.dependencies) {
     pkg.dependencies = sortDependencies(pkg.dependencies)

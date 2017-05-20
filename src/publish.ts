@@ -1,7 +1,7 @@
 import { exec, execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import * as path from 'path'
-import { copyWithIgnorePackageToStore } from './copy'
+import { copyPackageToStore } from './copy'
 import {
   PackageInstallation, InstallationsFile,
   readInstallationsFile,
@@ -21,10 +21,12 @@ import {
   getPackageManager,
   updatePackages,
   readPackageManifest,
-  writePackageManifest
+  writePackageManifest,
+  getStorePackagesDir
 } from '.'
 export interface PublishPackageOptions {
   workingDir: string,
+  signature?: boolean,
   knit?: boolean
   force?: boolean
   push?: boolean,
@@ -35,12 +37,11 @@ const { join } = path
 
 export const publishPackage = async (options: PublishPackageOptions) => {
   const workingDir = options.workingDir
-  const pkg = readPackageManifest({ workingDir })
+  const pkg = readPackageManifest(workingDir)
   if (!pkg) {
     return
   }
-  //const yarnCacheDir = execSync('yarn cache dir').toString().trim()
-  
+
   const changeDirCmd = 'cd ' + options.workingDir + ' && '
   const scriptRunCmd = !options.force && pkg.scripts
     ? changeDirCmd + getPackageManager(workingDir) + ' run ' : ''
@@ -55,7 +56,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     }
   }
 
-  copyWithIgnorePackageToStore(pkg, options)
+  const signature = await copyPackageToStore(pkg, options)
 
   if (scriptRunCmd) {
     if (pkg.scripts!.postyalc) {
@@ -76,7 +77,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       console.log(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
       installationsToRemove.concat(
         updatePackages([pkg.name], { workingDir, noInstallationsRemove: true })
-      )      
+      )
     })
     removeInstallations(installationsToRemove)
   }
@@ -86,7 +87,8 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     const cachedVersionPath =
       join(yarnCacheDir, ['npm', pkg.name, pkg.version].join('-'))
     fs.removeSync(cachedVersionPath)
-  } catch (e) {}
-
-  console.log(`${pkg.name}@${pkg.version} published in store.`)
+  } catch (e) { }  
+  const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
+  const publishedPkg = readPackageManifest(publishedPackageDir)!
+  console.log(`${publishedPkg.name}@${publishedPkg.version} published in store.`)
 }

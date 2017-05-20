@@ -23,7 +23,8 @@ import {
   values,
   parsePackageName,
   readPackageManifest,
-  writePackageManifest
+  writePackageManifest,
+  readSignatureFile
 } from '.'
 
 const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
@@ -58,7 +59,7 @@ const emptyDirExcludeNodeModules = (path: string) => {
 export const addPackages = (packages: string[], options: AddPackagesOptions) => {
   const packagesStoreDir = getStorePackagesDir()
   const workingDir = options.workingDir
-  const localPkg = readPackageManifest({ workingDir: workingDir })
+  const localPkg = readPackageManifest(workingDir)
   let localPkgUpdated = false
   if (!localPkg) {
     return
@@ -83,7 +84,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       return null
     }
 
-    const pkg = readPackageManifest({ workingDir: storedPackageDir })
+    const pkg = readPackageManifest(storedPackageDir)
     if (!pkg) {
       return
     }
@@ -131,7 +132,9 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
     }
     console.log(`${pkg.name}@${pkg.version} locted ==> ${destModulesDir}`)
+    const signature = readSignatureFile(storedPackageDir)  
     return {
+      signature,
       name,
       version,
       replaced: replacedVersion,
@@ -140,16 +143,17 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
   }).filter(_ => _) as PackageInstallation[]
 
   if (localPkgUpdated) {
-    writePackageManifest(localPkg, { workingDir })
+    writePackageManifest(workingDir, localPkg)
   }
-
+  
   addPackageToLockfile(
     addedInstalls
       .map((i) => ({
         name: i!.name,
         version: i!.version,
         replaced: i!.replaced,
-        file: !options.link
+        file: !options.link,
+        signature: i.signature
       })), { workingDir: options.workingDir }
   )
 

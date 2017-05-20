@@ -7,8 +7,9 @@ export type PackageName = string & { __packageName: true }
 export type PackageInstallation = {
   name: PackageName,
   version: string,
-  replaced?: string,
-  path: string
+  path: string,
+  replaced?: string,  
+  signature?: string
 }
 
 export type InstallationsFile = { [packageName: string]: string[] }

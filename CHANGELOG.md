@@ -1,6 +1,11 @@
 # Yalc changelog
 
 ## 1.0.0.pre.9
+- added hash signature
+- no default command 
+- fixed not-exiting package removal
+- added --all option for `remove`
+- handle unknown command
 
 ## 1.0.0.pre.8 (2017-05-25)
 - fix copy if no `files` in manifest defined
