@@ -35,6 +35,26 @@ export interface PublishPackageOptions {
 
 const { join } = path
 
+const execute = (cmd: string) => {
+  return new Promise<{ stdout: string, stderr: string }>((resolve, reject) => {
+    const res = exec(cmd, (err, stdout, stderr) => {
+      err ? reject(err) : resolve({ stdout, stderr })
+    })
+  })
+}
+
+// https://github.com/yarnpkg/yarn/issues/2165
+const workaroundYarnCacheBug = async (pkg: PackageManifest) => {
+  try {
+    const yarnCacheDir = (await execute('yarn cache dir')).stdout
+    if (yarnCacheDir) {
+      const cachedVersionPath =
+        join(yarnCacheDir, ['npm', pkg.name, pkg.version].join('-'))
+      fs.removeSync(cachedVersionPath)
+    }
+  } catch (e) { }
+}
+
 export const publishPackage = async (options: PublishPackageOptions) => {
   const workingDir = options.workingDir
   const pkg = readPackageManifest(workingDir)
@@ -80,14 +100,8 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       )
     })
     removeInstallations(installationsToRemove)
-  }
-  // workaround yarn bug with file: deps
-  try {
-    const yarnCacheDir = execSync('yarn cache dir').toString().trim()
-    const cachedVersionPath =
-      join(yarnCacheDir, ['npm', pkg.name, pkg.version].join('-'))
-    fs.removeSync(cachedVersionPath)
-  } catch (e) { }  
+  }  
+  workaroundYarnCacheBug(pkg)
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const publishedPkg = readPackageManifest(publishedPackageDir)!
   console.log(`${publishedPkg.name}@${publishedPkg.version} published in store.`)
