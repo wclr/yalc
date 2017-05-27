@@ -1,10 +1,13 @@
 # Yalc changelog
 
-## 1.0.0.pre.9
+## 1.0.0.pre.10
+- fixed `--all` option for `retreat` command
+
+## 1.0.0.pre.9 (2017-05-21)
 - added hash signature
 - no default command 
 - fixed not-exiting package removal
-- added --all option for `remove`
+- added `--all` option for `remove`
 - handle unknown command
 
 ## 1.0.0.pre.8 (2017-05-25)
