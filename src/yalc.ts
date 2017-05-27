@@ -15,17 +15,17 @@ import {
 
 
 const cliCommand = values.myNameIs
-// console.log(`Work with npm/yarn local packages like a boss.\n`)
-yargs
-  .usage(cliCommand + ' [command] [options] [package1 [package2...]]')
-  .demand(1)
+
+const argv = yargs
+  .usage(cliCommand + ' [command] [options] [package1 [package2...]]')  
   .command({
     command: '*',
-    handler: (argv) => {
+    handler: (argv) => {      
+      let msg = 'Use `yalc help` to see available commands.'
       if (argv._[0]) {
-        console.log('Unknown commmand', argv._[0],
-          'use just `yalc` to see available commands.')        
-      }      
+        msg = 'Unknown commmand `' + argv._[0]  + '`. ' + msg
+      }
+      console.log(msg)
     }
   })
   .command({
@@ -134,10 +134,12 @@ yargs
     describe: 'Remove packages from project, but leave in lock file (to be restored later)',
     builder: () => {
       return yargs
+      .boolean(['all'])  
         .help(true)
     },
     handler: (argv) => {
       removePackages(argv._.slice(1), {
+        all: argv.all,
         retreat: true,
         workingDir: process.cwd()
       })
