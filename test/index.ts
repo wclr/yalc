@@ -25,7 +25,7 @@ import {
 const values = {
   depPackage: 'dep-package',
   depPackageVersion: '1.0.0',
-  depPackageSignature: 'd77868c68f5324bcd59e36f0963a27e8',
+  depPackageSignature: 'f60263a9ec3d60310b6e3a9c3d374b77',
   depPackage2: 'dep-package2',
   depPackage2Version: '1.0.0',
   storeDir: 'yalc-store',
@@ -88,11 +88,23 @@ describe('Yalc package manager', () => {
       checkNotExists(join(publishedPackagePath, '.gitignore'))
     })
 
-    it('handles "files" manifest entry correctly', () => {
+    it('handles "files:" manifest entry correctly', () => {
       checkExists(
         join(publishedPackagePath, 'src'))
       checkExists(
         join(publishedPackagePath, 'dist/file.txt'))
+      checkExists(
+        join(publishedPackagePath, 'root-file.txt'))
+      checkExists(
+        join(publishedPackagePath, 'folder/file.txt'))      
+      checkNotExists(
+        join(publishedPackagePath, 'folder/file2.txt'))
+      checkExists(
+        join(publishedPackagePath, 'folder2/nested/file.txt'))
+      checkNotExists(
+        join(publishedPackagePath, 'folder2/file.txt'))
+      checkNotExists(
+        join(publishedPackagePath, 'folder2/nested/file2.txt'))
       checkNotExists(
         join(publishedPackagePath, 'test'))
     })

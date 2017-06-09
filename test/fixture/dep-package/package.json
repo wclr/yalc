@@ -5,7 +5,10 @@
   "license": "MIT",
   "files": [
     "dist/",
-    "src"
+    "src",
+    "folder/file.txt",
+    "folder2/nested/file.txt",
+    "root-file.txt"
   ],
   "dependencies": {}
 }

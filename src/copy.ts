@@ -72,7 +72,7 @@ const copyFile = (srcPath: string, destPath: string, relPath: string) => {
     await ensureDir(dirname(destPath))
     const stream = fs.createReadStream(srcPath)
     const md5sum = crypto.createHash("md5")
-    md5sum.update(relPath.replace(/\\/g, '/'))    
+    md5sum.update(relPath.replace(/\\/g, '/'))
     stream.on('data', (data: string) =>
       md5sum.update(data)
     )
@@ -104,6 +104,18 @@ const getIngoreFilesContent = (workingDir: string, hasFilesEntry: boolean): stri
   return content
 }
 
+const getFoldersPatterns = (files: string[]) => {
+  const folders = []
+  return files.reduce<string[]>((res, file) =>
+    res.concat(
+      file.split('/').filter(_ => _)
+        .reduce<string[]>((prev, folder) =>
+          prev.concat([prev[prev.length - 1], folder].join('/'))
+        , []).map(x => x.slice(1))
+    )
+    , [])
+}
+
 export const copyPackageToStore = async (pkg: PackageManifest, options: {
   workingDir: string,
   signature?: boolean,
@@ -117,13 +129,14 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
     .add(getIngoreFilesContent(workingDir, !!pkg.files))
   const ignores = (f: string, isDir: boolean) =>
     ignoreRule.ignores(f) || (isDir && ignoreRule.ignores(f + '/'))
-
+  const includeFoldersRule = ignore().add(getFoldersPatterns(pkg.files || []))
   const includeRule = pkg.files ? ignore()
     .add(npmIncludeDefaults)
     .add(pkg.files || []) : null
   const includes = (f: string, isDir: boolean) =>
     includeRule ?
-      includeRule.ignores(f) || (isDir && includeRule.ignores(f + '/'))
+      includeRule.ignores(f)
+      || (isDir && includeFoldersRule.ignores(f))
       : true
   const isIncluded = (f: string, isDir: boolean) =>
     !((ignores(f, isDir)) || !(includes(f, isDir)))
