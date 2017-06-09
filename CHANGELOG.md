@@ -1,5 +1,8 @@
 # Yalc changelog
 
+## 1.0.0.pre.11 (2017-06-09)
+- fixed include rules for `folder/file`
+
 ## 1.0.0.pre.10 (2017-05-27)
 - fixed `--all` option for `retreat` command
 - fixed #3 `yarn` absence error output
