@@ -4,13 +4,13 @@
 
 ## Why
 
-When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in other projects that you are working on in your local environment **without publishing those packages to remote registry**. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this may work in many cases, it often brings nasty [constrains and problems](https://github.com/yarnpkg/yarn/issues/1761#issuecomment-259706202) with dependencies resolution, symlinks interoperability between file systems, ect.
+When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in other projects that you are working on in your local environment **without publishing those packages to remote registry.** NPM and Yarn address this issue with a similar approach of [symlinked packages](https://docs.npmjs.com/cli/link) (`npm/yarn link`). Though this may work in many cases, it often brings nasty [constraints and problems](https://github.com/yarnpkg/yarn/issues/1761#issuecomment-259706202) with dependency resolution, symlink interoperability between file systems, etc.
 
 ## What
 
 - `Yalc` acts as very simple local repository for your localy developed packages that you want to share across your local environment. 
-- When you  you do `yalc publish` in the package directory it grabs only files that should be published to NPM and *puts* them to special global store (located for example in  `~/.yalc`). 
-- When you do `yalc add my-package` in your `project` it *pulls* package content to `.yalc` in current folder and injects `file:` dependency in `package.json`. Alternatively you may use `yalc link my-pakage` which will create symlink to package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does).
+- When you run `yalc publish` in the package directory it grabs only files that should be published to NPM and *puts* them to special global store (located for example in  `~/.yalc`). 
+- When you run `yalc add my-package` in your `project` it *pulls* package content to `.yalc` in current folder and injects `file:` dependency in `package.json`. Alternatively you may use `yalc link my-pakage` which will create symlink to package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does).
 -  `Yalc` creates special `yalc.lock` file in your project (near `yarn.lock` and `package.json`) that be used to ensure consistentcy while performing `yalc's` routines.
 - `Yalc` can be used with projects where `yarn` or `npm` package managers are used 
 for managing `package.json` dependencies.
