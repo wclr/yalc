@@ -4,13 +4,13 @@
 
 ## Why
 
-When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in other projects that you are working on in your local environment **without publishing those packages to remote registry**. Npm/yarn adress this issue with standard [symlinked packages](https://docs.npmjs.com/cli/link) aproach (`npm/yarn link`). Though this may work in many cases, it often brings nasty [constrains and problems](https://github.com/yarnpkg/yarn/issues/1761#issuecomment-259706202) with dependencies resolution, symlinks interoperability between file systems, ect.
+When developing and authoring multiple packages (private or public) you often find yourself in a need of using the latest/WIP versions in other projects that you are working on in your local environment **without publishing those packages to remote registry.** NPM and Yarn address this issue with a similar approach of [symlinked packages](https://docs.npmjs.com/cli/link) (`npm/yarn link`). Though this may work in many cases, it often brings nasty [constraints and problems](https://github.com/yarnpkg/yarn/issues/1761#issuecomment-259706202) with dependency resolution, symlink interoperability between file systems, etc.
 
 ## What
 
 - `Yalc` acts as very simple local repository for your localy developed packages that you want to share across your local environment. 
-- When you  you do `yalc publish` in the package directory it grabs only files that should be published to NPM and *puts* them to special global store (located for example in  `~/.yalc`). 
-- When you do `yalc add my-package` in your `project` it *pulls* package content to `.yalc` in current folder and injects `file:` dependency in `package.json`. Alternatively you may use `yalc link my-pakage` which will create symlink to package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does).
+- When you run `yalc publish` in the package directory it grabs only files that should be published to NPM and *puts* them to special global store (located for example in  `~/.yalc`). 
+- When you run `yalc add my-package` in your `project` it *pulls* package content to `.yalc` in current folder and injects `file:` dependency in `package.json`. Alternatively you may use `yalc link my-pakage` which will create symlink to package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does).
 -  `Yalc` creates special `yalc.lock` file in your project (near `yarn.lock` and `package.json`) that be used to ensure consistentcy while performing `yalc's` routines.
 - `Yalc` can be used with projects where `yarn` or `npm` package managers are used 
 for managing `package.json` dependencies.
@@ -40,7 +40,7 @@ for managing `package.json` dependencies.
 
 ### Add
 - Run `yalc add my-package` in your dependant project, 
-it will copy current version frome store to your project's `.yalc` folder and inject `file:.yalc/my-package` dependency in package.json.
+it will copy current version from store to your project's `.yalc` folder and inject `file:.yalc/my-package` dependency in package.json.
 - You may add particular versoin `yalc add my-package@version`, this version will be fixed in `yalc.lock` file and while updates it will not update to newly published versions.
 
 ### Link
@@ -58,7 +58,7 @@ it will copy current version frome store to your project's `.yalc` folder and in
 
 ----
 
-**NB!** Currenlty `yalc` copies (or links) added/updated package content to `node_modules` folder, but it doesn't execute `yarn/npm` install/update comands after this, so have dependencies updated have to do it manually.
+**NB!** Currenlty `yalc` copies (or links) added/updated package content to `node_modules` folder, but it doesn't execute `yarn/npm` install/update commands after this, so dependencies must be updated manually if necessary.
 
 ----
 
@@ -76,7 +76,7 @@ it will copy current version frome store to your project's `.yalc` folder and in
 
 - You want try to `--knit` option. Instead of just copying files from original package location to store it will create symlinks for each individual file in the package. 
 
-- Thus changes to the files will "be propagated" immidiately to all locations as you make updates to linked files.
+- Thus changes to the files will "be propagated" immediately to all locations as you make updates to linked files.
 
 - It is still symlinks. Modules will be resolving their dependencies relative to their original location. [Until you use available workarounds for loaders/resolvers.](https://nodejs.org/api/cli.html#cli_preserve_symlinks)
 
