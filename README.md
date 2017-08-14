@@ -40,7 +40,7 @@ for managing `package.json` dependencies.
 
 ### Add
 - Run `yalc add my-package` in your dependant project, 
-it will copy current version frome store to your project's `.yalc` folder and inject `file:.yalc/my-package` dependency in package.json.
+it will copy current version from store to your project's `.yalc` folder and inject `file:.yalc/my-package` dependency in package.json.
 - You may add particular versoin `yalc add my-package@version`, this version will be fixed in `yalc.lock` file and while updates it will not update to newly published versions.
 
 ### Link
@@ -58,7 +58,7 @@ it will copy current version frome store to your project's `.yalc` folder and in
 
 ----
 
-**NB!** Currenlty `yalc` copies (or links) added/updated package content to `node_modules` folder, but it doesn't execute `yarn/npm` install/update comands after this, so have dependencies updated have to do it manually.
+**NB!** Currenlty `yalc` copies (or links) added/updated package content to `node_modules` folder, but it doesn't execute `yarn/npm` install/update commands after this, so dependencies must be updated manually if necessary.
 
 ----
 
@@ -76,7 +76,7 @@ it will copy current version frome store to your project's `.yalc` folder and in
 
 - You want try to `--knit` option. Instead of just copying files from original package location to store it will create symlinks for each individual file in the package. 
 
-- Thus changes to the files will "be propagated" immidiately to all locations as you make updates to linked files.
+- Thus changes to the files will "be propagated" immediately to all locations as you make updates to linked files.
 
 - It is still symlinks. Modules will be resolving their dependencies relative to their original location. [Until you use available workarounds for loaders/resolvers.](https://nodejs.org/api/cli.html#cli_preserve_symlinks)
 
