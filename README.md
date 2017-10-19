@@ -95,7 +95,7 @@ it will copy current version frome store to your project's `.yalc` folder and in
 
 ### Publish/push sub-projects
 
-- Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package` will perform publish operation in nested `package` folder of current working dir.
+- Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package-dir will perform publish operation in nested `package` folder of current working dir.
 
 
 ## Related links

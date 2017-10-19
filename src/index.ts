@@ -148,7 +148,7 @@ export function writeSignatureFile(workingDir: string, signature: string) {
   let pkg: PackageManifest
   const signatureFilePath = join(workingDir, signatureFileName)
   try {
-    fs.writeFileSync(signatureFilePath, signature, 'utf-8')    
+    fs.writeFileSync(signatureFilePath, signature)    
   } catch (e) {    
     console.log('Could not write signature file')
     throw e

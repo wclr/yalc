@@ -33,15 +33,17 @@ const npmIgnoreDefaults = [
   'CVS',
   'npm-debug.log',
   'node_modules'
-].concat([
+]
+
+const npmFilesIncludedByDefault = [
   'CHANGELOG*',
   'README*',
   'CHANGES*',
   'HISTORY*',
   'LICENSE*',
   'LICENCE*',
-  'NOTICE*',
-])
+  'NOTICE*'
+]
 
 const getFilesToCopy = (workingDir: string, isIncluded: (path: string, isDir: boolean) => boolean) => {
   const filter = (filePath: string) => {
@@ -125,21 +127,28 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
 
   const ignoreRule = ignore()
     .add(npmIgnoreDefaults)
+    .add(npmFilesIncludedByDefault)
     .add(values.locedPackagesFolder)
     .add(getIngoreFilesContent(workingDir, !!pkg.files))
+  
+  const ingnoreFilesIncludedByDefaultRule = ignore()
+    //.add(npmFilesIncludedByDefault)
+  
   const ignores = (f: string, isDir: boolean) =>
     ignoreRule.ignores(f) || (isDir && ignoreRule.ignores(f + '/'))
+  
   const includeFoldersRule = ignore().add(getFoldersPatterns(pkg.files || []))
-  const includeRule = pkg.files ? ignore()
+  const explicitIncludeRule = pkg.files ? ignore()
     .add(npmIncludeDefaults)
     .add(pkg.files || []) : null
   const includes = (f: string, isDir: boolean) =>
-    includeRule ?
-      includeRule.ignores(f)
+    explicitIncludeRule ?
+      explicitIncludeRule.ignores(f)
       || (isDir && includeFoldersRule.ignores(f))
       : true
   const isIncluded = (f: string, isDir: boolean) =>
     !((ignores(f, isDir)) || !(includes(f, isDir)))
+    
   const copyFromDir = options.workingDir
   const locPackageStoreDir = join(getStorePackagesDir(), pkg.name, pkg.version)
 

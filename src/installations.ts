@@ -22,7 +22,7 @@ export const readInstallationsFile = (): InstallationsFile => {
   try {    
     fs.accessSync(installationFilePath)  
     try {
-      installationsConfig = fs.readJsonSync(installationFilePath, 'utf-8')
+      installationsConfig = fs.readJsonSync(installationFilePath)
     } catch (e) {
       console.log('Error reading installations file', installationFilePath, e)
       installationsConfig = {}
