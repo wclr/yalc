@@ -37,7 +37,8 @@ export const readInstallationsFile = (): InstallationsFile => {
 export const saveInstallationsFile = (installationsConfig: InstallationsFile) => {
   const storeDir = getStoreMainDir()
   const installationFilePath = path.join(storeDir, values.installationsFile)
-  fs.writeJson(installationFilePath, installationsConfig)
+  const data = JSON.stringify(installationsConfig, null, 2)
+  return fs.writeFile(installationFilePath, data)
 }
 
 export const addInstallations = (installations: (PackageInstallation)[]) => {

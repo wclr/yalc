@@ -77,7 +77,8 @@ export const readLockfile = (options: { workingDir: string }) => {
 
 export const writeLockfile = (lockfile: LockFileConfig, options: { workingDir: string }) => {
   const lockfilePath = join(options.workingDir, values.lockfileName)
-  fs.writeJSONSync(lockfilePath, lockfile)
+  const data = JSON.stringify(lockfile, null, 2)
+  fs.writeFileSync(lockfilePath, data)
 }
 
 export const addPackageToLockfile = (
