@@ -56,6 +56,14 @@ const emptyDirExcludeNodeModules = (path: string) => {
   })
 }
 
+const isSymlink = (path: string) => {
+  try {
+    return !!fs.readlinkSync(path)
+  } catch (e) {
+    return false
+  }
+}
+
 export const addPackages = (packages: string[], options: AddPackagesOptions) => {
   const packagesStoreDir = getStorePackagesDir()
   const workingDir = options.workingDir
@@ -93,14 +101,16 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
     const destModulesDir = join(workingDir, 'node_modules', name)
 
     emptyDirExcludeNodeModules(destYalcCopyDir)
-    fs.copySync(storedPackageDir, destYalcCopyDir)    
+    fs.copySync(storedPackageDir, destYalcCopyDir)
 
     let replacedVersion = ''
-    if (options.link) {
+    if (options.link || isSymlink(destModulesDir)) {
       fs.removeSync(destModulesDir)
+    }
+    if (options.link) {
       ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'dir')
     } else {
-      emptyDirExcludeNodeModules(destModulesDir)      
+      emptyDirExcludeNodeModules(destModulesDir)
       const localAddress = 'file:' + values.locedPackagesFolder + '/' + pkg.name
       fs.copySync(destYalcCopyDir, destModulesDir)
 
@@ -132,7 +142,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
     }
     console.log(`${pkg.name}@${pkg.version} locted ==> ${destModulesDir}`)
-    const signature = readSignatureFile(storedPackageDir)  
+    const signature = readSignatureFile(storedPackageDir)
     return {
       signature,
       name,
@@ -145,7 +155,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
   if (localPkgUpdated) {
     writePackageManifest(workingDir, localPkg)
   }
-  
+
   addPackageToLockfile(
     addedInstalls
       .map((i) => ({
