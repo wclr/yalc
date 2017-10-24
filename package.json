@@ -1,6 +1,6 @@
 {
   "name": "yalc",
-  "version": "1.0.0-pre.11",
+  "version": "1.0.0-pre.12",
   "description": "Work yarn packages locally like a boss.",
   "bin": {
     "yalc": "src/yalc.js"
@@ -10,7 +10,8 @@
     "build": "tsc",
     "precommit": "yalc check",
     "prepush": "yarn test",
-    "prepublishOnly": "ts-clean-built && tsc && yarn test",
+    "_prepublishOnly": "ts-clean-built && tsc && yarn test",
+    "prepublishOnly": "tsc && yarn test",
     "test": "mocha test",
     "watch": "mocha test --watch",
     "ci": "tsc && yarn test"
@@ -37,6 +38,7 @@
     "clean-ts-built": "^1.0.0",
     "husky": "^0.13.3",
     "mocha": "^3.2.0",
+    "ts-clean-built": "^1.0.0",
     "typescript": "2.6.1-insiders.20171016"
   }
 }

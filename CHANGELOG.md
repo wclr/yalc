@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.12 (2017-10-24)
+- update `fs-extra`
+- fix #7
+
 ## 1.0.0.pre.11 (2017-06-09)
 - fixed include rules for `folder/file`
 

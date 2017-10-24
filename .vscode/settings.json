@@ -2,9 +2,15 @@
   "typescript.tsdk": "./node_modules/typescript/lib",
   "search.exclude": {},
   "files.exclude": {
-    "**/*.js": true,
-    "**/*.js.map": true,
-    "**/*.d.ts": true
+    "**/*.js": {
+			"when": "$(basename).ts"
+		},
+		"**/*.js.map": {
+			"when": "$(basename).ts"
+		},
+		"**/*.d.ts": {
+			"when": "$(basename).ts"
+		}			
   },
   "tslint.run": "onSave",
   "editor.formatOnType": true,
