@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "files": [
+  "files": [    
+    ".yalc",
+    ".dot/",
     "dist/",
     "src",
     "folder/file.txt",

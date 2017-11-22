@@ -49,7 +49,7 @@ const getFilesToCopy = (workingDir: string, isIncluded: (path: string, isDir: bo
   const filter = (filePath: string) => {
     const f = relative(workingDir, filePath)
     if (!f) return true
-    const isDir = fs.statSync(filePath).isDirectory()
+    const isDir = fs.statSync(filePath).isDirectory()    
     return isIncluded(f, isDir)
   }
   return new Promise<string[]>((resolve, reject) => {
@@ -128,7 +128,6 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
   const ignoreRule = ignore()
     .add(npmIgnoreDefaults)
     .add(npmFilesIncludedByDefault)
-    .add(values.locedPackagesFolder)
     .add(getIngoreFilesContent(workingDir, !!pkg.files))
   
   const ingnoreFilesIncludedByDefaultRule = ignore()
@@ -136,7 +135,7 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
   
   const ignores = (f: string, isDir: boolean) =>
     ignoreRule.ignores(f) || (isDir && ignoreRule.ignores(f + '/'))
-  
+
   const includeFoldersRule = ignore().add(getFoldersPatterns(pkg.files || []))
   const explicitIncludeRule = pkg.files ? ignore()
     .add(npmIncludeDefaults)

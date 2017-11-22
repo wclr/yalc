@@ -97,7 +97,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       return
     }
     const destYalcCopyDir = join(workingDir,
-      values.locedPackagesFolder, name)
+      values.yalcPackagesFolder, name)
     const destModulesDir = join(workingDir, 'node_modules', name)
 
     emptyDirExcludeNodeModules(destYalcCopyDir)
@@ -111,7 +111,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'dir')
     } else {
       emptyDirExcludeNodeModules(destModulesDir)
-      const localAddress = 'file:' + values.locedPackagesFolder + '/' + pkg.name
+      const localAddress = 'file:' + values.yalcPackagesFolder + '/' + pkg.name
       fs.copySync(destYalcCopyDir, destModulesDir)
 
       const dependencies = localPkg.dependencies || {}

@@ -34,7 +34,7 @@ export interface RemovePackagesOptions {
 
 const isYalcFileAddress = (address: string, name: string,
   lockedPackage: LockFilePackageEntry) => {
-  const localAddress = 'file:' + values.locedPackagesFolder + '/' + name
+  const localAddress = 'file:' + values.yalcPackagesFolder + '/' + name
   return address === localAddress
 }
 
@@ -98,7 +98,7 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
   }
 
   if (!Object.keys(lockFileConfig.packages).length && !options.retreat) {
-    fs.removeSync(join(workingDir, values.locedPackagesFolder))
+    fs.removeSync(join(workingDir, values.yalcPackagesFolder))
     removeLockfile({ workingDir })
   }
 
@@ -114,7 +114,7 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
   packagesToRemove.forEach((name) => {
     fs.removeSync(join(workingDir, 'node_modules', name))
     if (!options.retreat) {
-      fs.removeSync(join(workingDir, values.locedPackagesFolder, name))
+      fs.removeSync(join(workingDir, values.yalcPackagesFolder, name))
     }
   })
 

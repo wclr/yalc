@@ -1,5 +1,8 @@
 # Yalc changelog
 
+## 1.0.0.pre.13 (2017-11-22)
+- fix: remove .yalc folder from ignored
+
 ## 1.0.0.pre.12 (2017-10-24)
 - update `fs-extra`
 - fix #7

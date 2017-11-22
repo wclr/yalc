@@ -25,7 +25,7 @@ export const values = {
   myNameIs: 'yalc',
   myNameIsCapitalized: 'Yalc',
   lockfileName: 'yalc.lock',
-  locedPackagesFolder: '.yalc',
+  yalcPackagesFolder: '.yalc',
   prescript: 'preyalc',
   postscript: 'postyalc',
   installationsFile: 'installations.json'

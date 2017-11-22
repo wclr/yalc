@@ -24,12 +24,12 @@ import {
 
 // we check concrete signature value to encure hash generation consistency
 const signature = /win/.test(os.platform())
-  ? 'e66fca3829bda5c475392a4d535099b6' 
-  : 'f60263a9ec3d60310b6e3a9c3d374b77'
+  ? '3aee289a65324c4f2475d699e1c88b0f'
+  : '4baf74b6208e768b542c6af9e1833906'
 
 const values = {
   depPackage: 'dep-package',
-  depPackageVersion: '1.0.0',  
+  depPackageVersion: '1.0.0',
   depPackageSignature: signature,
   depPackage2: 'dep-package2',
   depPackage2Version: '1.0.0',
@@ -95,13 +95,17 @@ describe('Yalc package manager', () => {
 
     it('handles "files:" manifest entry correctly', () => {
       checkExists(
+        join(publishedPackagePath, '.yalc/yalc.txt'))
+      checkExists(
+        join(publishedPackagePath, '.dot/dot.txt'))
+      checkExists(
         join(publishedPackagePath, 'src'))
       checkExists(
         join(publishedPackagePath, 'dist/file.txt'))
       checkExists(
         join(publishedPackagePath, 'root-file.txt'))
       checkExists(
-        join(publishedPackagePath, 'folder/file.txt'))      
+        join(publishedPackagePath, 'folder/file.txt'))
       checkNotExists(
         join(publishedPackagePath, 'folder/file2.txt'))
       checkExists(
@@ -122,11 +126,11 @@ describe('Yalc package manager', () => {
     it('it creates signature file', () => {
       const sigFileName = join(publishedPackagePath, 'yalc.sig')
       checkExists(sigFileName)
-      ok(fs.statSync(sigFileName).size  === 32, 'signature file size')
+      ok(fs.statSync(sigFileName).size === 32, 'signature file size')
     })
 
     it('Adds signature to package.json version', () => {
-      const pkg = readPackageManifest(publishedPackagePath)!      
+      const pkg = readPackageManifest(publishedPackagePath)!
       const versionLength = values.depPackageVersion.length + shortSignatureLength + 1
       ok(pkg.version.length === versionLength)
     })
@@ -139,7 +143,7 @@ describe('Yalc package manager', () => {
   describe('Package 2 (without `files` in manifest) publish, knit', () => {
     const publishedFilePath =
       join(publishedPackage2Path, 'file.txt')
-    
+
     const originalFilePath = join(depPackage2Dir, 'file.txt')
     before((done) => {
       publishPackage({ workingDir: depPackage2Dir, knit: false })
@@ -152,7 +156,7 @@ describe('Yalc package manager', () => {
     })
 
     it.skip('publishes symlinks (knitting)', () => {
-      ok(fs.readlinkSync(publishedFilePath) === originalFilePath)      
+      ok(fs.readlinkSync(publishedFilePath) === originalFilePath)
     })
   })
 
@@ -206,8 +210,8 @@ describe('Yalc package manager', () => {
       })
       setTimeout(done, 500)
     })
-    
-    it('does not change yalc.lock', () => {      
+
+    it('does not change yalc.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       console.log('lockFile', lockFile)
       deepEqual(lockFile.packages, {
