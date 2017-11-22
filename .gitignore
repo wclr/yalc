@@ -3,5 +3,5 @@ tmp
 *.js
 *.d.ts
 *.js.map
-.yalc
+/.yalc
 yalc.lock
