@@ -29,7 +29,7 @@ for managing `package.json` dependencies.
 
 ### Publish
 - Run `yalc publish` in your dependency package `my-package`. 
-- It will copy [all the files that should be published in remote NPM registry](https://docs.npmjs.com/files/package.json#files), but will not include standard non-code files like `README`, `LICENCE` etc.
+- It will copy [all the files that should be published in remote NPM registry](https://docs.npmjs.com/files/package.json#files), but will not include standard non-code files like `README`, `LICENCE` etc (if you need them included please add `!LICENCE` to `.npmignore`).
 - It will run `preyalc` or `prepublish` scripts before, and `postyalc` or `postpublish` after. Use `--force` to publish without running scripts.
 
 - **NB!** Windows users should ensure `LF` new line symbol is used in published sources, it may be needed for package to work correctly (for example it is must for `bin` scripts). `Yalc` won't convert line endings for you (because `npm` and `yarn` won't too).
@@ -69,20 +69,7 @@ it will copy current version from store to your project's `.yalc` folder and inj
 - When do `yalc add/link/update`, project's locations where packages added are tracked and saved, thus `yalc` tries to know where each package from store is being used in your local environment.
 - `yalc publish --push` will publish package to store and propagate all changes to existing `yalc's` package installations (will actually do `update` operation on the location).
 - `yalc push` - is a use shortcut command for push operation (which will likely become your primarily used command for publication):
-  - it supports `--knit` option
   - `force` options is `true` by default, so it won't run `pre/post` scripts (may change this with `--no-force` flag).
-
-### Try to use [knitting](https://github.com/yarnpkg/rfcs/blob/master/text/0000-yarn-knit.md) (really experimental)
-
-- You want try to `--knit` option. Instead of just copying files from original package location to store it will create symlinks for each individual file in the package. 
-
-- Thus changes to the files will "be propagated" immediately to all locations as you make updates to linked files.
-
-- It is still symlinks. Modules will be resolving their dependencies relative to their original location. [Until you use available workarounds for loaders/resolvers.](https://nodejs.org/api/cli.html#cli_preserve_symlinks)
-
-- Excluded folders from publications like `node_modules` stay isolated to the area of use.
-
-- When add new files you still need *may need* to push updated version to `yalc` store (to create symlinks to new files).
 
 ### Keep it out of git
 - If you are using `yalc'ed` modules temporary while development, first add `.yalc` and `yalc.lock` to `.gitignore`.
