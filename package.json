@@ -9,8 +9,7 @@
   "scripts": {
     "build": "tsc",
     "precommit": "yalc check",
-    "prepush": "yarn test",
-    "_prepublishOnly": "ts-clean-built && tsc && yarn test",
+    "_prepush": "yarn test",
     "prepublishOnly": "tsc && yarn test",
     "test": "mocha test",
     "watch": "mocha test --watch",
