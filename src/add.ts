@@ -78,9 +78,10 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
     if (!name) {
       console.log('Could not parse package name', packageName)
     }
-
-    if (!fs.existsSync(getPackageStoreDir(name))) {
-      console.log(`Could not find package \`${name}\` in store, skipping.`)
+    
+    const storedPackagePath = getPackageStoreDir(name)
+    if (!fs.existsSync(storedPackagePath)) {
+      console.log(`Could not find package \`${name}\` in store (${storedPackagePath}), skipping.`)
       return null
     }
     const versionToInstall = version || getLatestPackageVersion(name)
