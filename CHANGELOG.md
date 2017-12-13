@@ -1,5 +1,8 @@
 # Yalc changelog
 
+## 1.0.0.pre.14 
+- fix: remove package dir from node_modules only if needed
+
 ## 1.0.0.pre.13 (2017-11-22)
 - fix: remove .yalc folder from ignored
 

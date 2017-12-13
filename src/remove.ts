@@ -66,8 +66,8 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
     }
   }
 
-  let pkgUpdated = false
   let lockfileUpdated = false
+  const removedPackagedFromManifect: string[] = []
   packagesToRemove.forEach((name) => {
     const lockedPackage = lockFileConfig.packages[name]
 
@@ -80,7 +80,7 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
     }
     if (depsWithPackage &&
       isYalcFileAddress(depsWithPackage[name], name, lockedPackage || {})) {
-      pkgUpdated = true
+      removedPackagedFromManifect.push(name)
       if (lockedPackage && lockedPackage.replaced) {
         depsWithPackage[name] = lockedPackage.replaced
       } else {
@@ -102,7 +102,7 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
     removeLockfile({ workingDir })
   }
 
-  if (pkgUpdated) {
+  if (removedPackagedFromManifect.length) {
     writePackageManifest(workingDir, pkg)
   }
 
@@ -111,8 +111,10 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
       name, version: '', path: workingDir
     }))
 
-  packagesToRemove.forEach((name) => {
+  removedPackagedFromManifect.forEach((name) => {
     fs.removeSync(join(workingDir, 'node_modules', name))
+  })
+  packagesToRemove.forEach((name) => {
     if (!options.retreat) {
       fs.removeSync(join(workingDir, values.yalcPackagesFolder, name))
     }
