@@ -1,6 +1,6 @@
 # Yalc changelog
 
-## 1.0.0.pre.14 
+## 1.0.0.pre.14 (2017-12-15)
 - fix: remove package dir from node_modules only if needed
 
 ## 1.0.0.pre.13 (2017-11-22)
