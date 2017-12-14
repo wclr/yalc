@@ -86,7 +86,7 @@ const argv = yargs
     }
   })
   .command({
-    command: 'link ',
+    command: 'link',
     describe: 'Link package from yalc repo to the project',
     builder: () => {
       return yargs
@@ -101,7 +101,7 @@ const argv = yargs
     }
   })
   .command({
-    command: ['update'],
+    command: 'update',
     describe: 'Update packages from yalc repo',
     builder: () => {
       return yargs        
