@@ -23,7 +23,7 @@ import {
 } from '../src/lockfile'
 
 // we check concrete signature value to encure hash generation consistency
-const signature = /win/.test(os.platform())
+const signature = /^win/.test(os.platform())
   ? '3aee289a65324c4f2475d699e1c88b0f'
   : '4baf74b6208e768b542c6af9e1833906'
 
