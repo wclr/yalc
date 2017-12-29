@@ -82,6 +82,7 @@ export interface PackageManifest {
     preinstall?: string,
     install?: string,
     prepublish?: string
+    prepublishOnly?: string
     postpublish?: string
     preyalc?: string
     postyalc?: string
