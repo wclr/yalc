@@ -1,5 +1,11 @@
 # Yalc changelog
 
+## 1.0.0.pre.15 (2017-12-30)
+- run prepblushOnly script on publish
+- fixed `darwin` os support
+- fixed linking EPERM 
+- added `--link` option to `add` command for adding `link:` deps
+
 ## 1.0.0.pre.14 (2017-12-15)
 - fix: remove package dir from node_modules only if needed
 

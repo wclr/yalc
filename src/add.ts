@@ -32,6 +32,7 @@ const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
 export interface AddPackagesOptions {
   dev?: boolean,
   link?: boolean,
+  linkDep?: boolean,
   yarn?: boolean,
   safe?: boolean
   workingDir: string,
@@ -103,17 +104,23 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
 
     emptyDirExcludeNodeModules(destYalcCopyDir)
     fs.copySync(storedPackageDir, destYalcCopyDir)
-
+    var gracefulFs = require('graceful-fs')
+    gracefulFs.gracefulify(fs)
     let replacedVersion = ''
-    if (options.link || isSymlink(destModulesDir)) {
+    if (options.link || options.linkDep || isSymlink(destModulesDir)) {
       fs.removeSync(destModulesDir)
     }
-    if (options.link) {
-      ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'dir')
+    
+    if (options.link || options.linkDep) {
+      ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
     } else {
-      emptyDirExcludeNodeModules(destModulesDir)
-      const localAddress = 'file:' + values.yalcPackagesFolder + '/' + pkg.name
+      emptyDirExcludeNodeModules(destModulesDir)      
       fs.copySync(destYalcCopyDir, destModulesDir)
+    }
+    
+    if (!options.link) {
+      const protocol = options.linkDep ? 'link:' : 'file:'
+      const localAddress = protocol + values.yalcPackagesFolder + '/' + pkg.name      
 
       const dependencies = localPkg.dependencies || {}
       const devDependencies = localPkg.devDependencies || {}
@@ -142,7 +149,8 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       }
       replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
     }
-    console.log(`${pkg.name}@${pkg.version} locted ==> ${destModulesDir}`)
+    const addedAction = options.link ? 'linked' : 'added'
+    console.log(`${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}`)
     const signature = readSignatureFile(storedPackageDir)
     return {
       signature,

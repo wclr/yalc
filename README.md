@@ -10,7 +10,7 @@ When developing and authoring multiple packages (private or public) you often fi
 
 - `Yalc` acts as very simple local repository for your localy developed packages that you want to share across your local environment. 
 - When you run `yalc publish` in the package directory it grabs only files that should be published to NPM and *puts* them to special global store (located for example in  `~/.yalc`). 
-- When you run `yalc add my-package` in your `project` it *pulls* package content to `.yalc` in current folder and injects `file:` dependency in `package.json`. Alternatively you may use `yalc link my-pakage` which will create symlink to package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does).
+- When you run `yalc add my-package` in your `project` it *pulls* package content to `.yalc` in current folder and injects `file:`/`link:` dependency in `package.json`. Alternatively you may use `yalc link my-pakage` which will create symlink to package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does).
 -  `Yalc` creates special `yalc.lock` file in your project (near `yarn.lock` and `package.json`) that be used to ensure consistentcy while performing `yalc's` routines.
 - `Yalc` can be used with projects where `yarn` or `npm` package managers are used 
 for managing `package.json` dependencies.
@@ -22,8 +22,6 @@ for managing `package.json` dependencies.
 ```
   npm i yalc -g
 ```
-
-*Work in progress. It is a pre-release.*
 
 ## Usage 
 
@@ -42,6 +40,7 @@ for managing `package.json` dependencies.
 - Run `yalc add my-package` in your dependant project, 
 it will copy current version from store to your project's `.yalc` folder and inject `file:.yalc/my-package` dependency in package.json.
 - You may add particular versoin `yalc add my-package@version`, this version will be fixed in `yalc.lock` file and while updates it will not update to newly published versions.
+- Use `--link` option to add `link:` dependency instead of `file:`
 
 ### Link
 -  Alternatively to `add` you may use `link` operation which should work for you the same way as `npm/yarn link` does, the only difference is that source for symllink will be not the global link directory but local `.yalc` folder of your project. 
@@ -74,7 +73,7 @@ it will copy current version from store to your project's `.yalc` folder and inj
 ### Keep it out of git
 - If you are using `yalc'ed` modules temporary while development, first add `.yalc` and `yalc.lock` to `.gitignore`.
 - Use `yalc link`, that won't touch `packages.json`
-- If you use `yalc add` it will change `package.json`, and ads `file:` dependencies, if you may want to use `yalc check` in the [precommit hook](https://github.com/typicode/husky) which will check package.json for `yalc'ed` dependencies and exits with error, if you forgot to remove them.
+- If you use `yalc add` it will change `package.json`, and ads `file:`/`link:` dependencies, if you may want to use `yalc check` in the [precommit hook](https://github.com/typicode/husky) which will check package.json for `yalc'ed` dependencies and exits with error, if you forgot to remove them.
 
 ### Keep it in git
 - You may want to keep shared `yalc'ed` stuff within the projects you are working on and treat it as a part of the project's codebase. This may really simplify management and usage of shared *work in progress* packages within your projects and help to make things consistent. So, then just do it, keep `.yalc` folder and `yalc.lock` in git. 

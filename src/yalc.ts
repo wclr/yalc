@@ -13,7 +13,6 @@ import {
   checkManifest
 } from './check'
 
-
 const cliCommand = values.myNameIs
 
 const argv = yargs
@@ -74,13 +73,14 @@ const argv = yargs
     builder: () => {
       return yargs
         .default('yarn', false)
-        .boolean(['file', 'dev', 'yarn'])
+        .boolean(['file', 'dev', 'link', 'yarn'])
         .help(true)
     },
     handler: (argv) => {
       addPackages(argv._.slice(1), {
         dev: argv.dev,
         yarn: argv.yarn,
+        linkDep: argv.link,
         workingDir: process.cwd()
       })
     }
