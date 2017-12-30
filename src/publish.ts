@@ -70,6 +70,9 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     if (pkg.scripts!.preyalc) {
       console.log('Running preloc script: ' + pkg.scripts!.preyalc)
       execSync(scriptRunCmd + values.prescript, execLoudOptions)
+    } else if (pkg.scripts!.prepublishOnly) {
+      console.log('Running prepublishOnly script: ' + pkg.scripts!.prepublishOnly)
+      execSync(scriptRunCmd + 'prepublishOnly', execLoudOptions)
     } else if (pkg.scripts!.prepublish) {
       console.log('Running prepublish script: ' + pkg.scripts!.prepublish)
       execSync(scriptRunCmd + 'prepublish', execLoudOptions)
