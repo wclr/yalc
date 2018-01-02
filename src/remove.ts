@@ -34,8 +34,8 @@ export interface RemovePackagesOptions {
 
 const isYalcFileAddress = (address: string, name: string,
   lockedPackage: LockFilePackageEntry) => {
-  const localAddress = 'file:' + values.yalcPackagesFolder + '/' + name
-  return address === localAddress
+  const regExp = new RegExp('file|link:' + values.yalcPackagesFolder + '/' + name)
+  return regExp.test(address)
 }
 
 export const removePackages = (packages: string[], options: RemovePackagesOptions) => {
@@ -77,7 +77,7 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
     }
     if (pkg.devDependencies && pkg.devDependencies[name]) {
       depsWithPackage = pkg.devDependencies
-    }
+    }    
     if (depsWithPackage &&
       isYalcFileAddress(depsWithPackage[name], name, lockedPackage || {})) {
       removedPackagedFromManifect.push(name)

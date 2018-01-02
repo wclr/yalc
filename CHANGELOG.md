@@ -1,5 +1,10 @@
 # Yalc changelog
 
+## 1.0.0.pre.16 (2018-01-02)
+- fix package deps
+- fix `--link` removal
+
+
 ## 1.0.0.pre.15 (2017-12-30)
 - run prepblushOnly script on publish
 - fixed `darwin` os support
