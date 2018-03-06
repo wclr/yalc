@@ -1,6 +1,6 @@
 {
   "name": "yalc",
-  "version": "1.0.0-pre.16",
+  "version": "1.0.0-pre.17",
   "description": "Work yarn packages locally like a boss.",
   "bin": {
     "yalc": "src/yalc.js"

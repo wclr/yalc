@@ -58,15 +58,20 @@ export const updatePackages = (packages: string[], options: UpdatePackagesOption
     .map(name => ({
       name: lockfile.packages[name].version
         ? name + '@' + lockfile.packages[name].version : name,
-      file: lockfile.packages[name].file
+      file: lockfile.packages[name].file,
+      link: lockfile.packages[name].file,
     }))
   const packagesFiles = lockPackages
     .filter(p => p.file).map(p => p.name)
   addPackages(packagesFiles, { workingDir: options.workingDir })
 
   const packagesLinks = lockPackages
-    .filter(p => !p.file).map(p => p.name)
+    .filter(p => !p.file && !p.link).map(p => p.name)
   addPackages(packagesLinks, { workingDir: options.workingDir, link: true })
+
+  const packagesLinkDep = lockPackages
+    .filter(p => !p.link).map(p => p.name)
+  addPackages(packagesLinks, { workingDir: options.workingDir, linkDep: true })
 
   if (!options.noInstallationsRemove) {
     removeInstallations(installationsToRemove)

@@ -340,4 +340,77 @@ describe('Yalc package manager', () => {
       checkNotExists(join(projectDir, 'node_modules', values.depPackage))
     })
   })
+
+  describe('Add package (--link)', () => {
+    before((done) => {
+      addPackages([values.depPackage], {
+        workingDir: projectDir,
+        linkDep: true
+      })
+      setTimeout(done, 500)
+    })
+    it('copies package to .yalc folder', () => {
+      checkExists(join(projectDir, '.yalc', values.depPackage))
+    })
+    it('copies remove package to node_modules', () => {
+      checkExists(join(projectDir, 'node_modules', values.depPackage))
+    })
+    it('creates to yalc.lock', () => {
+      checkExists(join(projectDir, 'yalc.lock'))
+    })
+    it('places yalc.lock correct info about file', () => {
+      const lockFile = readLockfile({ workingDir: projectDir })
+      deepEqual(lockFile.packages, {
+        [values.depPackage]: {
+          link: true,
+          replaced: '1.0.0',
+          signature: values.depPackageSignature,
+        }
+      })
+    })
+    it('updates package.json', () => {
+      const pkg = readPackageManifest(projectDir)!
+      deepEqual(pkg.dependencies, {
+        [values.depPackage]: 'link:.yalc/' + values.depPackage
+      })
+    })
+    it('create and updates installations file', () => {
+      const installtions = readInstallationsFile()
+      deepEqual(installtions, {
+        [values.depPackage]: [projectDir]
+      })
+    })
+  })
+
+  describe('Updated linked (--link) package', () => {
+    before((done) => {
+      updatePackages([values.depPackage], {
+        workingDir: projectDir        
+      })
+      setTimeout(done, 500)
+    })    
+    it('places yalc.lock correct info about file', () => {
+      const lockFile = readLockfile({ workingDir: projectDir })
+      deepEqual(lockFile.packages, {
+        [values.depPackage]: {
+          link: true,
+          replaced: '1.0.0',
+          signature: values.depPackageSignature,
+        }
+      })
+    })
+    it('updates package.json', () => {
+      const pkg = readPackageManifest(projectDir)!
+      deepEqual(pkg.dependencies, {
+        [values.depPackage]: 'link:.yalc/' + values.depPackage
+      })
+    })
+    it('create and updates installations file', () => {
+      const installtions = readInstallationsFile()
+      deepEqual(installtions, {
+        [values.depPackage]: [projectDir]
+      })
+    })
+  })
+
 })

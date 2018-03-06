@@ -12,6 +12,7 @@ export type LockFileConfigV0 = {
 export type LockFilePackageEntry = {
   version?: string
   file?: boolean,
+  link?: boolean,
   replaced?: string,
   signature?: string
 }
@@ -85,12 +86,13 @@ export const addPackageToLockfile = (
   packages: ({ name: string } & LockFilePackageEntry)[],
   options: { workingDir: string }) => {
   const lockfile = readLockfile(options)
-  packages.forEach(({ name, version, file, replaced, signature }) => {
+  packages.forEach(({ name, version, file, link, replaced, signature }) => {
     let old = lockfile.packages[name] || {}
     lockfile.packages[name] = {}
     version && (lockfile.packages[name].version = version)
     signature && (lockfile.packages[name].signature = signature)
     file && (lockfile.packages[name].file = true)
+    link && (lockfile.packages[name].link = true)
     if (replaced || old.replaced) {
       lockfile.packages[name].replaced = replaced || old.replaced
     }

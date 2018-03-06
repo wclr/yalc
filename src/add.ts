@@ -164,14 +164,15 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
   if (localPkgUpdated) {
     writePackageManifest(workingDir, localPkg)
   }
-
-  addPackageToLockfile(
+  
+  addPackageToLockfile(    
     addedInstalls
       .map((i) => ({
         name: i!.name,
         version: i!.version,
         replaced: i!.replaced,
-        file: !options.link,
+        file: !options.link && !options.linkDep,
+        link: options.linkDep,        
         signature: i.signature
       })), { workingDir: options.workingDir }
   )

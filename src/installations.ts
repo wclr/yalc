@@ -8,7 +8,7 @@ export type PackageInstallation = {
   name: PackageName,
   version: string,
   path: string,
-  replaced?: string,  
+  replaced?: string, 
   signature?: string
 }
 
