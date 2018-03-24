@@ -73,12 +73,12 @@ const argv = yargs
     builder: () => {
       return yargs
         .default('yarn', false)
-        .boolean(['file', 'dev', 'link', 'yarn'])
+        .boolean(['file', 'dev', 'save-dev', 'link', 'yarn'])
         .help(true)
     },
     handler: (argv) => {
       addPackages(argv._.slice(1), {
-        dev: argv.dev,
+        dev: argv.dev || argv.saveDev,
         yarn: argv.yarn,
         linkDep: argv.link,
         workingDir: process.cwd()

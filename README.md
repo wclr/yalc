@@ -49,6 +49,7 @@ yarn global add yalc
 will copy the current version from the store to your project's `.yalc` folder and inject a `file:.yalc/my-package` dependency into `package.json`.
 - You may specify a particular version with `yalc add my-package@version`. This version will be fixed in `yalc.lock` and during updates it will not affect newly published versions.
 - Use the `--link` option to add a `link:` dependency instead of `file:`.
+- Use the `--dev` option to add yalc package to dev dependencies.
 
 ### Link
 -  As an alternative to `add`, you can use the `link` command which is similar to `npm/yarn link`, except that the symlink source will be not the global link directory but the local `.yalc` folder of your project. 
