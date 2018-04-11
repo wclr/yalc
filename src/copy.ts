@@ -36,20 +36,20 @@ const npmIgnoreDefaults = [
 ]
 
 const npmFilesIncludedByDefault = [
-  'CHANGELOG*',
-  'README*',
-  'CHANGES*',
-  'HISTORY*',
-  'LICENSE*',
-  'LICENCE*',
-  'NOTICE*'
+  '/CHANGELOG*',
+  '/README*',
+  '/CHANGES*',
+  '/HISTORY*',
+  '/LICENSE*',
+  '/LICENCE*',
+  '/NOTICE*'
 ]
 
 const getFilesToCopy = (workingDir: string, isIncluded: (path: string, isDir: boolean) => boolean) => {
   const filter = (filePath: string) => {
     const f = relative(workingDir, filePath)
     if (!f) return true
-    const isDir = fs.statSync(filePath).isDirectory()    
+    const isDir = fs.statSync(filePath).isDirectory()
     return isIncluded(f, isDir)
   }
   return new Promise<string[]>((resolve, reject) => {
@@ -129,10 +129,10 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
     .add(npmIgnoreDefaults)
     .add(npmFilesIncludedByDefault)
     .add(getIngoreFilesContent(workingDir, !!pkg.files))
-  
+
   const ingnoreFilesIncludedByDefaultRule = ignore()
     //.add(npmFilesIncludedByDefault)
-  
+
   const ignores = (f: string, isDir: boolean) =>
     ignoreRule.ignores(f) || (isDir && ignoreRule.ignores(f + '/'))
 
@@ -147,7 +147,7 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
       : true
   const isIncluded = (f: string, isDir: boolean) =>
     !((ignores(f, isDir)) || !(includes(f, isDir)))
-    
+
   const copyFromDir = options.workingDir
   const locPackageStoreDir = join(getStorePackagesDir(), pkg.name, pkg.version)
 
