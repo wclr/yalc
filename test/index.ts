@@ -158,6 +158,10 @@ describe('Yalc package manager', () => {
     it.skip('publishes symlinks (knitting)', () => {
       ok(fs.readlinkSync(publishedFilePath) === originalFilePath)
     })
+
+    it('does not ignore subdirectories matching standard non-code filenames', () => {
+      checkExists(join(publishedPackage2Path, 'dist/history/file1.txt'))
+    })
   })
 
   describe('Add package', () => {
@@ -385,10 +389,10 @@ describe('Yalc package manager', () => {
   describe('Updated linked (--link) package', () => {
     before((done) => {
       updatePackages([values.depPackage], {
-        workingDir: projectDir        
+        workingDir: projectDir
       })
       setTimeout(done, 500)
-    })    
+    })
     it('places yalc.lock correct info about file', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
