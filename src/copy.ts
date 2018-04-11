@@ -36,13 +36,20 @@ const npmIgnoreDefaults = [
 ]
 
 const npmFilesIncludedByDefault = [
-  'CHANGELOG*',
-  'README*',
-  'CHANGES*',
-  'HISTORY*',
-  'LICENSE*',
-  'LICENCE*',
-  'NOTICE*'
+  '/CHANGELOG',
+  '/README',
+  '/CHANGES',
+  '/HISTORY',
+  '/LICENSE',
+  '/LICENCE',
+  '/NOTICE',
+  '/CHANGELOG.*',
+  '/README.*',
+  '/CHANGES.*',
+  '/HISTORY.*',
+  '/LICENSE.*',
+  '/LICENCE.*',
+  '/NOTICE.*'
 ]
 
 const getFilesToCopy = (workingDir: string, isIncluded: (path: string, isDir: boolean) => boolean) => {
