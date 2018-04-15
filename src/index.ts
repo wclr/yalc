@@ -175,7 +175,7 @@ export function writePackageManifest(workingDir: string, pkg: PackageManifest) {
   delete pkg.__JSONSpaces
   const packagePath = join(workingDir, 'package.json')
   try {
-    fs.writeFileSync(packagePath, JSON.stringify(pkg, null, formatSpaces))
+    fs.writeFileSync(packagePath, JSON.stringify(pkg, null, formatSpaces) + '\n')
   } catch (e) {
     console.error('Could not write ', packagePath)
   }
