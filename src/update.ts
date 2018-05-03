@@ -59,8 +59,9 @@ export const updatePackages = (packages: string[], options: UpdatePackagesOption
       name: lockfile.packages[name].version
         ? name + '@' + lockfile.packages[name].version : name,
       file: lockfile.packages[name].file,
-      link: lockfile.packages[name].file,
+      link: lockfile.packages[name].link,
     }))
+  
   const packagesFiles = lockPackages
     .filter(p => p.file).map(p => p.name)
   addPackages(packagesFiles, { workingDir: options.workingDir })
@@ -70,8 +71,8 @@ export const updatePackages = (packages: string[], options: UpdatePackagesOption
   addPackages(packagesLinks, { workingDir: options.workingDir, link: true })
 
   const packagesLinkDep = lockPackages
-    .filter(p => !p.link).map(p => p.name)
-  addPackages(packagesLinks, { workingDir: options.workingDir, linkDep: true })
+    .filter(p => p.link).map(p => p.name)
+  addPackages(packagesLinkDep, { workingDir: options.workingDir, linkDep: true })
 
   if (!options.noInstallationsRemove) {
     removeInstallations(installationsToRemove)
