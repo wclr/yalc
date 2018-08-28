@@ -28,8 +28,6 @@ type LockFileVersions = 'v1' | 'v0'
 
 type LockFileConfig = LockFileConfigV1
 
-const currentVersion = 'v1'
-
 const determineLockFileVersion = (locfile: any) => {
   if (locfile.version == 'v1' && locfile.packages) {
     return 'v1'

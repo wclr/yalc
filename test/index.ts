@@ -8,8 +8,6 @@ import {
   publishPackage,
   removePackages,
   yalcGlobal,
-  getStorePackagesDir,
-  getPackageStoreDir,
   readPackageManifest
 
 } from '../src'

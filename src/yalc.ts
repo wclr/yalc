@@ -15,7 +15,7 @@ import {
 
 const cliCommand = values.myNameIs
 
-const argv = yargs
+yargs
   .usage(cliCommand + ' [command] [options] [package1 [package2...]]')  
   .command({
     command: '*',
@@ -158,7 +158,6 @@ const argv = yargs
       if (argv.commit) {
         console.log('gitParams', gitParams)
       }
-      const folder = argv._[1]
       checkManifest({
         commit: argv.commit,
         all: argv.all,
@@ -169,7 +168,7 @@ const argv = yargs
   .command({
     command: 'dir',
     describe: 'Show yalc system directory',
-    handler: (argv) => {
+    handler: () => {
       console.log(getStoreMainDir())
     }
   }) 

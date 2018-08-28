@@ -3,17 +3,10 @@ import * as fs from 'fs-extra'
 import * as path from 'path'
 import { copyPackageToStore } from './copy'
 import {
-  PackageInstallation, InstallationsFile,
+  PackageInstallation,
   readInstallationsFile,
-  addInstallations,
   removeInstallations,
-  PackageName
 } from './installations'
-
-import {
-  readLockfile,
-  addPackageToLockfile,
-} from './lockfile'
 
 import {
   values, PackageManifest,
@@ -21,7 +14,6 @@ import {
   getPackageManager,
   updatePackages,
   readPackageManifest,
-  writePackageManifest,
   getStorePackagesDir
 } from '.'
 export interface PublishPackageOptions {
@@ -37,7 +29,7 @@ const { join } = path
 
 const execute = (cmd: string) => {
   return new Promise<{ stdout: string, stderr: string }>((resolve, reject) => {
-    const res = exec(cmd, (err, stdout, stderr) => {
+    exec(cmd, (err, stdout, stderr) => {
       err ? reject(err) : resolve({ stdout, stderr })
     })
   })
@@ -79,7 +71,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     }
   }
 
-  const signature = await copyPackageToStore(pkg, options)
+  await copyPackageToStore(pkg, options)
 
   if (scriptRunCmd) {
     if (pkg.scripts!.postyalc) {
