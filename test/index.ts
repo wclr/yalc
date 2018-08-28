@@ -19,18 +19,12 @@ import {
 } from '../src/installations'
 
 import {
-  readLockfile
+  readLockfile, LockFileConfigV1
 } from '../src/lockfile'
-
-// we check concrete signature value to encure hash generation consistency
-const signature = /^win/.test(os.platform())
-  ? '3aee289a65324c4f2475d699e1c88b0f'
-  : '4baf74b6208e768b542c6af9e1833906'
 
 const values = {
   depPackage: 'dep-package',
   depPackageVersion: '1.0.0',
-  depPackageSignature: signature,
   depPackage2: 'dep-package2',
   depPackage2Version: '1.0.0',
   storeDir: 'yalc-store',
@@ -61,6 +55,21 @@ const checkExists = (path: string) =>
 
 const checkNotExists = (path: string) =>
   throws(() => fs.accessSync(path), path + ' exits')
+
+
+const extractSignature = (lockfile: LockFileConfigV1, packageName: string) => {
+  const packageEntry = lockfile.packages[packageName]
+  if (packageEntry === undefined) {
+    throw new Error(`expected package ${packageName} in lockfile.packages ${JSON.stringify(lockfile, undefined, 2)}`)
+  }
+
+  const signature = packageEntry.signature
+  if (signature === undefined) {
+    throw new Error(`expected signature property in lockfile.packages.${packageName} ${JSON.stringify(lockfile, undefined, 2)}`)
+  }
+
+  return signature;
+}
 
 describe('Yalc package manager', () => {
   before(() => {
@@ -138,6 +147,26 @@ describe('Yalc package manager', () => {
     it('does not respect .gitignore, if .npmignore presents', () => {
 
     })
+
+    const expectedSignature = fs.readFileSync(join(publishedPackagePath, 'yalc.sig')).toString();
+    describe('signature consistency', () => {
+      beforeEach((done) => {
+        publishPackage({
+          workingDir: depPackageDir,
+          signature: true
+        })
+        setTimeout(done, 500)
+      })
+
+      for (let tries = 1; tries <= 5; tries++) {
+        it(`should have a consistent signature after every publish (attempt ${tries})`, () => {
+          const sigFileName = join(publishedPackagePath, 'yalc.sig')
+          const signature = fs.readFileSync(sigFileName).toString();
+
+          deepEqual(signature, expectedSignature);
+        })
+      }
+    })
   })
 
   describe('Package 2 (without `files` in manifest) publish, knit', () => {
@@ -182,7 +211,7 @@ describe('Yalc package manager', () => {
         [values.depPackage]: {
           file: true,
           replaced: '1.0.0',
-          signature: values.depPackageSignature,
+          signature: extractSignature(lockFile, values.depPackage)
         }
       })
     })
@@ -218,7 +247,7 @@ describe('Yalc package manager', () => {
         [values.depPackage]: {
           file: true,
           replaced: '1.0.0',
-          signature: values.depPackageSignature,
+          signature: extractSignature(lockFile, values.depPackage)
         }
       })
     })
@@ -240,7 +269,7 @@ describe('Yalc package manager', () => {
         [values.depPackage]: {
           file: true,
           replaced: '1.0.0',
-          signature: values.depPackageSignature,
+          signature: extractSignature(lockFile, values.depPackage)
         }
       })
     })
@@ -261,7 +290,7 @@ describe('Yalc package manager', () => {
         [values.depPackage]: {
           file: true,
           replaced: '1.0.0',
-          signature: values.depPackageSignature,
+          signature: extractSignature(lockFile, values.depPackage)
         }
       })
     })
@@ -364,7 +393,7 @@ describe('Yalc package manager', () => {
         [values.depPackage]: {
           link: true,
           replaced: '1.0.0',
-          signature: values.depPackageSignature,
+          signature: extractSignature(lockFile, values.depPackage)
         }
       })
     })
@@ -395,7 +424,7 @@ describe('Yalc package manager', () => {
         [values.depPackage]: {
           link: true,
           replaced: '1.0.0',
-          signature: values.depPackageSignature,
+          signature: extractSignature(lockFile, values.depPackage)
         }
       })
     })
