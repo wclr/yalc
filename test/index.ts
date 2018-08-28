@@ -148,8 +148,12 @@ describe('Yalc package manager', () => {
 
     })
 
-    const expectedSignature = fs.readFileSync(join(publishedPackagePath, 'yalc.sig')).toString();
     describe('signature consistency', () => {
+      let expectedSignature: string;
+      before(() => {
+        expectedSignature = fs.readFileSync(join(publishedPackagePath, 'yalc.sig')).toString();
+      })
+
       beforeEach((done) => {
         publishPackage({
           workingDir: depPackageDir,
