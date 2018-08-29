@@ -2,6 +2,11 @@
   "name": "yalc",
   "version": "1.0.0-pre.22",
   "description": "Work yarn packages locally like a boss.",
+  "homepage": "https://github.com/whitecolor/yalc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whitecolor/yalc.git"
+  },
   "bin": {
     "yalc": "src/yalc.js"
   },
