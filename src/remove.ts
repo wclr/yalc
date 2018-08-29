@@ -33,7 +33,7 @@ const isYalcFileAddress = (
   return regExp.test(address)
 }
 
-export const removePackages = (packages: string[], options: RemovePackagesOptions) => {
+export const removePackages = async (packages: string[], options: RemovePackagesOptions) => {
   const { workingDir } = options
   const lockFileConfig = readLockfile({ workingDir: workingDir })
   const pkg = readPackageManifest(workingDir)
@@ -116,6 +116,6 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
   })
 
   if (!options.retreat) {
-    removeInstallations(installationsToRemove)
+    await removeInstallations(installationsToRemove)
   }
 }

@@ -58,7 +58,7 @@ const isSymlink = (path: string) => {
   }
 }
 
-export const addPackages = (packages: string[], options: AddPackagesOptions) => {
+export const addPackages = async (packages: string[], options: AddPackagesOptions) => {
   const workingDir = options.workingDir
   const localPkg = readPackageManifest(workingDir)
   let localPkgUpdated = false
@@ -171,7 +171,7 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       })), { workingDir: options.workingDir }
   )
 
-  addInstallations(addedInstalls)
+  await addInstallations(addedInstalls)
 
   if (options.yarn) {
     const changeDirCmd = 'cd ' + options.workingDir + ' && '
