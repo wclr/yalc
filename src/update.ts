@@ -1,26 +1,13 @@
-import { execSync } from 'child_process'
-import * as fs from 'fs-extra'
-import { join } from 'path'
 import {
   PackageInstallation,
-  InstallationsFile,
-  readInstallationsFile,
-  addInstallations,
   removeInstallations,
-  PackageName
 } from './installations'
 
 import {
   readLockfile,
-  addPackageToLockfile,
-  LockFilePackageEntry
 } from './lockfile'
 
 import {
-  getStorePackagesDir,
-  PackageManifest,
-  getPackageStoreDir,
-  values,
   parsePackageName,
   addPackages
 } from '.'

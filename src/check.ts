@@ -4,7 +4,6 @@ import * as path from 'path'
 import { join } from 'path'
 import {
   PackageManifest,
-  getStorePackagesDir,
   values
 } from '.'
 
@@ -15,10 +14,6 @@ export type CheckOptions = {
 }
 
 const stagedChangesCmd = 'git diff --cached --name-only'
-const allChangesCmd = 'git diff HEAD --name-only'
-const notStagedChangesCmd = 'git diff --name-only'
-//git ls-files --others --exclude-standard
-//const filesInCommitCmd = 'git diff-tree --no-commit-id --name-only -r bd61ad98'
 
 const isPackageManifest = (fileName: string) =>
   path.basename(fileName) === 'package.json'
@@ -37,10 +32,10 @@ export function checkManifest(options: CheckOptions) {
   }
 
   if (options.commit) {
-    const stagedChangesOutput = execSync(stagedChangesCmd, {
+    execSync(stagedChangesCmd, {
       cwd: options.workingDir
     }).toString().trim()
-    const filesTocommmit = execSync(stagedChangesCmd, {
+    execSync(stagedChangesCmd, {
       cwd: options.workingDir
     }).toString().trim().split('\n').filter((isPackageManifest))
   }

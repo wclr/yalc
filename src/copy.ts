@@ -7,7 +7,6 @@ import { join, relative, dirname } from 'path'
 import {
   PackageManifest,
   getStorePackagesDir,
-  values,
   readPackageManifest,
   writePackageManifest,
   writeSignatureFile
@@ -114,7 +113,6 @@ const getIngoreFilesContent = (workingDir: string, hasFilesEntry: boolean): stri
 }
 
 const getFoldersPatterns = (files: string[]) => {
-  const folders = []
   return files.reduce<string[]>((res, file) =>
     res.concat(
       file.split('/').filter(_ => _)
@@ -136,9 +134,6 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
     .add(npmIgnoreDefaults)
     .add(npmFilesIncludedByDefault)
     .add(getIngoreFilesContent(workingDir, !!pkg.files))
-  
-  const ingnoreFilesIncludedByDefaultRule = ignore()
-    //.add(npmFilesIncludedByDefault)
   
   const ignores = (f: string, isDir: boolean) =>
     ignoreRule.ignores(f) || (isDir && ignoreRule.ignores(f + '/'))

@@ -1,10 +1,7 @@
-import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import { join } from 'path'
 import {
-  PackageInstallation, InstallationsFile,
-  readInstallationsFile,
-  addInstallations,
+  PackageInstallation,
   removeInstallations,
   PackageName
 } from './installations'
@@ -12,14 +9,10 @@ import {
 import {
   readLockfile,
   writeLockfile,
-  addPackageToLockfile,
-  LockFilePackageEntry,
   removeLockfile
 } from './lockfile'
 
 import {
-  getStorePackagesDir,
-  getPackageStoreDir,
   values,
   parsePackageName,
   readPackageManifest,
@@ -32,8 +25,10 @@ export interface RemovePackagesOptions {
   workingDir: string
 }
 
-const isYalcFileAddress = (address: string, name: string,
-  lockedPackage: LockFilePackageEntry) => {
+const isYalcFileAddress = (
+  address: string,
+  name: string,
+) => {
   const regExp = new RegExp('file|link:' + values.yalcPackagesFolder + '/' + name)
   return regExp.test(address)
 }
@@ -79,7 +74,7 @@ export const removePackages = (packages: string[], options: RemovePackagesOption
       depsWithPackage = pkg.devDependencies
     }    
     if (depsWithPackage &&
-      isYalcFileAddress(depsWithPackage[name], name, lockedPackage || {})) {
+      isYalcFileAddress(depsWithPackage[name], name)) {
       removedPackagedFromManifect.push(name)
       if (lockedPackage && lockedPackage.replaced) {
         depsWithPackage[name] = lockedPackage.replaced

@@ -1,25 +1,12 @@
-import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import * as path from 'path'
-import { copyPackageToStore } from './copy'
 import {
-  PackageInstallation, InstallationsFile,
-  readInstallationsFile,
-  addInstallations,
-  removeInstallations,
   PackageName
 } from './installations'
-import {
-  readLockfile,
-  addPackageToLockfile,
-  LockFilePackageEntry
-} from './lockfile'
 
 const userHome = require('user-home')
 
 const { join } = path
-
-const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
 
 export const values = {
   myNameIs: 'yalc',
@@ -135,7 +122,6 @@ export function readPackageManifest(workingDir: string) {
 const signatureFileName = 'yalc.sig'
 
 export function readSignatureFile(workingDir: string) {
-  let pkg: PackageManifest
   const signatureFilePath = join(workingDir, signatureFileName)
   try {
     const fileData = fs.readFileSync(signatureFilePath, 'utf-8')
@@ -146,7 +132,6 @@ export function readSignatureFile(workingDir: string) {
 }
 
 export function writeSignatureFile(workingDir: string, signature: string) {
-  let pkg: PackageManifest
   const signatureFilePath = join(workingDir, signatureFileName)
   try {
     fs.writeFileSync(signatureFilePath, signature)    

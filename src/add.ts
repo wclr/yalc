@@ -3,22 +3,15 @@ import * as fs from 'fs-extra'
 import { join } from 'path'
 import * as del from 'del'
 import {
-  PackageInstallation, InstallationsFile,
-  readInstallationsFile,
+  PackageInstallation,
   addInstallations,
-  removeInstallations,
-  PackageName
 } from './installations'
 
 import {
-  readLockfile,
   addPackageToLockfile,
-  LockFilePackageEntry
 } from './lockfile'
 
 import {
-  getStorePackagesDir,
-  PackageManifest,
   getPackageStoreDir,
   values,
   parsePackageName,
@@ -66,7 +59,6 @@ const isSymlink = (path: string) => {
 }
 
 export const addPackages = (packages: string[], options: AddPackagesOptions) => {
-  const packagesStoreDir = getStorePackagesDir()
   const workingDir = options.workingDir
   const localPkg = readPackageManifest(workingDir)
   let localPkgUpdated = false
