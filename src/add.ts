@@ -135,8 +135,10 @@ export const addPackages = (packages: string[], options: AddPackagesOptions) => 
       if (whereToAdd[pkg.name] !== localAddress) {
         replacedVersion = replacedVersion || whereToAdd[pkg.name]
         whereToAdd[pkg.name] = localAddress
-        localPkg.dependencies = dependencies
-        localPkg.devDependencies = devDependencies
+        localPkg.dependencies = whereToAdd === dependencies
+          ? dependencies : localPkg.dependencies
+        localPkg.devDependencies = whereToAdd === devDependencies
+          ? devDependencies : localPkg.devDependencies
         localPkgUpdated = true
       }
       replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
