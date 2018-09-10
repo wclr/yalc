@@ -15,6 +15,7 @@ import {
 
 const cliCommand = values.myNameIs
 
+// tslint:disable-next-line:no-unused-expression
 yargs
   .usage(cliCommand + ' [command] [options] [package1 [package2...]]')  
   .command({
@@ -37,7 +38,7 @@ yargs
     },
     handler: (argv) => {
       const folder = argv._[1]
-      publishPackage({
+      return publishPackage({
         workingDir: join(process.cwd(), folder || ''),
         force: argv.force,
         knit: argv.knit,
@@ -57,7 +58,7 @@ yargs
         .boolean(['knit', 'safe', 'force', 'sig'])
     },
     handler: (argv) => {
-      publishPackage({
+      return publishPackage({
         workingDir: join(process.cwd(), argv._[1] || ''),
         force: argv.force !== undefined ? argv.force : true,
         knit: argv.knit,
@@ -77,7 +78,7 @@ yargs
         .help(true)
     },
     handler: (argv) => {
-      addPackages(argv._.slice(1), {
+      return addPackages(argv._.slice(1), {
         dev: argv.dev || argv.saveDev,
         yarn: argv.yarn,
         linkDep: argv.link,
@@ -94,7 +95,7 @@ yargs
         .help(true)
     },
     handler: (argv) => {
-      addPackages(argv._.slice(1), {
+      return addPackages(argv._.slice(1), {
         link: true,
         workingDir: process.cwd()
       })
@@ -108,7 +109,7 @@ yargs
         .help(true)
     },
     handler: (argv) => {
-      updatePackages(argv._.slice(1), {
+      return updatePackages(argv._.slice(1), {
         workingDir: process.cwd()
       })
     }
@@ -122,7 +123,7 @@ yargs
         .help(true)
     },
     handler: (argv) => {
-      removePackages(argv._.slice(1), {
+      return removePackages(argv._.slice(1), {
         retreat: argv.retreat,
         workingDir: process.cwd(),
         all: argv.all
@@ -138,7 +139,7 @@ yargs
         .help(true)
     },
     handler: (argv) => {
-      removePackages(argv._.slice(1), {
+      return removePackages(argv._.slice(1), {
         all: argv.all,
         retreat: true,
         workingDir: process.cwd()

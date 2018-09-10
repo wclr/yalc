@@ -76,12 +76,11 @@ describe('Yalc package manager', () => {
   })
   describe('Package publish', () => {
 
-    before((done) => {
-      publishPackage({
+    before(() => {
+      return publishPackage({
         workingDir: depPackageDir,
         signature: true
       })
-      setTimeout(done, 500)
     })
 
     it('publishes package to store', () => {
@@ -152,12 +151,11 @@ describe('Yalc package manager', () => {
         expectedSignature = fs.readFileSync(join(publishedPackagePath, 'yalc.sig')).toString();
       })
 
-      beforeEach((done) => {
-        publishPackage({
+      beforeEach(() => {
+        return publishPackage({
           workingDir: depPackageDir,
           signature: true
         })
-        setTimeout(done, 500)
       })
 
       for (let tries = 1; tries <= 5; tries++) {
@@ -176,9 +174,8 @@ describe('Yalc package manager', () => {
       join(publishedPackage2Path, 'file.txt')
 
     const originalFilePath = join(depPackage2Dir, 'file.txt')
-    before((done) => {
-      publishPackage({ workingDir: depPackage2Dir, knit: false })
-      setTimeout(done, 500)
+    before(() => {
+      return publishPackage({ workingDir: depPackage2Dir, knit: false })
     })
 
     it('publishes package to store', () => {
@@ -192,11 +189,10 @@ describe('Yalc package manager', () => {
   })
 
   describe('Add package', () => {
-    before((done) => {
-      addPackages([values.depPackage], {
+    before(() => {
+      return addPackages([values.depPackage], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
     it('copies package to .yalc folder', () => {
       checkExists(join(projectDir, '.yalc', values.depPackage))
@@ -234,12 +230,11 @@ describe('Yalc package manager', () => {
   describe('Update package', () => {
     const innterNodeModulesFile =
       join(projectDir, 'node_modules', values.depPackage, 'node_modules/file.txt')
-    before((done) => {
+    before(() => {
       fs.ensureFileSync(innterNodeModulesFile)
-      updatePackages([values.depPackage], {
+      return updatePackages([values.depPackage], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
 
     it('does not change yalc.lock', () => {
@@ -259,11 +254,10 @@ describe('Yalc package manager', () => {
   })
 
   describe('Remove not existing package', () => {
-    before((done) => {
-      removePackages(['xxxx'], {
+    before(() => {
+      return removePackages(['xxxx'], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
     it('does not updates yalc.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
@@ -278,12 +272,11 @@ describe('Yalc package manager', () => {
   })
 
   describe('Reatreat package', () => {
-    before((done) => {
-      removePackages([values.depPackage], {
+    before(() => {
+      return removePackages([values.depPackage], {
         workingDir: projectDir,
         retreat: true
       })
-      setTimeout(done, 500)
     })
 
     it('does not updates yalc.lock', () => {
@@ -321,11 +314,10 @@ describe('Yalc package manager', () => {
   })
 
   describe('Update (restore after retreat) package', () => {
-    before((done) => {
-      updatePackages([values.depPackage], {
+    before(() => {
+      return updatePackages([values.depPackage], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
 
     it('updates package.json', () => {
@@ -337,11 +329,10 @@ describe('Yalc package manager', () => {
   })
 
   describe('Remove package', () => {
-    before((done) => {
-      removePackages([values.depPackage], {
+    before(() => {
+      return removePackages([values.depPackage], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
 
     it('updates yalc.lock', () => {
@@ -373,12 +364,11 @@ describe('Yalc package manager', () => {
   })
 
   describe('Add package (--link)', () => {
-    before((done) => {
-      addPackages([values.depPackage], {
+    before(() => {
+      return addPackages([values.depPackage], {
         workingDir: projectDir,
         linkDep: true
       })
-      setTimeout(done, 500)
     })
     it('copies package to .yalc folder', () => {
       checkExists(join(projectDir, '.yalc', values.depPackage))
@@ -414,11 +404,10 @@ describe('Yalc package manager', () => {
   })
 
   describe('Updated linked (--link) package', () => {
-    before((done) => {
-      updatePackages([values.depPackage], {
+    before(() => {
+      return updatePackages([values.depPackage], {
         workingDir: projectDir        
       })
-      setTimeout(done, 500)
     })    
     it('places yalc.lock correct info about file', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
