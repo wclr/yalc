@@ -17,7 +17,7 @@ export interface UpdatePackagesOptions {
   noInstallationsRemove?: boolean,
   workingDir: string,
 }
-export const updatePackages = (packages: string[], options: UpdatePackagesOptions) => {
+export const updatePackages = async (packages: string[], options: UpdatePackagesOptions) => {
   const lockfile = readLockfile({ workingDir: options.workingDir })
 
   let packagesToUpdate: string[] = []
@@ -51,18 +51,18 @@ export const updatePackages = (packages: string[], options: UpdatePackagesOption
   
   const packagesFiles = lockPackages
     .filter(p => p.file).map(p => p.name)
-  addPackages(packagesFiles, { workingDir: options.workingDir })
+  await addPackages(packagesFiles, { workingDir: options.workingDir })
 
   const packagesLinks = lockPackages
     .filter(p => !p.file && !p.link).map(p => p.name)
-  addPackages(packagesLinks, { workingDir: options.workingDir, link: true })
+    await addPackages(packagesLinks, { workingDir: options.workingDir, link: true })
 
   const packagesLinkDep = lockPackages
     .filter(p => p.link).map(p => p.name)
-  addPackages(packagesLinkDep, { workingDir: options.workingDir, linkDep: true })
+    await addPackages(packagesLinkDep, { workingDir: options.workingDir, linkDep: true })
 
   if (!options.noInstallationsRemove) {
-    removeInstallations(installationsToRemove)
+    await removeInstallations(installationsToRemove)
   }
   return installationsToRemove
 }
