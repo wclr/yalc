@@ -42,7 +42,7 @@ yarn global add yalc
 
 - While copying package content, `yalc` calculates the hash signature of all files and, by default, adds this signature to the package manifest `version`. You can disable this by using the `--no-sig` option.
 
-- [Easily propagate package updates everywhere.](#pushing-updates-automaticaly-to-all-installations)
+- [Easily propagate package updates everywhere.](#pushing-updates-automatically-to-all-installations)
 
 ### Add
 - Run `yalc add my-package` in your dependent project, which
