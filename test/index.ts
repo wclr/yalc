@@ -49,10 +49,10 @@ const publishedPackage2Path =
 
 
 const checkExists = (path: string) =>
-  doesNotThrow(() => fs.accessSync(path), path + ' does not exit')
+  doesNotThrow(() => fs.accessSync(path), path + ' does not exist')
 
 const checkNotExists = (path: string) =>
-  throws(() => fs.accessSync(path), path + ' exits')
+  throws(() => fs.accessSync(path), path + ' exists')
 
 
 const extractSignature = (lockfile: LockFileConfigV1, packageName: string) => {
@@ -93,7 +93,7 @@ describe('Yalc package manager', () => {
     })
 
     it('ignores standard non-code', () => {
-      checkNotExists(join(publishedPackagePath, 'LICENCE'))
+      checkNotExists(join(publishedPackagePath, 'extra-file.txt'))
     })
 
     it('ignores .gitignore', () => {
@@ -113,6 +113,8 @@ describe('Yalc package manager', () => {
         join(publishedPackagePath, 'root-file.txt'))
       checkExists(
         join(publishedPackagePath, 'folder/file.txt'))
+      checkExists(
+        join(publishedPackagePath, 'folder/file.md'))
       checkNotExists(
         join(publishedPackagePath, 'folder/file2.txt'))
       checkExists(
@@ -125,8 +127,8 @@ describe('Yalc package manager', () => {
         join(publishedPackagePath, 'test'))
     })
 
-    it('handles .npmignore correctly', () => {
-      checkNotExists(
+    it('does not respect .npmignore, if package.json "files" present', () => {
+      checkExists(
         join(publishedPackagePath, 'src', 'file-npm-ignored.txt'))
     })
 
@@ -416,10 +418,10 @@ describe('Yalc package manager', () => {
   describe('Updated linked (--link) package', () => {
     before((done) => {
       updatePackages([values.depPackage], {
-        workingDir: projectDir        
+        workingDir: projectDir
       })
       setTimeout(done, 500)
-    })    
+    })
     it('places yalc.lock correct info about file', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
