@@ -49,7 +49,7 @@ yargs
   })
   .command({
     command: 'push',
-    describe: 'Publish package in yalc local repo and push to all installactions',
+    describe: 'Publish package in yalc local repo and push to all installations',
     builder: () => {
       return yargs
         .default('force', undefined)
