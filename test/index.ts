@@ -9,16 +9,11 @@ import {
   removePackages,
   yalcGlobal,
   readPackageManifest
-
 } from '../src'
 
-import {
-  readInstallationsFile
-} from '../src/installations'
+import { readInstallationsFile } from '../src/installations'
 
-import {
-  readLockfile, LockFileConfigV1
-} from '../src/lockfile'
+import { readLockfile, LockFileConfigV1 } from '../src/lockfile'
 
 const values = {
   depPackage: 'dep-package',
@@ -41,12 +36,19 @@ const depPackageDir = join(tmpDir, values.depPackage)
 const depPackage2Dir = join(tmpDir, values.depPackage2)
 const projectDir = join(tmpDir, values.project)
 
-const publishedPackagePath =
-  join(storeMainDr, 'packages', values.depPackage, values.depPackageVersion)
+const publishedPackagePath = join(
+  storeMainDr,
+  'packages',
+  values.depPackage,
+  values.depPackageVersion
+)
 
-const publishedPackage2Path =
-  join(storeMainDr, 'packages', values.depPackage2, values.depPackage2Version)
-
+const publishedPackage2Path = join(
+  storeMainDr,
+  'packages',
+  values.depPackage2,
+  values.depPackage2Version
+)
 
 const checkExists = (path: string) =>
   doesNotThrow(() => fs.accessSync(path), path + ' does not exist')
@@ -54,19 +56,30 @@ const checkExists = (path: string) =>
 const checkNotExists = (path: string) =>
   throws(() => fs.accessSync(path), path + ' exists')
 
-
 const extractSignature = (lockfile: LockFileConfigV1, packageName: string) => {
   const packageEntry = lockfile.packages[packageName]
   if (packageEntry === undefined) {
-    throw new Error(`expected package ${packageName} in lockfile.packages ${JSON.stringify(lockfile, undefined, 2)}`)
+    throw new Error(
+      `expected package ${packageName} in lockfile.packages ${JSON.stringify(
+        lockfile,
+        undefined,
+        2
+      )}`
+    )
   }
 
   const signature = packageEntry.signature
   if (signature === undefined) {
-    throw new Error(`expected signature property in lockfile.packages.${packageName} ${JSON.stringify(lockfile, undefined, 2)}`)
+    throw new Error(
+      `expected signature property in lockfile.packages.${packageName} ${JSON.stringify(
+        lockfile,
+        undefined,
+        2
+      )}`
+    )
   }
 
-  return signature;
+  return signature
 }
 
 describe('Yalc package manager', () => {
@@ -75,13 +88,11 @@ describe('Yalc package manager', () => {
     fs.copySync(fixtureDir, tmpDir)
   })
   describe('Package publish', () => {
-
-    before((done) => {
-      publishPackage({
+    before(() => {
+      return publishPackage({
         workingDir: depPackageDir,
         signature: true
       })
-      setTimeout(done, 500)
     })
 
     it('publishes package to store', () => {
@@ -101,35 +112,21 @@ describe('Yalc package manager', () => {
     })
 
     it('handles "files:" manifest entry correctly', () => {
-      checkExists(
-        join(publishedPackagePath, '.yalc/yalc.txt'))
-      checkExists(
-        join(publishedPackagePath, '.dot/dot.txt'))
-      checkExists(
-        join(publishedPackagePath, 'src'))
-      checkExists(
-        join(publishedPackagePath, 'dist/file.txt'))
-      checkExists(
-        join(publishedPackagePath, 'root-file.txt'))
-      checkExists(
-        join(publishedPackagePath, 'folder/file.txt'))
-      checkExists(
-        join(publishedPackagePath, 'folder/file.md'))
-      checkNotExists(
-        join(publishedPackagePath, 'folder/file2.txt'))
-      checkExists(
-        join(publishedPackagePath, 'folder2/nested/file.txt'))
-      checkNotExists(
-        join(publishedPackagePath, 'folder2/file.txt'))
-      checkNotExists(
-        join(publishedPackagePath, 'folder2/nested/file2.txt'))
-      checkNotExists(
-        join(publishedPackagePath, 'test'))
+      checkExists(join(publishedPackagePath, '.yalc/yalc.txt'))
+      checkExists(join(publishedPackagePath, '.dot/dot.txt'))
+      checkExists(join(publishedPackagePath, 'src'))
+      checkExists(join(publishedPackagePath, 'dist/file.txt'))
+      checkExists(join(publishedPackagePath, 'root-file.txt'))
+      checkExists(join(publishedPackagePath, 'folder/file.txt'))
+      checkNotExists(join(publishedPackagePath, 'folder/file2.txt'))
+      checkExists(join(publishedPackagePath, 'folder2/nested/file.txt'))
+      checkNotExists(join(publishedPackagePath, 'folder2/file.txt'))
+      checkNotExists(join(publishedPackagePath, 'folder2/nested/file2.txt'))
+      checkNotExists(join(publishedPackagePath, 'test'))
     })
 
     it('does not respect .npmignore, if package.json "files" present', () => {
-      checkExists(
-        join(publishedPackagePath, 'src', 'file-npm-ignored.txt'))
+      checkExists(join(publishedPackagePath, 'src', 'file-npm-ignored.txt'))
     })
 
     it('it creates signature file', () => {
@@ -144,43 +141,38 @@ describe('Yalc package manager', () => {
       ok(pkg.version.length === versionLength)
     })
 
-    it('does not respect .gitignore, if .npmignore presents', () => {
-
-    })
+    it('does not respect .gitignore, if .npmignore presents', () => {})
 
     describe('signature consistency', () => {
-      let expectedSignature: string;
+      let expectedSignature: string
       before(() => {
-        expectedSignature = fs.readFileSync(join(publishedPackagePath, 'yalc.sig')).toString();
+        expectedSignature = fs.readFileSync(join(publishedPackagePath, 'yalc.sig')).toString()
       })
 
-      beforeEach((done) => {
-        publishPackage({
+      beforeEach(() => {
+        return publishPackage({
           workingDir: depPackageDir,
           signature: true
         })
-        setTimeout(done, 500)
       })
 
       for (let tries = 1; tries <= 5; tries++) {
         it(`should have a consistent signature after every publish (attempt ${tries})`, () => {
           const sigFileName = join(publishedPackagePath, 'yalc.sig')
-          const signature = fs.readFileSync(sigFileName).toString();
+          const signature = fs.readFileSync(sigFileName).toString()
 
-          deepEqual(signature, expectedSignature);
+          deepEqual(signature, expectedSignature)
         })
       }
     })
   })
 
   describe('Package 2 (without `files` in manifest) publish, knit', () => {
-    const publishedFilePath =
-      join(publishedPackage2Path, 'file.txt')
+    const publishedFilePath = join(publishedPackage2Path, 'file.txt')
 
     const originalFilePath = join(depPackage2Dir, 'file.txt')
-    before((done) => {
-      publishPackage({ workingDir: depPackage2Dir, knit: false })
-      setTimeout(done, 500)
+    before(() => {
+      return publishPackage({ workingDir: depPackage2Dir, knit: false })
     })
 
     it('publishes package to store', () => {
@@ -194,11 +186,10 @@ describe('Yalc package manager', () => {
   })
 
   describe('Add package', () => {
-    before((done) => {
-      addPackages([values.depPackage], {
+    before(() => {
+      return addPackages([values.depPackage], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
     it('copies package to .yalc folder', () => {
       checkExists(join(projectDir, '.yalc', values.depPackage))
@@ -234,14 +225,17 @@ describe('Yalc package manager', () => {
   })
 
   describe('Update package', () => {
-    const innterNodeModulesFile =
-      join(projectDir, 'node_modules', values.depPackage, 'node_modules/file.txt')
-    before((done) => {
+    const innterNodeModulesFile = join(
+      projectDir,
+      'node_modules',
+      values.depPackage,
+      'node_modules/file.txt'
+    )
+    before(() => {
       fs.ensureFileSync(innterNodeModulesFile)
-      updatePackages([values.depPackage], {
+      return updatePackages([values.depPackage], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
 
     it('does not change yalc.lock', () => {
@@ -261,11 +255,10 @@ describe('Yalc package manager', () => {
   })
 
   describe('Remove not existing package', () => {
-    before((done) => {
-      removePackages(['xxxx'], {
+    before(() => {
+      return removePackages(['xxxx'], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
     it('does not updates yalc.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
@@ -280,12 +273,11 @@ describe('Yalc package manager', () => {
   })
 
   describe('Reatreat package', () => {
-    before((done) => {
-      removePackages([values.depPackage], {
+    before(() => {
+      return removePackages([values.depPackage], {
         workingDir: projectDir,
         retreat: true
       })
-      setTimeout(done, 500)
     })
 
     it('does not updates yalc.lock', () => {
@@ -323,11 +315,10 @@ describe('Yalc package manager', () => {
   })
 
   describe('Update (restore after retreat) package', () => {
-    before((done) => {
-      updatePackages([values.depPackage], {
+    before(() => {
+      return updatePackages([values.depPackage], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
 
     it('updates package.json', () => {
@@ -339,18 +330,15 @@ describe('Yalc package manager', () => {
   })
 
   describe('Remove package', () => {
-    before((done) => {
-      removePackages([values.depPackage], {
+    before(() => {
+      return removePackages([values.depPackage], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
 
     it('updates yalc.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
-      deepEqual(lockFile.packages, {
-
-      })
+      deepEqual(lockFile.packages, {})
     })
 
     it('updates package.json', () => {
@@ -362,8 +350,7 @@ describe('Yalc package manager', () => {
 
     it('updates installations file', () => {
       const installtions = readInstallationsFile()
-      deepEqual(installtions, {
-      })
+      deepEqual(installtions, {})
     })
     it('should remove package from .yalc', () => {
       checkNotExists(join(projectDir, '.ylc', values.depPackage))
@@ -375,12 +362,11 @@ describe('Yalc package manager', () => {
   })
 
   describe('Add package (--link)', () => {
-    before((done) => {
-      addPackages([values.depPackage], {
+    before(() => {
+      return addPackages([values.depPackage], {
         workingDir: projectDir,
         linkDep: true
       })
-      setTimeout(done, 500)
     })
     it('copies package to .yalc folder', () => {
       checkExists(join(projectDir, '.yalc', values.depPackage))
@@ -445,5 +431,4 @@ describe('Yalc package manager', () => {
       })
     })
   })
-
 })

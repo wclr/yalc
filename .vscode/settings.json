@@ -13,6 +13,7 @@
 		}			
   },
   "tslint.run": "onSave",
+  "tslint.autoFixOnSave": true,
   "editor.formatOnType": true,
   "editor.tabSize": 2,
   "editor.insertSpaces": true

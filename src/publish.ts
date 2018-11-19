@@ -2,14 +2,11 @@ import { exec, execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import * as path from 'path'
 import { copyPackageToStore } from './copy'
-import {
-  PackageInstallation,
-  readInstallationsFile,
-  removeInstallations,
-} from './installations'
+import { PackageInstallation, readInstallationsFile, removeInstallations } from './installations'
 
 import {
-  values, PackageManifest,
+  values,
+  PackageManifest,
   execLoudOptions,
   getPackageManager,
   updatePackages,
@@ -17,18 +14,18 @@ import {
   getStorePackagesDir
 } from '.'
 export interface PublishPackageOptions {
-  workingDir: string,
-  signature?: boolean,
+  workingDir: string
+  signature?: boolean
   knit?: boolean
   force?: boolean
-  push?: boolean,
+  push?: boolean
   pushSafe?: boolean
 }
 
 const { join } = path
 
 const execute = (cmd: string) => {
-  return new Promise<{ stdout: string, stderr: string }>((resolve, reject) => {
+  return new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
     exec(cmd, (err, stdout, stderr) => {
       err ? reject(err) : resolve({ stdout, stderr })
     })
@@ -40,11 +37,10 @@ const workaroundYarnCacheBug = async (pkg: PackageManifest) => {
   try {
     const yarnCacheDir = (await execute('yarn cache dir')).stdout
     if (yarnCacheDir) {
-      const cachedVersionPath =
-        join(yarnCacheDir, ['npm', pkg.name, pkg.version].join('-'))
+      const cachedVersionPath = join(yarnCacheDir, ['npm', pkg.name, pkg.version].join('-'))
       fs.removeSync(cachedVersionPath)
     }
-  } catch (e) { }
+  } catch (e) {}
 }
 
 export const publishPackage = async (options: PublishPackageOptions) => {
@@ -55,8 +51,8 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   }
 
   const changeDirCmd = 'cd ' + options.workingDir + ' && '
-  const scriptRunCmd = !options.force && pkg.scripts
-    ? changeDirCmd + getPackageManager(workingDir) + ' run ' : ''
+  const scriptRunCmd =
+    !options.force && pkg.scripts ? changeDirCmd + getPackageManager(workingDir) + ' run ' : ''
 
   if (scriptRunCmd) {
     if (pkg.scripts!.preyalc) {
@@ -85,18 +81,19 @@ export const publishPackage = async (options: PublishPackageOptions) => {
 
   if (options.push || options.pushSafe) {
     const installationsConfig = readInstallationsFile()
-    const installationPaths =
-      installationsConfig[pkg.name] || []
+    const installationPaths = installationsConfig[pkg.name] || []
     const installationsToRemove: PackageInstallation[] = []
-    installationPaths.forEach((workingDir) => {
+    for (const workingDir in installationPaths) {
       console.log(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
-      installationsToRemove.concat(
-        updatePackages([pkg.name], { workingDir, noInstallationsRemove: true })
-      )
-    })
-    removeInstallations(installationsToRemove)
-  }  
-  workaroundYarnCacheBug(pkg)
+      const installationsToRemoveForPkg = await updatePackages([pkg.name], {
+        workingDir,
+        noInstallationsRemove: true
+      })
+      installationsToRemove.concat(installationsToRemoveForPkg)
+    }
+    await removeInstallations(installationsToRemove)
+  }
+  await workaroundYarnCacheBug(pkg)
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const publishedPkg = readPackageManifest(publishedPackageDir)!
   console.log(`${publishedPkg.name}@${publishedPkg.version} published in store.`)
