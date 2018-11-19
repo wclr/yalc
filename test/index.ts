@@ -87,11 +87,15 @@ describe('Yalc package manager', () => {
     fs.removeSync(tmpDir)
     fs.copySync(fixtureDir, tmpDir)
   })
-  describe('Package publish', () => {
+  describe('Package publish', function() {
+    this.timeout(5000)
     before(() => {
+      console.time('Package publish')
       return publishPackage({
         workingDir: depPackageDir,
         signature: true
+      }).then(() => {
+        console.timeEnd('Package publish')
       })
     })
 
@@ -137,7 +141,8 @@ describe('Yalc package manager', () => {
 
     it('Adds signature to package.json version', () => {
       const pkg = readPackageManifest(publishedPackagePath)!
-      const versionLength = values.depPackageVersion.length + shortSignatureLength + 1
+      const versionLength =
+        values.depPackageVersion.length + shortSignatureLength + 1
       ok(pkg.version.length === versionLength)
     })
 
@@ -146,7 +151,9 @@ describe('Yalc package manager', () => {
     describe('signature consistency', () => {
       let expectedSignature: string
       before(() => {
-        expectedSignature = fs.readFileSync(join(publishedPackagePath, 'yalc.sig')).toString()
+        expectedSignature = fs
+          .readFileSync(join(publishedPackagePath, 'yalc.sig'))
+          .toString()
       })
 
       beforeEach(() => {
@@ -172,7 +179,13 @@ describe('Yalc package manager', () => {
 
     const originalFilePath = join(depPackage2Dir, 'file.txt')
     before(() => {
-      return publishPackage({ workingDir: depPackage2Dir, knit: false })
+      console.time('Package2 publish')
+      return publishPackage({
+        workingDir: depPackage2Dir,
+        knit: false
+      }).then(() => {
+        console.timeEnd('Package2 publish')
+      })
     })
 
     it('publishes package to store', () => {
@@ -217,8 +230,8 @@ describe('Yalc package manager', () => {
       })
     })
     it('create and updates installations file', () => {
-      const installtions = readInstallationsFile()
-      deepEqual(installtions, {
+      const installations = readInstallationsFile()
+      deepEqual(installations, {
         [values.depPackage]: [projectDir]
       })
     })
@@ -402,11 +415,10 @@ describe('Yalc package manager', () => {
   })
 
   describe('Updated linked (--link) package', () => {
-    before((done) => {
-      updatePackages([values.depPackage], {
+    before(() => {
+      return updatePackages([values.depPackage], {
         workingDir: projectDir
       })
-      setTimeout(done, 500)
     })
     it('places yalc.lock correct info about file', () => {
       const lockFile = readLockfile({ workingDir: projectDir })

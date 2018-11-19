@@ -14,9 +14,8 @@
   "scripts": {
     "build": "tsc",
     "precommit": "yalc check",
-    "_prepush": "yarn test",
     "prepublishOnly": "tsc && yarn test",
-    "test": "mocha test && yarn lint",
+    "test": "tsc && mocha test && yarn lint",
     "watch": "mocha test --watch",
     "ci": "tsc && yarn test",
     "lint": "tslint -p ."
@@ -40,7 +39,7 @@
     "@types/yargs": "^6.6.0",
     "clean-ts-built": "^1.0.0",
     "husky": "^0.13.3",
-    "mocha": "^3.2.0",
+    "mocha": "^5.2.0",
     "prettier": "^1.14.2",
     "ts-clean-built": "^1.0.0",
     "tslint": "^5.11.0",

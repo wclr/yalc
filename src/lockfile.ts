@@ -34,7 +34,9 @@ const determineLockFileVersion = (locfile: any) => {
   return 'v0'
 }
 
-type ConfigTransformers = { [key in LockFileVersions]: (locfile: any) => LockFileConfig }
+type ConfigTransformers = {
+  [key in LockFileVersions]: (locfile: any) => LockFileConfig
+}
 
 const configTransformers: ConfigTransformers = {
   v0: (lockFile: LockFileConfigV0) => {
@@ -71,7 +73,10 @@ export const readLockfile = (options: { workingDir: string }) => {
   return lockfile as LockFileConfig
 }
 
-export const writeLockfile = (lockfile: LockFileConfig, options: { workingDir: string }) => {
+export const writeLockfile = (
+  lockfile: LockFileConfig,
+  options: { workingDir: string }
+) => {
   const lockfilePath = join(options.workingDir, values.lockfileName)
   const data = JSON.stringify(lockfile, null, 2)
   fs.writeFileSync(lockfilePath, data)

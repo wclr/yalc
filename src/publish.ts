@@ -2,7 +2,11 @@ import { exec, execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import * as path from 'path'
 import { copyPackageToStore } from './copy'
-import { PackageInstallation, readInstallationsFile, removeInstallations } from './installations'
+import {
+  PackageInstallation,
+  readInstallationsFile,
+  removeInstallations
+} from './installations'
 
 import {
   values,
@@ -37,7 +41,10 @@ const workaroundYarnCacheBug = async (pkg: PackageManifest) => {
   try {
     const yarnCacheDir = (await execute('yarn cache dir')).stdout
     if (yarnCacheDir) {
-      const cachedVersionPath = join(yarnCacheDir, ['npm', pkg.name, pkg.version].join('-'))
+      const cachedVersionPath = join(
+        yarnCacheDir,
+        ['npm', pkg.name, pkg.version].join('-')
+      )
       fs.removeSync(cachedVersionPath)
     }
   } catch (e) {}
@@ -52,23 +59,25 @@ export const publishPackage = async (options: PublishPackageOptions) => {
 
   const changeDirCmd = 'cd ' + options.workingDir + ' && '
   const scriptRunCmd =
-    !options.force && pkg.scripts ? changeDirCmd + getPackageManager(workingDir) + ' run ' : ''
+    !options.force && pkg.scripts
+      ? changeDirCmd + getPackageManager(workingDir) + ' run '
+      : ''
 
   if (scriptRunCmd) {
     if (pkg.scripts!.preyalc) {
       console.log('Running preloc script: ' + pkg.scripts!.preyalc)
       execSync(scriptRunCmd + values.prescript, execLoudOptions)
     } else if (pkg.scripts!.prepublishOnly) {
-      console.log('Running prepublishOnly script: ' + pkg.scripts!.prepublishOnly)
+      console.log(
+        'Running prepublishOnly script: ' + pkg.scripts!.prepublishOnly
+      )
       execSync(scriptRunCmd + 'prepublishOnly', execLoudOptions)
     } else if (pkg.scripts!.prepublish) {
       console.log('Running prepublish script: ' + pkg.scripts!.prepublish)
       execSync(scriptRunCmd + 'prepublish', execLoudOptions)
     }
   }
-
   await copyPackageToStore(pkg, options)
-
   if (scriptRunCmd) {
     if (pkg.scripts!.postyalc) {
       console.log('Running postloc script: ' + pkg.scripts!.postyalc)
@@ -78,12 +87,13 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       execSync(scriptRunCmd + 'postpublish', execLoudOptions)
     }
   }
-
   if (options.push || options.pushSafe) {
     const installationsConfig = readInstallationsFile()
     const installationPaths = installationsConfig[pkg.name] || []
     const installationsToRemove: PackageInstallation[] = []
-    for (const workingDir in installationPaths) {
+    console.log('installationsConfig', installationsConfig)
+    for (const index in installationPaths) {
+      const workingDir = installationPaths[index]
       console.log(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
       const installationsToRemoveForPkg = await updatePackages([pkg.name], {
         workingDir,
@@ -96,5 +106,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   await workaroundYarnCacheBug(pkg)
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const publishedPkg = readPackageManifest(publishedPackageDir)!
-  console.log(`${publishedPkg.name}@${publishedPkg.version} published in store.`)
+  console.log(
+    `${publishedPkg.name}@${publishedPkg.version} published in store.`
+  )
 }

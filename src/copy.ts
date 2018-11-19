@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra'
 import * as crypto from 'crypto'
-import * as npmPacklist from 'npm-packlist';
+import * as npmPacklist from 'npm-packlist'
 
 import { join, dirname } from 'path'
 import {
@@ -13,19 +13,18 @@ import {
 
 const shortSignatureLength = 8
 
-const ensureDir = (dirPath: string) => new Promise((resolve, reject) =>
-  fs.ensureDir(dirPath, (err) => err ? reject(err) : resolve())
-)
+const ensureDir = (dirPath: string) =>
+  new Promise((resolve, reject) =>
+    fs.ensureDir(dirPath, err => (err ? reject(err) : resolve()))
+  )
 
 const copyFile = (srcPath: string, destPath: string, relPath: string) => {
   return new Promise(async (resolve, reject) => {
     await ensureDir(dirname(destPath))
     const stream = fs.createReadStream(srcPath)
-    const md5sum = crypto.createHash("md5")
+    const md5sum = crypto.createHash('md5')
     md5sum.update(relPath.replace(/\\/g, '/'))
-    stream.on('data', (data: string) =>
-      md5sum.update(data)
-    )
+    stream.on('data', (data: string) => md5sum.update(data))
     stream
       .pipe(fs.createWriteStream(destPath))
       .on('error', reject)
@@ -35,12 +34,14 @@ const copyFile = (srcPath: string, destPath: string, relPath: string) => {
   })
 }
 
-
-export const copyPackageToStore = async (pkg: PackageManifest, options: {
-  workingDir: string,
-  signature?: boolean,
-  knit?: boolean
-}) => {
+export const copyPackageToStore = async (
+  pkg: PackageManifest,
+  options: {
+    workingDir: string
+    signature?: boolean
+    knit?: boolean
+  }
+) => {
   const { workingDir } = options
 
   const copyFromDir = options.workingDir
@@ -48,12 +49,22 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
 
   fs.removeSync(locPackageStoreDir)
 
-  const filesToCopy = await npmPacklist({ path: workingDir });
-  const hashes = await Promise.all(filesToCopy.sort().map((relPath) =>
-    copyFile(join(copyFromDir, relPath), join(locPackageStoreDir, relPath), relPath)
-  ))
-  const signature = crypto.createHash('md5')
-    .update(hashes.join('')).digest('hex')
+  const filesToCopy = await npmPacklist({ path: workingDir })
+  const hashes = await Promise.all(
+    filesToCopy
+      .sort()
+      .map(relPath =>
+        copyFile(
+          join(copyFromDir, relPath),
+          join(locPackageStoreDir, relPath),
+          relPath
+        )
+      )
+  )
+  const signature = crypto
+    .createHash('md5')
+    .update(hashes.join(''))
+    .digest('hex')
   const shortSignature = signature.substr(0, shortSignatureLength)
 
   if (options.knit) {
@@ -64,10 +75,7 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
       if (fs.statSync(source).isDirectory()) {
         return
       }
-      ensureSymlinkSync(
-        source,
-        join(locPackageStoreDir, f)
-      )
+      ensureSymlinkSync(source, join(locPackageStoreDir, f))
     })
   }
   writeSignatureFile(locPackageStoreDir, signature)

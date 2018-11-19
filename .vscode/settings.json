@@ -12,9 +12,10 @@
 			"when": "$(basename).ts"
 		}			
   },
-  "tslint.run": "onSave",
-  "tslint.autoFixOnSave": true,
-  "editor.formatOnType": true,
+  "prettier.tslintIntegration": true,
+  // "tslint.run": "onSave",
+  // "tslint.autoFixOnSave": true,
+  //"editor.formatOnType": true,
   "editor.tabSize": 2,
-  "editor.insertSpaces": true
+  "editor.insertSpaces": true  
 }

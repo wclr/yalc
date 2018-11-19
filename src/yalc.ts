@@ -30,7 +30,9 @@ yargs
     command: 'publish',
     describe: 'Publish package in yalc local repo',
     builder: () => {
-      return yargs.default('sig', true).boolean(['push', 'knit', 'force', 'push-safe', 'sig'])
+      return yargs
+        .default('sig', true)
+        .boolean(['push', 'knit', 'force', 'push-safe', 'sig'])
     },
     handler: argv => {
       const folder = argv._[1]
@@ -46,7 +48,8 @@ yargs
   })
   .command({
     command: 'push',
-    describe: 'Publish package in yalc local repo and push to all installations',
+    describe:
+      'Publish package in yalc local repo and push to all installations',
     builder: () => {
       return yargs
         .default('force', undefined)
@@ -123,7 +126,8 @@ yargs
   })
   .command({
     command: 'retreat',
-    describe: 'Remove packages from project, but leave in lock file (to be restored later)',
+    describe:
+      'Remove packages from project, but leave in lock file (to be restored later)',
     builder: () => {
       return yargs.boolean(['all']).help(true)
     },

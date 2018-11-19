@@ -85,7 +85,10 @@ export const parsePackageName = (packageName: string) => {
   if (!match) {
     return { name: '' as PackageName, version: '' }
   }
-  return { name: ((match[1] || '') + match[2]) as PackageName, version: match[3] || '' }
+  return {
+    name: ((match[1] || '') + match[2]) as PackageName,
+    version: match[3] || ''
+  }
 }
 
 const getJSONSpaces = (jsonStr: string) => {
@@ -100,7 +103,11 @@ export function readPackageManifest(workingDir: string) {
     const fileData = fs.readFileSync(packagePath, 'utf-8')
     pkg = JSON.parse(fileData) as PackageManifest
     if (!pkg.name && pkg.version) {
-      console.log('Package manifest', packagePath, 'should contain name and version.')
+      console.log(
+        'Package manifest',
+        packagePath,
+        'should contain name and version.'
+      )
       return null
     }
     const formatSpaces = getJSONSpaces(fileData) || 2
@@ -140,7 +147,10 @@ export function writeSignatureFile(workingDir: string, signature: string) {
 const sortDependencies = (dependencies: { [name: string]: string }) => {
   return Object.keys(dependencies)
     .sort()
-    .reduce((deps, key) => Object.assign(deps, { [key]: dependencies[key] }), {})
+    .reduce(
+      (deps, key) => Object.assign(deps, { [key]: dependencies[key] }),
+      {}
+    )
 }
 
 export function writePackageManifest(workingDir: string, pkg: PackageManifest) {
@@ -155,7 +165,10 @@ export function writePackageManifest(workingDir: string, pkg: PackageManifest) {
   delete pkg.__JSONSpaces
   const packagePath = join(workingDir, 'package.json')
   try {
-    fs.writeFileSync(packagePath, JSON.stringify(pkg, null, formatSpaces) + '\n')
+    fs.writeFileSync(
+      packagePath,
+      JSON.stringify(pkg, null, formatSpaces) + '\n'
+    )
   } catch (e) {
     console.error('Could not write ', packagePath)
   }

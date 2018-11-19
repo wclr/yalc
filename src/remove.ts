@@ -1,10 +1,19 @@
 import * as fs from 'fs-extra'
 import { join } from 'path'
-import { PackageInstallation, removeInstallations, PackageName } from './installations'
+import {
+  PackageInstallation,
+  removeInstallations,
+  PackageName
+} from './installations'
 
 import { readLockfile, writeLockfile, removeLockfile } from './lockfile'
 
-import { values, parsePackageName, readPackageManifest, writePackageManifest } from '.'
+import {
+  values,
+  parsePackageName,
+  readPackageManifest,
+  writePackageManifest
+} from '.'
 
 export interface RemovePackagesOptions {
   all?: boolean
@@ -13,11 +22,16 @@ export interface RemovePackagesOptions {
 }
 
 const isYalcFileAddress = (address: string, name: string) => {
-  const regExp = new RegExp('file|link:' + values.yalcPackagesFolder + '/' + name)
+  const regExp = new RegExp(
+    'file|link:' + values.yalcPackagesFolder + '/' + name
+  )
   return regExp.test(address)
 }
 
-export const removePackages = async (packages: string[], options: RemovePackagesOptions) => {
+export const removePackages = async (
+  packages: string[],
+  options: RemovePackagesOptions
+) => {
   const { workingDir } = options
   const lockFileConfig = readLockfile({ workingDir: workingDir })
   const pkg = readPackageManifest(workingDir)
@@ -86,11 +100,13 @@ export const removePackages = async (packages: string[], options: RemovePackages
     writePackageManifest(workingDir, pkg)
   }
 
-  const installationsToRemove: PackageInstallation[] = packagesToRemove.map(name => ({
-    name,
-    version: '',
-    path: workingDir
-  }))
+  const installationsToRemove: PackageInstallation[] = packagesToRemove.map(
+    name => ({
+      name,
+      version: '',
+      path: workingDir
+    })
+  )
 
   removedPackagedFromManifect.forEach(name => {
     fs.removeSync(join(workingDir, 'node_modules', name))

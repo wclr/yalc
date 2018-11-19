@@ -56,7 +56,10 @@ const isSymlink = (path: string) => {
   }
 }
 
-export const addPackages = async (packages: string[], options: AddPackagesOptions) => {
+export const addPackages = async (
+  packages: string[],
+  options: AddPackagesOptions
+) => {
   const workingDir = options.workingDir
   const localPkg = readPackageManifest(workingDir)
   let localPkgUpdated = false
@@ -73,7 +76,9 @@ export const addPackages = async (packages: string[], options: AddPackagesOption
 
       const storedPackagePath = getPackageStoreDir(name)
       if (!fs.existsSync(storedPackagePath)) {
-        console.log(`Could not find package \`${name}\` in store (${storedPackagePath}), skipping.`)
+        console.log(
+          `Could not find package \`${name}\` in store (${storedPackagePath}), skipping.`
+        )
         return null
       }
       const versionToInstall = version || getLatestPackageVersion(name)
@@ -81,7 +86,10 @@ export const addPackages = async (packages: string[], options: AddPackagesOption
       const storedPackageDir = getPackageStoreDir(name, versionToInstall)
 
       if (!fs.existsSync(storedPackageDir)) {
-        console.log(`Could not find package \`${packageName}\` ` + storedPackageDir, ', skipping.')
+        console.log(
+          `Could not find package \`${packageName}\` ` + storedPackageDir,
+          ', skipping.'
+        )
         return null
       }
 
@@ -110,7 +118,8 @@ export const addPackages = async (packages: string[], options: AddPackagesOption
 
       if (!options.link) {
         const protocol = options.linkDep ? 'link:' : 'file:'
-        const localAddress = protocol + values.yalcPackagesFolder + '/' + pkg.name
+        const localAddress =
+          protocol + values.yalcPackagesFolder + '/' + pkg.name
 
         const dependencies = localPkg.dependencies || {}
         const devDependencies = localPkg.devDependencies || {}
@@ -132,15 +141,20 @@ export const addPackages = async (packages: string[], options: AddPackagesOption
         if (whereToAdd[pkg.name] !== localAddress) {
           replacedVersion = replacedVersion || whereToAdd[pkg.name]
           whereToAdd[pkg.name] = localAddress
-          localPkg.dependencies = whereToAdd === dependencies ? dependencies : localPkg.dependencies
+          localPkg.dependencies =
+            whereToAdd === dependencies ? dependencies : localPkg.dependencies
           localPkg.devDependencies =
-            whereToAdd === devDependencies ? devDependencies : localPkg.devDependencies
+            whereToAdd === devDependencies
+              ? devDependencies
+              : localPkg.devDependencies
           localPkgUpdated = true
         }
         replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
       }
       const addedAction = options.link ? 'linked' : 'added'
-      console.log(`${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}`)
+      console.log(
+        `${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}`
+      )
       const signature = readSignatureFile(storedPackageDir)
       return {
         signature,

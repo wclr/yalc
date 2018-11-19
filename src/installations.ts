@@ -34,20 +34,26 @@ export const readInstallationsFile = (): InstallationsFile => {
   return installationsConfig
 }
 
-export const saveInstallationsFile = async (installationsConfig: InstallationsFile) => {
+export const saveInstallationsFile = async (
+  installationsConfig: InstallationsFile
+) => {
   const storeDir = getStoreMainDir()
   const installationFilePath = path.join(storeDir, values.installationsFile)
   const data = JSON.stringify(installationsConfig, null, 2)
   return fs.writeFile(installationFilePath, data)
 }
 
-export const addInstallations = async (installations: (PackageInstallation)[]) => {
+export const addInstallations = async (
+  installations: (PackageInstallation)[]
+) => {
   const installationsConfig = readInstallationsFile()
   let updated = false
   installations.forEach(newInstall => {
     const packageInstallPaths = installationsConfig[newInstall.name] || []
     installationsConfig[newInstall.name] = packageInstallPaths
-    const hasInstallation = !!packageInstallPaths.filter(p => p === newInstall.path)[0]
+    const hasInstallation = !!packageInstallPaths.filter(
+      p => p === newInstall.path
+    )[0]
     if (!hasInstallation) {
       updated = true
       packageInstallPaths.push(newInstall!.path)
@@ -59,7 +65,9 @@ export const addInstallations = async (installations: (PackageInstallation)[]) =
   }
 }
 
-export const removeInstallations = async (installations: (PackageInstallation)[]) => {
+export const removeInstallations = async (
+  installations: (PackageInstallation)[]
+) => {
   const installationsConfig = readInstallationsFile()
   let updated = false
   installations.forEach(install => {
