@@ -14,9 +14,7 @@ import {
 
 const shortSignatureLength = 8
 
-const npmIncludeDefaults = [
-  'package.json'
-]
+const npmIncludeDefaults = ['package.json']
 
 const npmIgnoreDefaults = [
   '.*.swp',
@@ -51,39 +49,41 @@ const npmFilesIncludedByDefault = [
   '/NOTICE.*'
 ]
 
-const getFilesToCopy = (workingDir: string, isIncluded: (path: string, isDir: boolean) => boolean) => {
+const getFilesToCopy = (
+  workingDir: string,
+  isIncluded: (path: string, isDir: boolean) => boolean
+) => {
   const filter = (filePath: string) => {
     const f = relative(workingDir, filePath)
     if (!f) return true
-    const isDir = fs.statSync(filePath).isDirectory()    
+    const isDir = fs.statSync(filePath).isDirectory()
     return isIncluded(f, isDir)
   }
   return new Promise<string[]>((resolve, reject) => {
     const items: string[] = []
     klaw(workingDir, { filter: filter })
-      .on('data', (item) => {
+      .on('data', item => {
         if (!item.stats.isDirectory()) {
           items.push(relative(workingDir, item.path))
         }
-      }).on('end', () => {
+      })
+      .on('end', () => {
         resolve(items)
-      }).on('error', reject)
+      })
+      .on('error', reject)
   })
 }
 
-const ensureDir = (dirPath: string) => new Promise((resolve, reject) =>
-  fs.ensureDir(dirPath, (err) => err ? reject(err) : resolve())
-)
+const ensureDir = (dirPath: string) =>
+  new Promise((resolve, reject) => fs.ensureDir(dirPath, err => (err ? reject(err) : resolve())))
 
 const copyFile = (srcPath: string, destPath: string, relPath: string) => {
   return new Promise(async (resolve, reject) => {
     await ensureDir(dirname(destPath))
     const stream = fs.createReadStream(srcPath)
-    const md5sum = crypto.createHash("md5")
+    const md5sum = crypto.createHash('md5')
     md5sum.update(relPath.replace(/\\/g, '/'))
-    stream.on('data', (data: string) =>
-      md5sum.update(data)
-    )
+    stream.on('data', (data: string) => md5sum.update(data))
     stream
       .pipe(fs.createWriteStream(destPath))
       .on('error', reject)
@@ -98,7 +98,7 @@ const getIngoreFilesContent = (workingDir: string, hasFilesEntry: boolean): stri
   const ignoreFiles = {
     npm: join(workingDir, '.npmignore'),
     yarn: join(workingDir, '.yarnignore'),
-    git: join(workingDir, '.gitignore'),
+    git: join(workingDir, '.gitignore')
   }
   if (fs.existsSync(ignoreFiles.npm)) {
     content += fs.readFileSync(ignoreFiles.npm, 'utf-8') + '\n'
@@ -113,54 +113,69 @@ const getIngoreFilesContent = (workingDir: string, hasFilesEntry: boolean): stri
 }
 
 const getFoldersPatterns = (files: string[]) => {
-  return files.reduce<string[]>((res, file) =>
-    res.concat(
-      file.split('/').filter(_ => _)
-        .reduce<string[]>((prev, folder) =>
-          prev.concat([prev[prev.length - 1], folder].join('/'))
-        , []).map(x => x.slice(1))
-    )
-    , [])
+  return files.reduce<string[]>(
+    (res, file) =>
+      res.concat(
+        file
+          .split('/')
+          .filter(_ => _)
+          .reduce<string[]>(
+            (prev, folder) => prev.concat([prev[prev.length - 1], folder].join('/')),
+            []
+          )
+          .map(x => x.slice(1))
+      ),
+    []
+  )
 }
 
-export const copyPackageToStore = async (pkg: PackageManifest, options: {
-  workingDir: string,
-  signature?: boolean,
-  knit?: boolean
-}) => {
+export const copyPackageToStore = async (
+  pkg: PackageManifest,
+  options: {
+    workingDir: string
+    signature?: boolean
+    knit?: boolean
+  }
+) => {
   const { workingDir } = options
 
   const ignoreRule = ignore()
     .add(npmIgnoreDefaults)
     .add(npmFilesIncludedByDefault)
     .add(getIngoreFilesContent(workingDir, !!pkg.files))
-  
+
   const ignores = (f: string, isDir: boolean) =>
     ignoreRule.ignores(f) || (isDir && ignoreRule.ignores(f + '/'))
 
   const includeFoldersRule = ignore().add(getFoldersPatterns(pkg.files || []))
-  const explicitIncludeRule = pkg.files ? ignore()
-    .add(npmIncludeDefaults)
-    .add(pkg.files || []) : null
+  const explicitIncludeRule = pkg.files
+    ? ignore()
+        .add(npmIncludeDefaults)
+        .add(pkg.files || [])
+    : null
   const includes = (f: string, isDir: boolean) =>
-    explicitIncludeRule ?
-      explicitIncludeRule.ignores(f)
-      || (isDir && includeFoldersRule.ignores(f))
+    explicitIncludeRule
+      ? explicitIncludeRule.ignores(f) || (isDir && includeFoldersRule.ignores(f))
       : true
-  const isIncluded = (f: string, isDir: boolean) =>
-    !((ignores(f, isDir)) || !(includes(f, isDir)))
-    
+  const isIncluded = (f: string, isDir: boolean) => !(ignores(f, isDir) || !includes(f, isDir))
+
   const copyFromDir = options.workingDir
   const locPackageStoreDir = join(getStorePackagesDir(), pkg.name, pkg.version)
 
   fs.removeSync(locPackageStoreDir)
 
   const filesToCopy = await getFilesToCopy(workingDir, isIncluded)
-  const hashes = await Promise.all(filesToCopy.sort().map((relPath) =>
-    copyFile(join(copyFromDir, relPath), join(locPackageStoreDir, relPath), relPath)
-  ))
-  const signature = crypto.createHash('md5')
-    .update(hashes.join('')).digest('hex')
+  const hashes = await Promise.all(
+    filesToCopy
+      .sort()
+      .map(relPath =>
+        copyFile(join(copyFromDir, relPath), join(locPackageStoreDir, relPath), relPath)
+      )
+  )
+  const signature = crypto
+    .createHash('md5')
+    .update(hashes.join(''))
+    .digest('hex')
   const shortSignature = signature.substr(0, shortSignatureLength)
 
   if (options.knit) {
@@ -171,10 +186,7 @@ export const copyPackageToStore = async (pkg: PackageManifest, options: {
       if (fs.statSync(source).isDirectory()) {
         return
       }
-      ensureSymlinkSync(
-        source,
-        join(locPackageStoreDir, f)
-      )
+      ensureSymlinkSync(source, join(locPackageStoreDir, f))
     })
   }
   writeSignatureFile(locPackageStoreDir, signature)

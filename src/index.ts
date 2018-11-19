@@ -1,8 +1,6 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
-import {
-  PackageName
-} from './installations'
+import { PackageName } from './installations'
 
 const userHome = require('user-home')
 
@@ -19,16 +17,16 @@ export const values = {
 }
 
 export interface AddPackagesOptions {
-  dev?: boolean,
-  link?: boolean,
-  yarn?: boolean,
+  dev?: boolean
+  link?: boolean
+  yarn?: boolean
   safe?: boolean
-  workingDir: string,
+  workingDir: string
 }
 
 export interface UpdatePackagesOptions {
-  safe?: boolean,
-  workingDir: string,
+  safe?: boolean
+  workingDir: string
 }
 
 export { publishPackage } from './publish'
@@ -47,33 +45,33 @@ export function getStoreMainDir(): string {
     return yalcGlobal.yalcStoreMainDir
   }
   if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
-    return join(process.env.LOCALAPPDATA, values.myNameIsCapitalized);
+    return join(process.env.LOCALAPPDATA, values.myNameIsCapitalized)
   }
-  return join(userHome, '.' + values.myNameIs);
+  return join(userHome, '.' + values.myNameIs)
 }
 
 export function getStorePackagesDir(): string {
-  return join(getStoreMainDir(), 'packages');
+  return join(getStoreMainDir(), 'packages')
 }
 
 export const getPackageStoreDir = (packageName: string, version = '') =>
   path.join(getStorePackagesDir(), packageName, version)
 
 export interface PackageManifest {
-  name: string,
-  version: string,
-  files: string[],
-  dependencies?: { [name: string]: string },
-  devDependencies?: { [name: string]: string },
+  name: string
+  version: string
+  files: string[]
+  dependencies?: { [name: string]: string }
+  devDependencies?: { [name: string]: string }
   scripts?: {
-    preinstall?: string,
-    install?: string,
+    preinstall?: string
+    install?: string
     prepublish?: string
     prepublishOnly?: string
     postpublish?: string
     preyalc?: string
     postyalc?: string
-  },
+  }
   __JSONSpaces: number
 }
 
@@ -87,7 +85,7 @@ export const parsePackageName = (packageName: string) => {
   if (!match) {
     return { name: '' as PackageName, version: '' }
   }
-  return { name: (match[1] || '') + match[2] as PackageName, version: match[3] || '' }
+  return { name: ((match[1] || '') + match[2]) as PackageName, version: match[3] || '' }
 }
 
 const getJSONSpaces = (jsonStr: string) => {
@@ -99,8 +97,7 @@ export function readPackageManifest(workingDir: string) {
   let pkg: PackageManifest
   const packagePath = join(workingDir, 'package.json')
   try {
-    const fileData = fs.readFileSync(
-      packagePath, 'utf-8')
+    const fileData = fs.readFileSync(packagePath, 'utf-8')
     pkg = JSON.parse(fileData) as PackageManifest
     if (!pkg.name && pkg.version) {
       console.log('Package manifest', packagePath, 'should contain name and version.')
@@ -108,7 +105,6 @@ export function readPackageManifest(workingDir: string) {
     }
     const formatSpaces = getJSONSpaces(fileData) || 2
     if (!formatSpaces) {
-
       console.log('Could not get JSON formatting for', packagePath, 'using 2')
     }
     pkg.__JSONSpaces = formatSpaces
@@ -126,7 +122,7 @@ export function readSignatureFile(workingDir: string) {
   try {
     const fileData = fs.readFileSync(signatureFilePath, 'utf-8')
     return fileData
-  } catch (e) {    
+  } catch (e) {
     return ''
   }
 }
@@ -134,18 +130,17 @@ export function readSignatureFile(workingDir: string) {
 export function writeSignatureFile(workingDir: string, signature: string) {
   const signatureFilePath = join(workingDir, signatureFileName)
   try {
-    fs.writeFileSync(signatureFilePath, signature)    
-  } catch (e) {    
+    fs.writeFileSync(signatureFilePath, signature)
+  } catch (e) {
     console.log('Could not write signature file')
     throw e
   }
 }
 
-
 const sortDependencies = (dependencies: { [name: string]: string }) => {
-  return Object.keys(dependencies).sort().reduce((deps, key) =>
-    Object.assign(deps, { [key]: dependencies[key] })
-    , {})
+  return Object.keys(dependencies)
+    .sort()
+    .reduce((deps, key) => Object.assign(deps, { [key]: dependencies[key] }), {})
 }
 
 export function writePackageManifest(workingDir: string, pkg: PackageManifest) {
@@ -165,4 +160,3 @@ export function writePackageManifest(workingDir: string, pkg: PackageManifest) {
     console.error('Could not write ', packagePath)
   }
 }
-

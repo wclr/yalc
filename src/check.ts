@@ -2,21 +2,17 @@ import * as fs from 'fs-extra'
 import { execSync } from 'child_process'
 import * as path from 'path'
 import { join } from 'path'
-import {
-  PackageManifest,
-  values
-} from '.'
+import { PackageManifest, values } from '.'
 
 export type CheckOptions = {
-  workingDir: string,
-  all?: boolean,
+  workingDir: string
+  all?: boolean
   commit?: boolean
 }
 
 const stagedChangesCmd = 'git diff --cached --name-only'
 
-const isPackageManifest = (fileName: string) =>
-  path.basename(fileName) === 'package.json'
+const isPackageManifest = (fileName: string) => path.basename(fileName) === 'package.json'
 
 export function checkManifest(options: CheckOptions) {
   const findLocalDepsInManifest = (manifestPath: string) => {
@@ -24,20 +20,24 @@ export function checkManifest(options: CheckOptions) {
     const addresMatch = new RegExp(`^(file|link):(.\\/)?\\${values.yalcPackagesFolder}\\/`)
 
     const findDeps = (depsMap: { [name: string]: string }) =>
-      Object.keys(depsMap)
-        .filter(name => depsMap[name].match(addresMatch))
-    const localDeps = findDeps(pkg.dependencies || {})
-      .concat(findDeps(pkg.devDependencies || {}))
+      Object.keys(depsMap).filter(name => depsMap[name].match(addresMatch))
+    const localDeps = findDeps(pkg.dependencies || {}).concat(findDeps(pkg.devDependencies || {}))
     return localDeps
   }
 
   if (options.commit) {
     execSync(stagedChangesCmd, {
       cwd: options.workingDir
-    }).toString().trim()
+    })
+      .toString()
+      .trim()
     execSync(stagedChangesCmd, {
       cwd: options.workingDir
-    }).toString().trim().split('\n').filter((isPackageManifest))
+    })
+      .toString()
+      .trim()
+      .split('\n')
+      .filter(isPackageManifest)
   }
 
   const manifestPath = join(options.workingDir, 'package.json')

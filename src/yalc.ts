@@ -9,21 +9,19 @@ import {
   removePackages,
   getStoreMainDir
 } from '.'
-import {
-  checkManifest
-} from './check'
+import { checkManifest } from './check'
 
 const cliCommand = values.myNameIs
 
 // tslint:disable-next-line:no-unused-expression
 yargs
-  .usage(cliCommand + ' [command] [options] [package1 [package2...]]')  
+  .usage(cliCommand + ' [command] [options] [package1 [package2...]]')
   .command({
     command: '*',
-    handler: (argv) => {      
+    handler: argv => {
       let msg = 'Use `yalc help` to see available commands.'
       if (argv._[0]) {
-        msg = 'Unknown commmand `' + argv._[0]  + '`. ' + msg
+        msg = 'Unknown commmand `' + argv._[0] + '`. ' + msg
       }
       console.log(msg)
     }
@@ -32,11 +30,9 @@ yargs
     command: 'publish',
     describe: 'Publish package in yalc local repo',
     builder: () => {
-      return yargs
-        .default('sig', true)  
-        .boolean(['push', 'knit', 'force', 'push-safe', 'sig'])
+      return yargs.default('sig', true).boolean(['push', 'knit', 'force', 'push-safe', 'sig'])
     },
-    handler: (argv) => {
+    handler: argv => {
       const folder = argv._[1]
       return publishPackage({
         workingDir: join(process.cwd(), folder || ''),
@@ -57,7 +53,7 @@ yargs
         .default('sig', true)
         .boolean(['knit', 'safe', 'force', 'sig'])
     },
-    handler: (argv) => {
+    handler: argv => {
       return publishPackage({
         workingDir: join(process.cwd(), argv._[1] || ''),
         force: argv.force !== undefined ? argv.force : true,
@@ -77,7 +73,7 @@ yargs
         .boolean(['file', 'dev', 'save-dev', 'link', 'yarn'])
         .help(true)
     },
-    handler: (argv) => {
+    handler: argv => {
       return addPackages(argv._.slice(1), {
         dev: argv.dev || argv.saveDev,
         yarn: argv.yarn,
@@ -90,11 +86,9 @@ yargs
     command: 'link',
     describe: 'Link package from yalc repo to the project',
     builder: () => {
-      return yargs
-        .default('yarn', true)
-        .help(true)
+      return yargs.default('yarn', true).help(true)
     },
-    handler: (argv) => {
+    handler: argv => {
       return addPackages(argv._.slice(1), {
         link: true,
         workingDir: process.cwd()
@@ -105,24 +99,21 @@ yargs
     command: 'update',
     describe: 'Update packages from yalc repo',
     builder: () => {
-      return yargs        
-        .help(true)
+      return yargs.help(true)
     },
-    handler: (argv) => {
+    handler: argv => {
       return updatePackages(argv._.slice(1), {
         workingDir: process.cwd()
       })
     }
-  })  
+  })
   .command({
     command: 'remove',
     describe: 'Remove packages from the project',
     builder: () => {
-      return yargs          
-        .boolean(['retreat', 'all'])
-        .help(true)
+      return yargs.boolean(['retreat', 'all']).help(true)
     },
-    handler: (argv) => {
+    handler: argv => {
       return removePackages(argv._.slice(1), {
         retreat: argv.retreat,
         workingDir: process.cwd(),
@@ -134,11 +125,9 @@ yargs
     command: 'retreat',
     describe: 'Remove packages from project, but leave in lock file (to be restored later)',
     builder: () => {
-      return yargs
-      .boolean(['all'])  
-        .help(true)
+      return yargs.boolean(['all']).help(true)
     },
-    handler: (argv) => {
+    handler: argv => {
       return removePackages(argv._.slice(1), {
         all: argv.all,
         retreat: true,
@@ -150,11 +139,12 @@ yargs
     command: 'check',
     describe: 'Check package.json for yalc packages',
     builder: () => {
-      return yargs.boolean(['commit'])
+      return yargs
+        .boolean(['commit'])
         .usage('check usage here')
         .help(true)
     },
-    handler: (argv) => {
+    handler: argv => {
       const gitParams = process.env.GIT_PARAMS
       if (argv.commit) {
         console.log('gitParams', gitParams)
@@ -172,6 +162,5 @@ yargs
     handler: () => {
       console.log(getStoreMainDir())
     }
-  }) 
-  .help('help')
-  .argv
+  })
+  .help('help').argv

@@ -1,34 +1,18 @@
 import * as fs from 'fs-extra'
 import { join } from 'path'
-import {
-  PackageInstallation,
-  removeInstallations,
-  PackageName
-} from './installations'
+import { PackageInstallation, removeInstallations, PackageName } from './installations'
 
-import {
-  readLockfile,
-  writeLockfile,
-  removeLockfile
-} from './lockfile'
+import { readLockfile, writeLockfile, removeLockfile } from './lockfile'
 
-import {
-  values,
-  parsePackageName,
-  readPackageManifest,
-  writePackageManifest
-} from '.'
+import { values, parsePackageName, readPackageManifest, writePackageManifest } from '.'
 
 export interface RemovePackagesOptions {
-  all?: boolean,
-  retreat?: boolean,
+  all?: boolean
+  retreat?: boolean
   workingDir: string
 }
 
-const isYalcFileAddress = (
-  address: string,
-  name: string,
-) => {
+const isYalcFileAddress = (address: string, name: string) => {
   const regExp = new RegExp('file|link:' + values.yalcPackagesFolder + '/' + name)
   return regExp.test(address)
 }
@@ -41,15 +25,17 @@ export const removePackages = async (packages: string[], options: RemovePackages
   let packagesToRemove: PackageName[] = []
 
   if (packages.length) {
-    packages.forEach((packageName) => {
+    packages.forEach(packageName => {
       const { name, version } = parsePackageName(packageName)
       if (lockFileConfig.packages[name]) {
         if (!version || version === lockFileConfig.packages[name].version) {
           packagesToRemove.push(name)
         }
       } else {
-        console.log(`Package ${packageName} not found in ${values.lockfileName}` +
-          `, still will try to remove.`)
+        console.log(
+          `Package ${packageName} not found in ${values.lockfileName}` +
+            `, still will try to remove.`
+        )
         packagesToRemove.push(name)
       }
     })
@@ -63,7 +49,7 @@ export const removePackages = async (packages: string[], options: RemovePackages
 
   let lockfileUpdated = false
   const removedPackagedFromManifect: string[] = []
-  packagesToRemove.forEach((name) => {
+  packagesToRemove.forEach(name => {
     const lockedPackage = lockFileConfig.packages[name]
 
     let depsWithPackage
@@ -72,9 +58,8 @@ export const removePackages = async (packages: string[], options: RemovePackages
     }
     if (pkg.devDependencies && pkg.devDependencies[name]) {
       depsWithPackage = pkg.devDependencies
-    }    
-    if (depsWithPackage &&
-      isYalcFileAddress(depsWithPackage[name], name)) {
+    }
+    if (depsWithPackage && isYalcFileAddress(depsWithPackage[name], name)) {
       removedPackagedFromManifect.push(name)
       if (lockedPackage && lockedPackage.replaced) {
         depsWithPackage[name] = lockedPackage.replaced
@@ -101,15 +86,16 @@ export const removePackages = async (packages: string[], options: RemovePackages
     writePackageManifest(workingDir, pkg)
   }
 
-  const installationsToRemove: PackageInstallation[] =
-    packagesToRemove.map(name => ({
-      name, version: '', path: workingDir
-    }))
+  const installationsToRemove: PackageInstallation[] = packagesToRemove.map(name => ({
+    name,
+    version: '',
+    path: workingDir
+  }))
 
-  removedPackagedFromManifect.forEach((name) => {
+  removedPackagedFromManifect.forEach(name => {
     fs.removeSync(join(workingDir, 'node_modules', name))
   })
-  packagesToRemove.forEach((name) => {
+  packagesToRemove.forEach(name => {
     if (!options.retreat) {
       fs.removeSync(join(workingDir, values.yalcPackagesFolder, name))
     }
