@@ -88,15 +88,16 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     const installationPaths =
       installationsConfig[pkg.name] || []
     const installationsToRemove: PackageInstallation[] = []
-    installationPaths.forEach((workingDir) => {
+    for (const workingDir in installationPaths) {
       console.log(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
+      const installationsToRemoveForPkg = await updatePackages([pkg.name], { workingDir, noInstallationsRemove: true });
       installationsToRemove.concat(
-        updatePackages([pkg.name], { workingDir, noInstallationsRemove: true })
+        installationsToRemoveForPkg
       )
-    })
-    removeInstallations(installationsToRemove)
+    }
+    await removeInstallations(installationsToRemove)
   }  
-  workaroundYarnCacheBug(pkg)
+  await workaroundYarnCacheBug(pkg)
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const publishedPkg = readPackageManifest(publishedPackageDir)!
   console.log(`${publishedPkg.name}@${publishedPkg.version} published in store.`)

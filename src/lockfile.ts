@@ -82,15 +82,24 @@ export const writeLockfile = (lockfile: LockFileConfig, options: { workingDir: s
 
 export const addPackageToLockfile = (
   packages: ({ name: string } & LockFilePackageEntry)[],
-  options: { workingDir: string }) => {
+  options: { workingDir: string }
+) => {
   const lockfile = readLockfile(options)
   packages.forEach(({ name, version, file, link, replaced, signature }) => {
     let old = lockfile.packages[name] || {}
     lockfile.packages[name] = {}
-    version && (lockfile.packages[name].version = version)
-    signature && (lockfile.packages[name].signature = signature)
-    file && (lockfile.packages[name].file = true)
-    link && (lockfile.packages[name].link = true)
+    if (version) {
+      lockfile.packages[name].version = version
+    }
+    if (signature) {
+      lockfile.packages[name].signature = signature
+    }
+    if (file) {
+      lockfile.packages[name].file = true
+    }
+    if (link) {
+      lockfile.packages[name].link = true
+    }
     if (replaced || old.replaced) {
       lockfile.packages[name].replaced = replaced || old.replaced
     }
