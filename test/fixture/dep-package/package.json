@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "files": [    
+  "files": [
     ".yalc",
     ".dot/",
     "dist/",
     "src",
-    "folder/file.txt",
+    "folder/file.{txt,md}",
     "folder2/nested/file.txt",
     "root-file.txt"
   ],
