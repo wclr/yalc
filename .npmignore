@@ -1,7 +1,8 @@
 *.ts
 !*.d.ts
-tsconfig.json
+
 /test
+
 *.lock
-.*
+*.json
 *.yml

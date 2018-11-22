@@ -1,6 +1,6 @@
 # Yalc changelog
 
-## 1.0.0.pre.24
+## 1.0.0.pre.24 (2018-11-23)
 - postupdate script on update (and push)
 - new file inclusion algorithm with `npm-packlist`
 - .yalcignore added
