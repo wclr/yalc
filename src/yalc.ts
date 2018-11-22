@@ -52,10 +52,9 @@ yargs
   .command({
     command: 'installations',
     builder: () => {
-      return yargs
-        .boolean(['dry'])
+      return yargs.boolean(['dry'])
     },
-    handler: argv => {      
+    handler: async argv => {
       const action = argv._[1]
       const packages = argv._.slice(2)
       switch (action) {
@@ -63,13 +62,13 @@ yargs
           showInstallations({ packages })
           break
         case 'clean':
-          cleanInstallations({ packages, dry: argv.dry })
+          await cleanInstallations({ packages, dry: argv.dry })
           break
         default:
           console.log('Need installation action: show | clean')
       }
     }
-  })  
+  })
   .command({
     command: 'push',
     describe:
