@@ -82,7 +82,8 @@ const extractSignature = (lockfile: LockFileConfigV1, packageName: string) => {
   return signature
 }
 
-describe('Yalc package manager', () => {
+describe('Yalc package manager', function() {
+  this.timeout(60000)
   before(() => {
     fs.removeSync(tmpDir)
     fs.copySync(fixtureDir, tmpDir)

@@ -23,6 +23,8 @@ export interface AddPackagesOptions {
   linkDep?: boolean
   yarn?: boolean
   safe?: boolean
+  to?: string
+  from?: string
   workingDir: string
 }
 

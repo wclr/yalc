@@ -35,12 +35,17 @@ yarn global add yalc
 
 ### Publish
 - Run `yalc publish` in your dependency package `my-package`. 
-- It will copy [all the files that should be published in remote NPM registry](https://docs.npmjs.com/files/package.json#files), but will not include standard non-code files like `README`, `LICENCE` etc. (If you need them included, add `!LICENCE` to `.npmignore`).
+- It will copy [all the files that should be published in remote NPM registry](https://docs.npmjs.com/files/package.json#files).
+
 - It will run `preyalc` or `prepublish` scripts before, and `postyalc` or `postpublish` after. Use `--force` to publish without running scripts.
+
+- While copying package content, `yalc` calculates the hash signature of all files and, by default, adds this signature to the package manifest `version`. You can disable this by using the `--no-sig` option.
+
+- You may also use `.yalcignore` to exclude files from publishing to yalc repo, for example files like README.md, etc.
 
 - **NB!** Windows users should make sure the `LF` new line symbol is used in published sources; it may be needed for some packages to work correctly (for example, `bin` scripts). `yalc` won't convert line endings for you (because `npm` and `yarn` won't either).
 
-- While copying package content, `yalc` calculates the hash signature of all files and, by default, adds this signature to the package manifest `version`. You can disable this by using the `--no-sig` option.
+- **NB!** Note that, if you want to include `.yalc` folder in published package content, you should add `!.yalc` line to `.npmignore`.
 
 - [Easily propagate package updates everywhere.](#pushing-updates-automatically-to-all-installations)
 
@@ -87,10 +92,16 @@ will copy the current version from the store to your project's `.yalc` folder an
 ### Keep it in git
 - You may want to keep shared `yalc'ed` stuff within the projects you are working on and treat it as a part of the project's codebase. This may really simplify management and usage of shared *work in progress* packages within your projects and help to make things consistent. So, then just do it, keep `.yalc` folder and `yalc.lock` in git. 
 - Replace it with published versions from remote repository when ready.
+- **NB!** - standard non-code files like `README`, `LICENCE` etc. will be included also, so you may want to excluded them in `.gitignore` with a line like `**/.yalc/**/*.md` or you may use `.yalcignore` not to include those files in package content.
+
 
 ### Publish/push sub-projects
 
 - Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package-dir will perform publish operation in nested `package` folder of current working dir.
+
+### Clean up installations file
+
+- While working with yalc for some time on the dev machine you may face the situation when you have locations where you added yalc'ed packages being removed from file system, and this will cause some warning messages when yalc will try to push package to removed location. To get rid of such messages there in an explicit command for this `yalc installations clean [package]`.
 
 
 ## Related links

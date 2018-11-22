@@ -1,15 +1,7 @@
 {
-  "extends": ["tslint-plugin-prettier", "tslint-config-prettier"],
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
   "rules": {
     "no-floating-promises": true,
-    "no-unused-expression": true,
-    "whitespace": [true, "check-brace"],
-    "prettier": [
-      true,
-      {
-        "semi": false,
-        "singleQuote": true
-      }
-    ]
+    "no-unused-expression": true
   }
 }

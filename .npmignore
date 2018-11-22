@@ -4,3 +4,4 @@ tsconfig.json
 /test
 *.lock
 .*
+*.yml

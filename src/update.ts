@@ -1,8 +1,10 @@
+import { execSync } from 'child_process'
+import { join } from 'path'
 import { PackageInstallation, removeInstallations } from './installations'
 
 import { readLockfile } from './lockfile'
 
-import { parsePackageName, addPackages } from '.'
+import { parsePackageName, addPackages, readPackageManifest, values } from '.'
 
 export interface UpdatePackagesOptions {
   safe?: boolean
@@ -13,7 +15,8 @@ export const updatePackages = async (
   packages: string[],
   options: UpdatePackagesOptions
 ) => {
-  const lockfile = readLockfile({ workingDir: options.workingDir })
+  const { workingDir } = options
+  const lockfile = readLockfile({ workingDir })
 
   let packagesToUpdate: string[] = []
   let installationsToRemove: PackageInstallation[] = []
@@ -61,6 +64,19 @@ export const updatePackages = async (
     workingDir: options.workingDir,
     linkDep: true
   })
+
+  for (const packageName of packages) {
+    const pkg = readPackageManifest(
+      join(options.workingDir, values.yalcPackagesFolder, packageName)
+    )
+    const postupdate = pkg && pkg.scripts && pkg.scripts.postupdate
+    if (postupdate) {
+      console.log(
+        `Running postupdate script of package ${packageName} in ${workingDir}`
+      )
+      execSync(postupdate, { cwd: workingDir })
+    }
+  }
 
   if (!options.noInstallationsRemove) {
     await removeInstallations(installationsToRemove)

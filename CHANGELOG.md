@@ -1,5 +1,11 @@
 # Yalc changelog
 
+## 1.0.0.pre.24
+- postupdate script on update (and push)
+- new file inclusion algorithm with `npm-packlist`
+- .yalcignore added
+- installations show/clean commmand
+
 ## 1.0.0.pre.16 (2018-01-02)
 - fix package deps
 - fix `--link` removal

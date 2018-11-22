@@ -3,19 +3,17 @@
   "search.exclude": {},
   "files.exclude": {
     "**/*.js": {
-			"when": "$(basename).ts"
-		},
-		"**/*.js.map": {
-			"when": "$(basename).ts"
-		},
-		"**/*.d.ts": {
-			"when": "$(basename).ts"
-		}			
+      "when": "$(basename).ts"
+    },
+    "**/*.js.map": true,
+    "**/*.d.ts": {
+      "when": "$(basename).ts"
+    }
   },
-  "prettier.tslintIntegration": true,
+  "prettier.tslintIntegration": false,
   // "tslint.run": "onSave",
   // "tslint.autoFixOnSave": true,
   //"editor.formatOnType": true,
   "editor.tabSize": 2,
-  "editor.insertSpaces": true  
+  "editor.insertSpaces": true
 }

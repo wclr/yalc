@@ -8,6 +8,7 @@ const { join } = path
 
 export const values = {
   myNameIs: 'yalc',
+  ignoreFileName: '.yalcignore',
   myNameIsCapitalized: 'Yalc',
   lockfileName: 'yalc.lock',
   yalcPackagesFolder: '.yalc',
@@ -65,6 +66,8 @@ export interface PackageManifest {
   devDependencies?: { [name: string]: string }
   scripts?: {
     preinstall?: string
+    postupdate: string
+    postpush: string
     install?: string
     prepublish?: string
     prepublishOnly?: string
@@ -128,6 +131,16 @@ export function readSignatureFile(workingDir: string) {
   const signatureFilePath = join(workingDir, signatureFileName)
   try {
     const fileData = fs.readFileSync(signatureFilePath, 'utf-8')
+    return fileData
+  } catch (e) {
+    return ''
+  }
+}
+
+export function readIgnoreFile(workingDir: string) {
+  const flePath = join(workingDir, values.ignoreFileName)
+  try {
+    const fileData = fs.readFileSync(flePath, 'utf-8')
     return fileData
   } catch (e) {
     return ''

@@ -15,6 +15,8 @@ export type LockFilePackageEntry = {
   link?: boolean
   replaced?: string
   signature?: string
+  to?: string[]
+  from?: string[]
 }
 
 export type LockFileConfigV1 = {
@@ -60,7 +62,6 @@ export const removeLockfile = (options: { workingDir: string }) => {
 
 export const readLockfile = (options: { workingDir: string }) => {
   const lockfilePath = join(options.workingDir, values.lockfileName)
-  fs.ensureFileSync(lockfilePath)
   let lockfile: LockFileConfig = {
     version: 'v1',
     packages: {}

@@ -1,8 +1,10 @@
 import * as fs from 'fs-extra'
 import * as crypto from 'crypto'
 import * as npmPacklist from 'npm-packlist'
+import ignore from 'ignore'
 
 import { join, dirname } from 'path'
+import { readIgnoreFile } from '.'
 import {
   PackageManifest,
   getStorePackagesDir,
@@ -47,9 +49,14 @@ export const copyPackageToStore = async (
   const copyFromDir = options.workingDir
   const locPackageStoreDir = join(getStorePackagesDir(), pkg.name, pkg.version)
 
-  fs.removeSync(locPackageStoreDir)
+  await fs.remove(locPackageStoreDir)
 
-  const filesToCopy = await npmPacklist({ path: workingDir })
+  const ignoreFileContent = readIgnoreFile(workingDir)
+  
+  const ignoreRule = ignore().add(ignoreFileContent)
+  const filesToCopy = (await npmPacklist({ path: workingDir }))
+    .filter(f => !ignoreRule.ignores(f))
+
   const hashes = await Promise.all(
     filesToCopy
       .sort()

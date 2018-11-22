@@ -17,6 +17,7 @@ import {
   readPackageManifest,
   getStorePackagesDir
 } from '.'
+
 export interface PublishPackageOptions {
   workingDir: string
   signature?: boolean
@@ -87,13 +88,12 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       execSync(scriptRunCmd + 'postpublish', execLoudOptions)
     }
   }
+
   if (options.push || options.pushSafe) {
     const installationsConfig = readInstallationsFile()
     const installationPaths = installationsConfig[pkg.name] || []
     const installationsToRemove: PackageInstallation[] = []
-    console.log('installationsConfig', installationsConfig)
-    for (const index in installationPaths) {
-      const workingDir = installationPaths[index]
+    for (const workingDir of installationPaths) {
       console.log(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
       const installationsToRemoveForPkg = await updatePackages([pkg.name], {
         workingDir,
