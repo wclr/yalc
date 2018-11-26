@@ -176,7 +176,9 @@ export const addPackages = async (
         }
         const addedAction = options.link ? 'linked' : 'added'
         console.log(
-          `Package ${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}.`
+          `Package ${pkg.name}@${
+            pkg.version
+          } ${addedAction} ==> ${destModulesDir}.`
         )
       }
 
@@ -213,6 +215,6 @@ export const addPackages = async (
 
   if (options.yarn) {
     console.log('Running yarn:')
-    execSync('yarn', {cwd: options.workingDir})
+    execSync('yarn', { cwd: options.workingDir })
   }
 }

@@ -23,9 +23,9 @@ export interface PublishPackageOptions {
   signature?: boolean
   knit?: boolean
   force?: boolean
-  changed?: boolean,
+  changed?: boolean
   push?: boolean
-  pushSafe?: boolean,
+  pushSafe?: boolean
   yarn?: boolean
 }
 
@@ -109,7 +109,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       installationsToRemove.concat(installationsToRemoveForPkg)
     }
     await removePackageInstallationsFromInstallationsFile(installationsToRemove)
-  }  
+  }
   //await workaroundYarnCacheBug(pkg)
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const publishedPkg = readPackageManifest(publishedPackageDir)!

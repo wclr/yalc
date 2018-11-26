@@ -38,9 +38,8 @@ export const readInstallationsFile = (): InstallationsFile => {
 export const showInstallations = ({ packages }: { packages: string[] }) => {
   const config = readInstallationsFile()
   Object.keys(config)
-    .filter(
-      packageName =>
-        packages.length ? packages.indexOf(packageName) >= 0 : true
+    .filter(packageName =>
+      packages.length ? packages.indexOf(packageName) >= 0 : true
     )
     .map((name: PackageName) => ({ name, locations: config[name] }))
     .forEach(({ name, locations }) => {
@@ -55,14 +54,13 @@ export const cleanInstallations = async ({
   packages,
   dry
 }: {
-  packages: string[],
+  packages: string[]
   dry: boolean
 }) => {
   const config = readInstallationsFile()
   const installsToRemove = Object.keys(config)
-    .filter(
-      packageName =>
-        packages.length ? packages.indexOf(packageName) >= 0 : true
+    .filter(packageName =>
+      packages.length ? packages.indexOf(packageName) >= 0 : true
     )
     .map((name: PackageName) => ({ name, locations: config[name] }))
     .reduce(

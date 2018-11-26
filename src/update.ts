@@ -1,6 +1,9 @@
 import { execSync } from 'child_process'
 import { join } from 'path'
-import { PackageInstallation, removePackageInstallationsFromInstallationsFile } from './installations'
+import {
+  PackageInstallation,
+  removePackageInstallationsFromInstallationsFile
+} from './installations'
 
 import { readLockfile } from './lockfile'
 
@@ -18,7 +21,10 @@ export const updatePackages = async (
 ) => {
   const { workingDir } = options
 
-  const { lockPackages, installationsToRemove } = findPackagesToUpdateOrRemoveFromGivenProjectPath(packages, workingDir);
+  const {
+    lockPackages,
+    installationsToRemove
+  } = findPackagesToUpdateOrRemoveFromGivenProjectPath(packages, workingDir)
 
   const packagesFiles = lockPackages.filter(p => p.file).map(p => p.name)
   await addPackages(packagesFiles, { workingDir: options.workingDir })
@@ -69,7 +75,10 @@ export const updatePackages = async (
   return installationsToRemove
 }
 
-const findPackagesToUpdateOrRemoveFromGivenProjectPath = (packages: string[], workingDir: string) => {
+const findPackagesToUpdateOrRemoveFromGivenProjectPath = (
+  packages: string[],
+  workingDir: string
+) => {
   const lockfile = readLockfile({ workingDir })
 
   let packagesToUpdate: string[] = []

@@ -1,6 +1,7 @@
 {
-  "extends": ["tslint-config-prettier"],
+  "extends": ["tslint-plugin-prettier", "tslint-config-prettier"],
   "rules": {
+    "prettier": true,
     "no-floating-promises": true,
     "no-unused-expression": true
   }

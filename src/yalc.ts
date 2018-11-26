@@ -35,7 +35,15 @@ yargs
     builder: () => {
       return yargs
         .default('sig', true)
-        .boolean(['push', 'knit', 'force', 'push-safe', 'sig', 'changed', 'yarn'])
+        .boolean([
+          'push',
+          'knit',
+          'force',
+          'push-safe',
+          'sig',
+          'changed',
+          'yarn'
+        ])
     },
     handler: argv => {
       const folder = argv._[1]
