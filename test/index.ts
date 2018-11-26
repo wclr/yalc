@@ -88,7 +88,7 @@ describe('Yalc package manager', function() {
     fs.removeSync(tmpDir)
     fs.copySync(fixtureDir, tmpDir)
   })
-  describe.only('Package publish', function() {
+  describe('Package publish', function() {
     this.timeout(5000)
     before(() => {
       console.time('Package publish')
