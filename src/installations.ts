@@ -90,7 +90,7 @@ export const cleanInstallations = async ({
       console.log(`Package ${inst.name}: ${inst.path}`)
     })
     if (!dry) {
-      await removeInstallations(installsToRemove)
+      await removePackageInstallationsFromInstallationsFile(installsToRemove)
     } else {
       console.log(`Dry run.`)
     }
@@ -128,7 +128,7 @@ export const addInstallations = async (
   }
 }
 
-export const removeInstallations = async (
+export const removePackageInstallationsFromInstallationsFile = async (
   installations: PackageInstallation[]
 ) => {
   const installationsFile = readInstallationsFile()

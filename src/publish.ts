@@ -5,7 +5,7 @@ import { copyPackageToStore } from './copy'
 import {
   PackageInstallation,
   readInstallationsFile,
-  removeInstallations
+  removePackageInstallationsFromInstallationsFile
 } from './installations'
 
 import {
@@ -108,7 +108,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       })
       installationsToRemove.concat(installationsToRemoveForPkg)
     }
-    await removeInstallations(installationsToRemove)
+    await removePackageInstallationsFromInstallationsFile(installationsToRemove)
   }  
   //await workaroundYarnCacheBug(pkg)
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)

@@ -2,7 +2,7 @@ import * as fs from 'fs-extra'
 import { join } from 'path'
 import {
   PackageInstallation,
-  removeInstallations,
+  removePackageInstallationsFromInstallationsFile,
   PackageName
 } from './installations'
 
@@ -118,6 +118,6 @@ export const removePackages = async (
   })
 
   if (!options.retreat) {
-    await removeInstallations(installationsToRemove)
+    await removePackageInstallationsFromInstallationsFile(installationsToRemove)
   }
 }

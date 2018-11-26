@@ -1,6 +1,6 @@
 import { execSync } from 'child_process'
 import { join } from 'path'
-import { PackageInstallation, removeInstallations } from './installations'
+import { PackageInstallation, removePackageInstallationsFromInstallationsFile } from './installations'
 
 import { readLockfile } from './lockfile'
 
@@ -94,7 +94,7 @@ export const updatePackages = async (
   }
 
   if (!options.noInstallationsRemove) {
-    await removeInstallations(installationsToRemove)
+    await removePackageInstallationsFromInstallationsFile(installationsToRemove)
   }
   return installationsToRemove
 }
