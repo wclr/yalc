@@ -19,16 +19,7 @@ export const updatePackages = async (
   const { workingDir } = options
   const lockfile = readLockfile({ workingDir })
 
-  const { packagesToUpdate, installationsToRemove } = findPackagesToUpdateOrRemoveFromGivenProjectPath(packages, workingDir, lockfile);
-
-  const lockPackages = packagesToUpdate.map(name => ({
-    name: lockfile.packages[name].version
-      ? name + '@' + lockfile.packages[name].version
-      : name,
-    file: lockfile.packages[name].file,
-    link: lockfile.packages[name].link,
-    pure: lockfile.packages[name].pure
-  }))
+  const { lockPackages, installationsToRemove } = findPackagesToUpdateOrRemoveFromGivenProjectPath(packages, workingDir, lockfile);
 
   const packagesFiles = lockPackages.filter(p => p.file).map(p => p.name)
   await addPackages(packagesFiles, { workingDir: options.workingDir })
@@ -103,8 +94,17 @@ const findPackagesToUpdateOrRemoveFromGivenProjectPath = (packages: string[], wo
     packagesToUpdate = Object.keys(lockfile.packages)
   }
 
+  const lockPackages = packagesToUpdate.map(name => ({
+    name: lockfile.packages[name].version
+      ? name + '@' + lockfile.packages[name].version
+      : name,
+    file: lockfile.packages[name].file,
+    link: lockfile.packages[name].link,
+    pure: lockfile.packages[name].pure
+  }))
+
   return {
-    packagesToUpdate: packagesToUpdate,
+    lockPackages: lockPackages,
     installationsToRemove: installationsToRemove
   }
 }
