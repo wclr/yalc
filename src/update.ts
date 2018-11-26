@@ -2,7 +2,7 @@ import { execSync } from 'child_process'
 import { join } from 'path'
 import { PackageInstallation, removePackageInstallationsFromInstallationsFile } from './installations'
 
-import { readLockfile } from './lockfile'
+import { readLockfile, LockFileConfigV1 } from './lockfile'
 
 import { parsePackageName, addPackages, readPackageManifest, values } from '.'
 
@@ -19,27 +19,7 @@ export const updatePackages = async (
   const { workingDir } = options
   const lockfile = readLockfile({ workingDir })
 
-  let packagesToUpdate: string[] = []
-  let installationsToRemove: PackageInstallation[] = []
-  if (packages.length) {
-    packages.forEach(packageName => {
-      const { name, version } = parsePackageName(packageName)
-      if (lockfile.packages[name]) {
-        if (version) {
-          lockfile.packages[name].version = version
-        }
-        packagesToUpdate.push(name)
-      } else {
-        installationsToRemove.push({ name, path: options.workingDir })
-        console.log(
-          `Did not find package ${name} in lockfile, ` +
-            `please use 'add' command to add it explicitly.`
-        )
-      }
-    })
-  } else {
-    packagesToUpdate = Object.keys(lockfile.packages)
-  }
+  const { packagesToUpdate, installationsToRemove } = findPackagesToUpdateOrRemoveFromGivenProjectPath(packages, workingDir, lockfile);
 
   const lockPackages = packagesToUpdate.map(name => ({
     name: lockfile.packages[name].version
@@ -97,4 +77,34 @@ export const updatePackages = async (
     await removePackageInstallationsFromInstallationsFile(installationsToRemove)
   }
   return installationsToRemove
+}
+
+const findPackagesToUpdateOrRemoveFromGivenProjectPath = (packages: string[], workingDir: string, lockfile: LockFileConfigV1) => {
+  let packagesToUpdate: string[] = []
+  let installationsToRemove: PackageInstallation[] = []
+
+  if (packages.length) {
+    packages.forEach(packageName => {
+      const { name, version } = parsePackageName(packageName)
+      if (lockfile.packages[name]) {
+        if (version) {
+          lockfile.packages[name].version = version
+        }
+        packagesToUpdate.push(name)
+      } else {
+        installationsToRemove.push({ name, path: workingDir })
+        console.log(
+          `Did not find package ${name} in lockfile, ` +
+            `please use 'add' command to add it explicitly.`
+        )
+      }
+    })
+  } else {
+    packagesToUpdate = Object.keys(lockfile.packages)
+  }
+
+  return {
+    packagesToUpdate: packagesToUpdate,
+    installationsToRemove: installationsToRemove
+  }
 }
