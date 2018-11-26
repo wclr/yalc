@@ -131,20 +131,20 @@ export const addInstallations = async (
 export const removeInstallations = async (
   installations: PackageInstallation[]
 ) => {
-  const installationsConfig = readInstallationsFile()
+  const installationsFile = readInstallationsFile()
   let updated = false
   installations.forEach(install => {
-    const packageInstallPaths = installationsConfig[install.name] || []
+    const packageInstallPaths = installationsFile[install.name] || []
     const index = packageInstallPaths.indexOf(install.path)
     if (index >= 0) {
       packageInstallPaths.splice(index, 1)
       updated = true
     }
     if (!packageInstallPaths.length) {
-      delete installationsConfig[install.name]
+      delete installationsFile[install.name]
     }
   })
   if (updated) {
-    await saveInstallationsFile(installationsConfig)
+    await saveInstallationsFile(installationsFile)
   }
 }
