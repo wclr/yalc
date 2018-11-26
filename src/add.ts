@@ -23,8 +23,7 @@ export interface AddPackagesOptions {
   linkDep?: boolean
   yarn?: boolean
   safe?: boolean
-  to?: string
-  from?: string
+  pure?: boolean
   workingDir: string
 }
 
@@ -58,6 +57,9 @@ const isSymlink = (path: string) => {
   }
 }
 
+const gracefulFs = require('graceful-fs')
+gracefulFs.gracefulify(fs)
+
 export const addPackages = async (
   packages: string[],
   options: AddPackagesOptions
@@ -68,6 +70,8 @@ export const addPackages = async (
   if (!localPkg) {
     return
   }
+  const doPure =
+    options.pure === false ? false : options.pure || !!localPkg.workspaces
   const addedInstalls = packages
     .map(packageName => {
       const { name, version = '' } = parsePackageName(packageName)
@@ -100,63 +104,82 @@ export const addPackages = async (
         return
       }
       const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
-      const destModulesDir = join(workingDir, 'node_modules', name)
 
       emptyDirExcludeNodeModules(destYalcCopyDir)
       fs.copySync(storedPackageDir, destYalcCopyDir)
-      var gracefulFs = require('graceful-fs')
-      gracefulFs.gracefulify(fs)
+
       let replacedVersion = ''
-      if (options.link || options.linkDep || isSymlink(destModulesDir)) {
-        fs.removeSync(destModulesDir)
-      }
-
-      if (options.link || options.linkDep) {
-        ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
-      } else {
-        emptyDirExcludeNodeModules(destModulesDir)
-        fs.copySync(destYalcCopyDir, destModulesDir)
-      }
-
-      if (!options.link) {
-        const protocol = options.linkDep ? 'link:' : 'file:'
-        const localAddress =
-          protocol + values.yalcPackagesFolder + '/' + pkg.name
-
-        const dependencies = localPkg.dependencies || {}
-        const devDependencies = localPkg.devDependencies || {}
-        let whereToAdd = options.dev ? devDependencies : dependencies
-
-        if (options.dev) {
-          if (dependencies[pkg.name]) {
-            replacedVersion = dependencies[pkg.name]
-            delete dependencies[pkg.name]
+      if (doPure) {
+        if (localPkg.workspaces) {
+          if (!options.pure) {
+            console.log(
+              'Because of `workspaces` enabled in this package,' +
+                ' --pure option will be used by default, to override use --no-pure.'
+            )
           }
+        }
+        console.log(
+          `${pkg.name}@${pkg.version} added to ${join(
+            values.yalcPackagesFolder,
+            name
+          )} purely`
+        )
+      }
+      if (!doPure) {
+        const destModulesDir = join(workingDir, 'node_modules', name)
+        if (options.link || options.linkDep || isSymlink(destModulesDir)) {
+          fs.removeSync(destModulesDir)
+        }
+
+        if (options.link || options.linkDep) {
+          ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
         } else {
-          if (!dependencies[pkg.name]) {
-            if (devDependencies[pkg.name]) {
-              whereToAdd = devDependencies
+          emptyDirExcludeNodeModules(destModulesDir)
+          fs.copySync(destYalcCopyDir, destModulesDir)
+        }
+
+        if (!options.link) {
+          const protocol = options.linkDep ? 'link:' : 'file:'
+          const localAddress =
+            protocol + values.yalcPackagesFolder + '/' + pkg.name
+
+          const dependencies = localPkg.dependencies || {}
+          const devDependencies = localPkg.devDependencies || {}
+          let whereToAdd = options.dev ? devDependencies : dependencies
+
+          if (options.dev) {
+            if (dependencies[pkg.name]) {
+              replacedVersion = dependencies[pkg.name]
+              delete dependencies[pkg.name]
+            }
+          } else {
+            if (!dependencies[pkg.name]) {
+              if (devDependencies[pkg.name]) {
+                whereToAdd = devDependencies
+              }
             }
           }
-        }
 
-        if (whereToAdd[pkg.name] !== localAddress) {
-          replacedVersion = replacedVersion || whereToAdd[pkg.name]
-          whereToAdd[pkg.name] = localAddress
-          localPkg.dependencies =
-            whereToAdd === dependencies ? dependencies : localPkg.dependencies
-          localPkg.devDependencies =
-            whereToAdd === devDependencies
-              ? devDependencies
-              : localPkg.devDependencies
-          localPkgUpdated = true
+          if (whereToAdd[pkg.name] !== localAddress) {
+            replacedVersion = replacedVersion || whereToAdd[pkg.name]
+            whereToAdd[pkg.name] = localAddress
+            localPkg.dependencies =
+              whereToAdd === dependencies ? dependencies : localPkg.dependencies
+            localPkg.devDependencies =
+              whereToAdd === devDependencies
+                ? devDependencies
+                : localPkg.devDependencies
+            localPkgUpdated = true
+          }
+          replacedVersion =
+            replacedVersion == localAddress ? '' : replacedVersion
         }
-        replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
+        const addedAction = options.link ? 'linked' : 'added'
+        console.log(
+          `Package ${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}.`
+        )
       }
-      const addedAction = options.link ? 'linked' : 'added'
-      console.log(
-        `${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}`
-      )
+
       const signature = readSignatureFile(storedPackageDir)
       return {
         signature,
@@ -166,7 +189,8 @@ export const addPackages = async (
         path: options.workingDir
       }
     })
-    .filter(_ => _) as PackageInstallation[]
+    .filter(_ => !!_)
+    .map(_ => _!)
 
   if (localPkgUpdated) {
     writePackageManifest(workingDir, localPkg)
@@ -177,8 +201,9 @@ export const addPackages = async (
       name: i!.name,
       version: i!.version,
       replaced: i!.replaced,
-      file: !options.link && !options.linkDep,
-      link: options.linkDep,
+      pure: doPure,
+      file: !options.link && !options.linkDep && !doPure,
+      link: options.linkDep && !doPure,
       signature: i.signature
     })),
     { workingDir: options.workingDir }
@@ -187,7 +212,7 @@ export const addPackages = async (
   await addInstallations(addedInstalls)
 
   if (options.yarn) {
-    const changeDirCmd = 'cd ' + options.workingDir + ' && '
-    execSync(changeDirCmd + 'yarn')
+    console.log('Running yarn:')
+    execSync('yarn', {cwd: options.workingDir})
   }
 }

@@ -1,10 +1,15 @@
 # Yalc changelog
 
+## 1.0.0.pre.25
+
+- `--pure` flag, yarn `workspaces` support
+- `--changed` option, publish/push only if package content changed
+
 ## 1.0.0.pre.24 (2018-11-23)
-- postupdate script on update (and push)
+- `postupdate` script on `update` (and `push`)
 - new file inclusion algorithm with `npm-packlist`
-- .yalcignore added
-- installations show/clean commmand
+- `.yalcignore` added
+- installations `show/clean` commmand
 
 ## 1.0.0.pre.16 (2018-01-02)
 - fix package deps

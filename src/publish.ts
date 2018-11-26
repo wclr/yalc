@@ -23,8 +23,10 @@ export interface PublishPackageOptions {
   signature?: boolean
   knit?: boolean
   force?: boolean
+  changed?: boolean,
   push?: boolean
-  pushSafe?: boolean
+  pushSafe?: boolean,
+  yarn?: boolean
 }
 
 const { join } = path
@@ -78,7 +80,11 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       execSync(scriptRunCmd + 'prepublish', execLoudOptions)
     }
   }
-  await copyPackageToStore(pkg, options)
+  const copyRes = await copyPackageToStore(pkg, options)
+  if (options.changed && !copyRes) {
+    console.log('Package content has not changed, skipping publishing.')
+    return
+  }
   if (scriptRunCmd) {
     if (pkg.scripts!.postyalc) {
       console.log('Running postloc script: ' + pkg.scripts!.postyalc)
@@ -97,13 +103,14 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       console.log(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
       const installationsToRemoveForPkg = await updatePackages([pkg.name], {
         workingDir,
-        noInstallationsRemove: true
+        noInstallationsRemove: true,
+        yarn: options.yarn
       })
       installationsToRemove.concat(installationsToRemoveForPkg)
     }
     await removeInstallations(installationsToRemove)
-  }
-  await workaroundYarnCacheBug(pkg)
+  }  
+  //await workaroundYarnCacheBug(pkg)
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const publishedPkg = readPackageManifest(publishedPackageDir)!
   console.log(

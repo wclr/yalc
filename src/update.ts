@@ -7,9 +7,10 @@ import { readLockfile } from './lockfile'
 import { parsePackageName, addPackages, readPackageManifest, values } from '.'
 
 export interface UpdatePackagesOptions {
-  safe?: boolean
-  noInstallationsRemove?: boolean
   workingDir: string
+  noInstallationsRemove?: boolean
+  safe?: boolean
+  yarn?: boolean
 }
 export const updatePackages = async (
   packages: string[],
@@ -29,7 +30,7 @@ export const updatePackages = async (
         }
         packagesToUpdate.push(name)
       } else {
-        installationsToRemove.push({ name, version, path: options.workingDir })
+        installationsToRemove.push({ name, path: options.workingDir })
         console.log(
           `Did not find package ${name} in lockfile, ` +
             `please use 'add' command to add it explicitly.`
@@ -45,24 +46,33 @@ export const updatePackages = async (
       ? name + '@' + lockfile.packages[name].version
       : name,
     file: lockfile.packages[name].file,
-    link: lockfile.packages[name].link
+    link: lockfile.packages[name].link,
+    pure: lockfile.packages[name].pure
   }))
 
   const packagesFiles = lockPackages.filter(p => p.file).map(p => p.name)
   await addPackages(packagesFiles, { workingDir: options.workingDir })
 
   const packagesLinks = lockPackages
-    .filter(p => !p.file && !p.link)
+    .filter(p => !p.file && !p.link && !p.pure)
     .map(p => p.name)
   await addPackages(packagesLinks, {
     workingDir: options.workingDir,
-    link: true
+    link: true,
+    pure: false
   })
 
   const packagesLinkDep = lockPackages.filter(p => p.link).map(p => p.name)
   await addPackages(packagesLinkDep, {
     workingDir: options.workingDir,
-    linkDep: true
+    linkDep: true,
+    pure: false
+  })
+
+  const packagesPure = lockPackages.filter(p => p.pure).map(p => p.name)
+  await addPackages(packagesPure, {
+    workingDir: options.workingDir,
+    pure: true
   })
 
   for (const packageName of packages) {
@@ -76,6 +86,11 @@ export const updatePackages = async (
       )
       execSync(postupdate, { cwd: workingDir })
     }
+  }
+
+  if (options.yarn) {
+    console.log('Running yarn:')
+    execSync('yarn', { cwd: options.workingDir })
   }
 
   if (!options.noInstallationsRemove) {

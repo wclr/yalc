@@ -8,12 +8,12 @@ When developing and authoring multiple packages (private or public), you often f
 
 ## What
 
-- `yalc` acts as very simple local repository for your localy developed packages that you want to share across your local environment.
-- When you run `yalc publish` in the package directory, it grabs only files that should be published to NPM and *puts* them in a special global store (located, for example, in  `~/.yalc`). 
-- When you run `yalc add my-package` in your `project` it *pulls* package content into `.yalc` in the current folder and injects a `file:`/`link:` dependency into `package.json`. Alternatively, you may use `yalc link my-package` which will create a symlink to the package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does).
--  `yalc` creates a special `yalc.lock` file in your project (similar to `yarn.lock` and `package.json`) that is used to ensure consistency while performing `yalc`'s routines.
-- `yalc` can be used with projects where `yarn` or `npm` package managers are used 
-for managing `package.json` dependencies.
+- `yalc` acts as very simple local repository for your locally developed packages that you want to share across your local environment.
+- When you run `yalc publish` in the package directory, it grabs only files that should be published to NPM and _puts_ them in a special global store (located, for example, in `~/.yalc`).
+- When you run `yalc add my-package` in your `project` it _pulls_ package content into `.yalc` in the current folder and injects a `file:`/`link:` dependency into `package.json`. Alternatively, you may use `yalc link my-package` which will create a symlink to the package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does), or you even may use it with **Yarn workspaces**.
+- `yalc` creates a special `yalc.lock` file in your project (similar to `yarn.lock` and `package.json`) that is used to ensure consistency while performing `yalc`'s routines.
+- `yalc` can be used with projects where `yarn` or `npm` package managers are used
+  for managing `package.json` dependencies.
 
 ## Installation
 
@@ -31,10 +31,13 @@ Using Yarn:
 yarn global add yalc
 ```
 
+Some documented features might not has been published yet, see [change log](./CHANGELOG.md).
+
 ## Usage
 
 ### Publish
-- Run `yalc publish` in your dependency package `my-package`. 
+
+- Run `yalc publish` in your dependency package `my-package`.
 - It will copy [all the files that should be published in remote NPM registry](https://docs.npmjs.com/files/package.json#files).
 
 - It will run `preyalc` or `prepublish` scripts before, and `postyalc` or `postpublish` after. Use `--force` to publish without running scripts.
@@ -50,30 +53,36 @@ yarn global add yalc
 - [Easily propagate package updates everywhere.](#pushing-updates-automatically-to-all-installations)
 
 ### Add
+
 - Run `yalc add my-package` in your dependent project, which
-will copy the current version from the store to your project's `.yalc` folder and inject a `file:.yalc/my-package` dependency into `package.json`.
+  will copy the current version from the store to your project's `.yalc` folder and inject a `file:.yalc/my-package` dependency into `package.json`.
 - You may specify a particular version with `yalc add my-package@version`. This version will be fixed in `yalc.lock` and during updates it will not affect newly published versions.
 - Use the `--link` option to add a `link:` dependency instead of `file:`.
 - Use the `--dev` option to add yalc package to dev dependencies.
+- With `--pure` flag it will not touch `package.json` file, nor will touch modules folder, this is useful for example when working with [**Yarn workspaces**](https://yarnpkg.com/lang/en/docs/workspaces/) (read below in _Advanced usage_ section)
 
 ### Link
--  As an alternative to `add`, you can use the `link` command which is similar to `npm/yarn link`, except that the symlink source will be not the global link directory but the local `.yalc` folder of your project. 
+
+- As an alternative to `add`, you can use the `link` command which is similar to `npm/yarn link`, except that the symlink source will be not the global link directory but the local `.yalc` folder of your project.
 - After `yalc` copies package content to `.yalc` folder it will create a symlink:
-`project/.yalc/my-package ==> project/node_modules/my-package`. It will not touch `package.json` in this case.
+  `project/.yalc/my-package ==> project/node_modules/my-package`. It will not touch `package.json` in this case.
 
 ### Update
+
 - Run `yalc update my-package` to update the latest version from store.
 - Run `yalc update` to update all the packages found in `yalc.lock`.
-  
-### Remove
- - Run `yalc remove my-package`, it will remove package info from `package.json` and `yalc.lock`
- - Run `yalc remove --all` to remove all packages from project.
+- While update if yalc'ed package has `scripts.postupdate` this command will run in host package dir.
 
-----
+### Remove
+
+- Run `yalc remove my-package`, it will remove package info from `package.json` and `yalc.lock`
+- Run `yalc remove --all` to remove all packages from project.
+
+---
 
 **NB!** Currently, `yalc` copies (or links) added/updated package content to the `node_modules` folder, but it doesn't execute `yarn/npm` install/update commands after this, so dependencies must be updated manually if necessary.
 
-----
+---
 
 ## Advanced usage
 
@@ -83,26 +92,37 @@ will copy the current version from the store to your project's `.yalc` folder an
 - `yalc publish --push` will publish your package to the store and propagate all changes to existing `yalc` package installations (this will actually do `update` operation on the location).
 - `yalc push` - is a use shortcut command for push operation (which will likely become your primarily used command for publication):
   - `force` options is `true` by default, so it won't run `pre/post` scripts (may change this with `--no-force` flag).
+- `scripts.postupdate` will be executed in host package dir, like while `update` operation.
+- With `--changed` flag yalc will first check if package content has changed before publishing and pushing, it is quick operation, maybe useful for _file watching scenarios_ with pushing on changes.
+
 
 ### Keep it out of git
+
 - If you are using `yalc'ed` modules temporary while development, first add `.yalc` and `yalc.lock` to `.gitignore`.
 - Use `yalc link`, that won't touch `packages.json`
 - If you use `yalc add` it will change `package.json`, and ads `file:`/`link:` dependencies, if you may want to use `yalc check` in the [precommit hook](https://github.com/typicode/husky) which will check package.json for `yalc'ed` dependencies and exits with error, if you forgot to remove them.
 
 ### Keep it in git
-- You may want to keep shared `yalc'ed` stuff within the projects you are working on and treat it as a part of the project's codebase. This may really simplify management and usage of shared *work in progress* packages within your projects and help to make things consistent. So, then just do it, keep `.yalc` folder and `yalc.lock` in git. 
+
+- You may want to keep shared `yalc'ed` stuff within the projects you are working on and treat it as a part of the project's codebase. This may really simplify management and usage of shared _work in progress_ packages within your projects and help to make things consistent. So, then just do it, keep `.yalc` folder and `yalc.lock` in git.
 - Replace it with published versions from remote repository when ready.
 - **NB!** - standard non-code files like `README`, `LICENCE` etc. will be included also, so you may want to excluded them in `.gitignore` with a line like `**/.yalc/**/*.md` or you may use `.yalcignore` not to include those files in package content.
 
-
 ### Publish/push sub-projects
 
-- Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package-dir will perform publish operation in nested `package` folder of current working dir.
+- Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package-dir will perform publish operation in nested`package` folder of current working dir.
+
+### Use with [**Yarn workspaces**](https://yarnpkg.com/lang/en/docs/workspaces/)!
+
+Use if you will try to `add` repo in `workspaces` enabled package, `--pure` option will be used by default, `package.json` nor modules folder will not be touched.
+
+Then you add yalc'ed package folder to `workspaces` in `package.json` (you may just add `.yalc/*` and `.yalc/@*/*` patterns). When you will do `update` (or `push`) packages, content will be updated automatically and `yarn` will care about everything else.
+
+If you want to override default pure behavior use `--no-pure` flag.
 
 ### Clean up installations file
 
 - While working with yalc for some time on the dev machine you may face the situation when you have locations where you added yalc'ed packages being removed from file system, and this will cause some warning messages when yalc will try to push package to removed location. To get rid of such messages there in an explicit command for this `yalc installations clean [package]`.
-
 
 ## Related links
 

@@ -35,7 +35,7 @@ yargs
     builder: () => {
       return yargs
         .default('sig', true)
-        .boolean(['push', 'knit', 'force', 'push-safe', 'sig'])
+        .boolean(['push', 'knit', 'force', 'push-safe', 'sig', 'changed', 'yarn'])
     },
     handler: argv => {
       const folder = argv._[1]
@@ -45,7 +45,9 @@ yargs
         knit: argv.knit,
         push: argv.push,
         pushSafe: argv.pushSafe,
-        signature: argv.sig
+        signature: argv.sig,
+        yarn: argv.yarn,
+        changed: argv.changed
       })
     }
   })
@@ -77,7 +79,7 @@ yargs
       return yargs
         .default('force', undefined)
         .default('sig', true)
-        .boolean(['knit', 'safe', 'force', 'sig'])
+        .boolean(['knit', 'safe', 'force', 'sig', 'changed', 'yarn'])
     },
     handler: argv => {
       return publishPackage({
@@ -86,7 +88,9 @@ yargs
         knit: argv.knit,
         push: true,
         pushSafe: argv.safe,
-        signature: argv.sig
+        signature: argv.sig,
+        yarn: argv.yarn,
+        changed: argv.changed
       })
     }
   })
@@ -96,14 +100,19 @@ yargs
     builder: () => {
       return yargs
         .default('yarn', false)
-        .boolean(['file', 'dev', 'save-dev', 'link', 'yarn'])
+        .boolean(['file', 'dev', 'save-dev', 'link', 'yarn', 'pure'])
         .help(true)
     },
     handler: argv => {
+      const hasPureArg = process.argv.reduce(
+        (res, arg) => res || /-pure/.test(arg),
+        false
+      )
       return addPackages(argv._.slice(1), {
         dev: argv.dev || argv.saveDev,
         yarn: argv.yarn,
         linkDep: argv.link,
+        pure: hasPureArg ? argv.pure : undefined,
         workingDir: process.cwd()
       })
     }

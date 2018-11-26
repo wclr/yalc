@@ -61,9 +61,11 @@ export const getPackageStoreDir = (packageName: string, version = '') =>
 export interface PackageManifest {
   name: string
   version: string
+  private?: boolean
   files: string[]
   dependencies?: { [name: string]: string }
   devDependencies?: { [name: string]: string }
+  workspaces?: string[]
   scripts?: {
     preinstall?: string
     postupdate: string
@@ -127,7 +129,7 @@ export function readPackageManifest(workingDir: string) {
 
 const signatureFileName = 'yalc.sig'
 
-export function readSignatureFile(workingDir: string) {
+export const readSignatureFile = (workingDir: string) => {
   const signatureFilePath = join(workingDir, signatureFileName)
   try {
     const fileData = fs.readFileSync(signatureFilePath, 'utf-8')
@@ -137,17 +139,17 @@ export function readSignatureFile(workingDir: string) {
   }
 }
 
-export function readIgnoreFile(workingDir: string) {
-  const flePath = join(workingDir, values.ignoreFileName)
+export const readIgnoreFile = (workingDir: string) => {
+  const filePath = join(workingDir, values.ignoreFileName)
   try {
-    const fileData = fs.readFileSync(flePath, 'utf-8')
+    const fileData = fs.readFileSync(filePath, 'utf-8')
     return fileData
   } catch (e) {
     return ''
   }
 }
 
-export function writeSignatureFile(workingDir: string, signature: string) {
+export const writeSignatureFile = (workingDir: string, signature: string) => {
   const signatureFilePath = join(workingDir, signatureFileName)
   try {
     fs.writeFileSync(signatureFilePath, signature)

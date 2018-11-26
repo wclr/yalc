@@ -28,6 +28,7 @@
   "dependencies": {
     "del": "^2.2.2",
     "fs-extra": "^4.0.2",
+    "graceful-fs": "^4.1.15",
     "ignore": "^5.0.4",
     "npm-packlist": "^1.1.12",
     "user-home": "^2.0.0",

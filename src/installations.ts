@@ -7,10 +7,10 @@ export type PackageName = string & { __packageName: true }
 
 export type PackageInstallation = {
   name: PackageName
-  version: string
+  //version: string
   path: string
-  replaced?: string
-  signature?: string
+  //replaced?: string
+  //signature?: string
 }
 
 export type InstallationsFile = { [packageName: string]: string[] }
@@ -74,7 +74,7 @@ export const cleanInstallations = async ({
             return list.concat([
               {
                 name,
-                version: '',
+                //version: '',
                 path: loc
               }
             ])

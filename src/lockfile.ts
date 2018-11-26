@@ -15,8 +15,14 @@ export type LockFilePackageEntry = {
   link?: boolean
   replaced?: string
   signature?: string
-  to?: string[]
-  from?: string[]
+  pure?: boolean
+  // to?: {
+  //   location: string,
+  //   link?: boolean,
+  //   file?: boolean,
+  //   replaced?: string
+  // }[]
+  // from?: string[]
 }
 
 export type LockFileConfigV1 = {
@@ -88,24 +94,29 @@ export const addPackageToLockfile = (
   options: { workingDir: string }
 ) => {
   const lockfile = readLockfile(options)
-  packages.forEach(({ name, version, file, link, replaced, signature }) => {
-    let old = lockfile.packages[name] || {}
-    lockfile.packages[name] = {}
-    if (version) {
-      lockfile.packages[name].version = version
+  packages.forEach(
+    ({ name, version, file, link, replaced, signature, pure }) => {
+      let old = lockfile.packages[name] || {}
+      lockfile.packages[name] = {}
+      if (version) {
+        lockfile.packages[name].version = version
+      }
+      if (signature) {
+        lockfile.packages[name].signature = signature
+      }
+      if (file) {
+        lockfile.packages[name].file = true
+      }
+      if (pure) {
+        lockfile.packages[name].pure = true
+      }
+      if (link) {
+        lockfile.packages[name].link = true
+      }
+      if (replaced || old.replaced) {
+        lockfile.packages[name].replaced = replaced || old.replaced
+      }
     }
-    if (signature) {
-      lockfile.packages[name].signature = signature
-    }
-    if (file) {
-      lockfile.packages[name].file = true
-    }
-    if (link) {
-      lockfile.packages[name].link = true
-    }
-    if (replaced || old.replaced) {
-      lockfile.packages[name].replaced = replaced || old.replaced
-    }
-  })
+  )
   writeLockfile(lockfile, options)
 }
