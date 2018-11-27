@@ -239,7 +239,7 @@ describe('Yalc package manager', function() {
   })
 
   describe('Update package', () => {
-    const innterNodeModulesFile = join(
+    const innerNodeModulesFile = join(
       projectDir,
       'node_modules',
       values.depPackage,
@@ -259,7 +259,7 @@ describe('Yalc package manager', function() {
           `Expected ${notChangedInnerRootTxtFile} to not be updated because it is the same but fs '${event}' occurred`
         )
       })
-      fs.ensureFileSync(innterNodeModulesFile)
+      fs.ensureFileSync(innerNodeModulesFile)
       await updatePackages([values.depPackage], {
         workingDir: projectDir
       })
@@ -282,11 +282,11 @@ describe('Yalc package manager', function() {
       })
     })
     it('does not remove inner node_modules', () => {
-      checkExists(innterNodeModulesFile)
+      checkExists(innerNodeModulesFile)
     })
   })
 
-  describe('Publish package with --push', () => {
+  describe('Push package updates', () => {
     const rootTxtFileName = 'root-file.txt'
     const newRootTxtFileContents = 'some text in a previous empty file'
 
@@ -294,7 +294,7 @@ describe('Yalc package manager', function() {
       const rootTxtFile = join(depPackageDir, rootTxtFileName)
       await fs.writeFile(rootTxtFile, newRootTxtFileContents)
 
-      const publishPushTimeLabel = 'Package publish --push'
+      const publishPushTimeLabel = 'Push package updates'
       console.time(publishPushTimeLabel)
       await publishPackage({
         workingDir: depPackageDir,
@@ -335,7 +335,7 @@ describe('Yalc package manager', function() {
     })
   })
 
-  describe('Reatreat package', () => {
+  describe('Retreat package', () => {
     before(() => {
       return removePackages([values.depPackage], {
         workingDir: projectDir,
@@ -362,8 +362,8 @@ describe('Yalc package manager', function() {
     })
 
     it('does not update installations file', () => {
-      const installtions = readInstallationsFile()
-      deepEqual(installtions, {
+      const installations = readInstallationsFile()
+      deepEqual(installations, {
         [values.depPackage]: [projectDir]
       })
     })
@@ -412,8 +412,8 @@ describe('Yalc package manager', function() {
     })
 
     it('updates installations file', () => {
-      const installtions = readInstallationsFile()
-      deepEqual(installtions, {})
+      const installations = readInstallationsFile()
+      deepEqual(installations, {})
     })
     it('should remove package from .yalc', () => {
       checkNotExists(join(projectDir, '.ylc', values.depPackage))
@@ -487,8 +487,8 @@ describe('Yalc package manager', function() {
       })
     })
     it('create and updates installations file', () => {
-      const installtions = readInstallationsFile()
-      deepEqual(installtions, {
+      const installations = readInstallationsFile()
+      deepEqual(installations, {
         [values.depPackage]: [projectDir]
       })
     })
