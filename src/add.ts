@@ -2,7 +2,7 @@ import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import { join } from 'path'
 import * as del from 'del'
-import { PackageInstallation, addInstallations } from './installations'
+import { addInstallations } from './installations'
 
 import { addPackageToLockfile } from './lockfile'
 
@@ -47,14 +47,6 @@ const emptyDirExcludeNodeModules = (path: string) => {
     cwd: path,
     ignore: '**/node_modules/**'
   })
-}
-
-const isSymlink = (path: string) => {
-  try {
-    return !!fs.readlinkSync(path)
-  } catch (e) {
-    return false
-  }
 }
 
 export const addPackages = async (
