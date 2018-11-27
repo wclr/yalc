@@ -126,9 +126,6 @@ export const addPackages = async (
       }
       if (!doPure) {
         const destModulesDir = join(workingDir, 'node_modules', name)
-        if (options.link || options.linkDep || isSymlink(destModulesDir)) {
-          fs.removeSync(destModulesDir)
-        }
 
         if (options.link || options.linkDep) {
           ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
