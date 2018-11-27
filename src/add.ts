@@ -105,8 +105,7 @@ export const addPackages = async (
       }
       const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
 
-      emptyDirExcludeNodeModules(destYalcCopyDir)
-      fs.copySync(storedPackageDir, destYalcCopyDir)
+      replaceContentsOfDir(destYalcCopyDir, storedPackageDir)
 
       let replacedVersion = ''
       if (doPure) {
@@ -134,8 +133,7 @@ export const addPackages = async (
         if (options.link || options.linkDep) {
           ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
         } else {
-          emptyDirExcludeNodeModules(destModulesDir)
-          fs.copySync(destYalcCopyDir, destModulesDir)
+          replaceContentsOfDir(destModulesDir, destYalcCopyDir)
         }
 
         if (!options.link) {
@@ -217,4 +215,9 @@ export const addPackages = async (
     console.log('Running yarn:')
     execSync('yarn', { cwd: options.workingDir })
   }
+}
+
+function replaceContentsOfDir(dirToReplace: string, dirToCopyFrom: string) {
+  emptyDirExcludeNodeModules(dirToReplace)
+  fs.copySync(dirToCopyFrom, dirToReplace)
 }
