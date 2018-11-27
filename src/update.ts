@@ -22,14 +22,16 @@ export const updatePackages = async (
   const { workingDir } = options
 
   const {
-    lockPackages,
+    lockfileInfoForPackagesToUpdate,
     installationsToRemove
   } = findPackagesToUpdateOrRemoveFromGivenProjectPath(packages, workingDir)
 
-  const packagesFiles = lockPackages.filter(p => p.file).map(p => p.name)
+  const packagesFiles = lockfileInfoForPackagesToUpdate
+    .filter(p => p.file)
+    .map(p => p.name)
   await addPackages(packagesFiles, { workingDir: options.workingDir })
 
-  const packagesLinks = lockPackages
+  const packagesLinks = lockfileInfoForPackagesToUpdate
     .filter(p => !p.file && !p.link && !p.pure)
     .map(p => p.name)
   await addPackages(packagesLinks, {
@@ -38,14 +40,18 @@ export const updatePackages = async (
     pure: false
   })
 
-  const packagesLinkDep = lockPackages.filter(p => p.link).map(p => p.name)
+  const packagesLinkDep = lockfileInfoForPackagesToUpdate
+    .filter(p => p.link)
+    .map(p => p.name)
   await addPackages(packagesLinkDep, {
     workingDir: options.workingDir,
     linkDep: true,
     pure: false
   })
 
-  const packagesPure = lockPackages.filter(p => p.pure).map(p => p.name)
+  const packagesPure = lockfileInfoForPackagesToUpdate
+    .filter(p => p.pure)
+    .map(p => p.name)
   await addPackages(packagesPure, {
     workingDir: options.workingDir,
     pure: true
@@ -104,7 +110,7 @@ const findPackagesToUpdateOrRemoveFromGivenProjectPath = (
     packagesToUpdate = Object.keys(lockfile.packages)
   }
 
-  const lockPackages = packagesToUpdate.map(name => ({
+  const lockfileInfoForPackagesToUpdate = packagesToUpdate.map(name => ({
     name: lockfile.packages[name].version
       ? name + '@' + lockfile.packages[name].version
       : name,
@@ -114,7 +120,7 @@ const findPackagesToUpdateOrRemoveFromGivenProjectPath = (
   }))
 
   return {
-    lockPackages: lockPackages,
+    lockfileInfoForPackagesToUpdate: lockfileInfoForPackagesToUpdate,
     installationsToRemove: installationsToRemove
   }
 }
