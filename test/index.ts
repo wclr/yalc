@@ -245,16 +245,34 @@ describe('Yalc package manager', function() {
       values.depPackage,
       'node_modules/file.txt'
     )
-    before(() => {
+    const notChangedInnerRootTxtFile = join(
+      projectDir,
+      'node_modules',
+      values.depPackage,
+      'root-file.txt'
+    )
+    let fileWatcher: fs.FSWatcher | undefined
+
+    before(async () => {
+      fileWatcher = fs.watch(notChangedInnerRootTxtFile, event => {
+        throw new Error(
+          `Expected ${notChangedInnerRootTxtFile} to not be updated because it is the same but fs '${event}' occurred`
+        )
+      })
       fs.ensureFileSync(innterNodeModulesFile)
-      return updatePackages([values.depPackage], {
+      await updatePackages([values.depPackage], {
         workingDir: projectDir
       })
     })
 
+    after(() => {
+      if (fileWatcher) {
+        fileWatcher.close()
+      }
+    })
+
     it('does not change yalc.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
-      console.log('lockFile', lockFile)
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
           file: true,
@@ -265,6 +283,37 @@ describe('Yalc package manager', function() {
     })
     it('does not remove inner node_modules', () => {
       checkExists(innterNodeModulesFile)
+    })
+  })
+
+  describe('Publish package with --push', () => {
+    const rootTxtFileName = 'root-file.txt'
+    const newRootTxtFileContents = 'some text in a previous empty file'
+
+    before(async () => {
+      const rootTxtFile = join(depPackageDir, rootTxtFileName)
+      await fs.writeFile(rootTxtFile, newRootTxtFileContents)
+
+      const publishPushTimeLabel = 'Package publish --push'
+      console.time(publishPushTimeLabel)
+      await publishPackage({
+        workingDir: depPackageDir,
+        signature: true,
+        push: true
+      })
+      console.timeEnd(publishPushTimeLabel)
+    })
+
+    it(`updates changed file ${rootTxtFileName} in consuming project`, async () => {
+      const innerRootTxtFile = join(
+        projectDir,
+        'node_modules',
+        values.depPackage,
+        rootTxtFileName
+      )
+      const newFileContents = await fs.readFile(innerRootTxtFile)
+
+      deepEqual(newFileContents.toString(), newRootTxtFileContents)
     })
   })
 
