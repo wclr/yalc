@@ -57,9 +57,6 @@ const isSymlink = (path: string) => {
   }
 }
 
-const gracefulFs = require('graceful-fs')
-gracefulFs.gracefulify(fs)
-
 export const addPackages = async (
   packages: string[],
   options: AddPackagesOptions
