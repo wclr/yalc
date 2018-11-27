@@ -218,33 +218,10 @@ async function replaceContentsOfDirectory(
     isNodeModulesDirectory
   )
 
-  const itemsInDestinationDirectoryAsMap = convertFileSystemItemArrayToMapKeyedOnRelativePath(
+  const { newItems, changedItems } = await findNewAndChangedItems(
+    itemsInSourceDirectoryExcludingNodeModulesDir,
     itemsInDestinationDirectoryExcludingNodeModulesDir
   )
-
-  const newItems: FileSystemItem[] = []
-  const changedItems: FileSystemItem[] = []
-  for (const itemInSourceDirectory of itemsInSourceDirectoryExcludingNodeModulesDir) {
-    const itemInDestinationDirectory = itemsInDestinationDirectoryAsMap.get(
-      itemInSourceDirectory.relativePath
-    )
-
-    const itemDiffResults = await diffItems(
-      itemInSourceDirectory,
-      itemInDestinationDirectory
-    )
-
-    switch (itemDiffResults) {
-      case 'changed':
-        changedItems.push(itemInSourceDirectory)
-        break
-      case 'new':
-        newItems.push(itemInSourceDirectory)
-        break
-      case 'same':
-        break
-    }
-  }
 
   const itemsInSourceDirectoryAsMap = convertFileSystemItemArrayToMapKeyedOnRelativePath(
     itemsInSourceDirectoryExcludingNodeModulesDir
@@ -330,6 +307,41 @@ async function getAllItemsInDirectory(
 const isNodeModulesDirectory = (item: FileSystemItem) =>
   item.stats.isDirectory() &&
   path.parse(item.absolutePath).base === 'node_modules'
+
+async function findNewAndChangedItems(
+  sourceItems: FileSystemItem[],
+  destinationItems: FileSystemItem[]
+): Promise<{ newItems: FileSystemItem[]; changedItems: FileSystemItem[] }> {
+  const destinationItemsAsMapKeyedOnRelativeItemPath = convertFileSystemItemArrayToMapKeyedOnRelativePath(
+    destinationItems
+  )
+
+  const newItems: FileSystemItem[] = []
+  const changedItems: FileSystemItem[] = []
+  for (const itemInSourceDirectory of sourceItems) {
+    const itemInDestinationDirectory = destinationItemsAsMapKeyedOnRelativeItemPath.get(
+      itemInSourceDirectory.relativePath
+    )
+
+    const itemDiffResults = await diffItems(
+      itemInSourceDirectory,
+      itemInDestinationDirectory
+    )
+
+    switch (itemDiffResults) {
+      case 'changed':
+        changedItems.push(itemInSourceDirectory)
+        break
+      case 'new':
+        newItems.push(itemInSourceDirectory)
+        break
+      case 'same':
+        break
+    }
+  }
+
+  return { newItems, changedItems }
+}
 
 function convertFileSystemItemArrayToMapKeyedOnRelativePath(
   items: FileSystemItem[]
