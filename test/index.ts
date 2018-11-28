@@ -56,6 +56,17 @@ const checkExists = (path: string) =>
 const checkNotExists = (path: string) =>
   throws(() => fs.accessSync(path), path + ' exists')
 
+const isSymlink = (path: string) => {
+  const stats = fs.lstatSync(path)
+  return stats.isSymbolicLink()
+}
+const checkThatPathIsSymlink = (path: string) => {
+  deepEqual(isSymlink(path), true, `${path} is a symlink`)
+}
+const checkThatPathIsNotASymlink = (path: string) => {
+  deepEqual(isSymlink(path), false, `${path} is not a symlink`)
+}
+
 const extractSignature = (lockfile: LockFileConfigV1, packageName: string) => {
   const packageEntry = lockfile.packages[packageName]
   if (packageEntry === undefined) {
@@ -206,12 +217,24 @@ describe('Yalc package manager', function() {
       })
     })
     it('copies package to .yalc folder', () => {
-      checkExists(join(projectDir, '.yalc', values.depPackage))
+      const depPackagePathInYalcDir = join(
+        projectDir,
+        '.yalc',
+        values.depPackage
+      )
+      checkExists(depPackagePathInYalcDir)
+      checkThatPathIsNotASymlink(depPackagePathInYalcDir)
     })
-    it('copies remove package to node_modules', () => {
-      checkExists(join(projectDir, 'node_modules', values.depPackage))
+    it('copies package to node_modules', () => {
+      const depPackagePathInNodeModulesDir = join(
+        projectDir,
+        'node_modules',
+        values.depPackage
+      )
+      checkExists(depPackagePathInNodeModulesDir)
+      checkThatPathIsNotASymlink(depPackagePathInNodeModulesDir)
     })
-    it('creates to yalc.lock', () => {
+    it('creates yalc.lock', () => {
       checkExists(join(projectDir, 'yalc.lock'))
     })
     it('places yalc.lock correct info about file', () => {
@@ -422,7 +445,7 @@ describe('Yalc package manager', function() {
       deepEqual(installations, {})
     })
     it('should remove package from .yalc', () => {
-      checkNotExists(join(projectDir, '.ylc', values.depPackage))
+      checkNotExists(join(projectDir, '.yalc', values.depPackage))
     })
 
     it('should remove package from node_modules', () => {
@@ -438,15 +461,27 @@ describe('Yalc package manager', function() {
       })
     })
     it('copies package to .yalc folder', () => {
-      checkExists(join(projectDir, '.yalc', values.depPackage))
+      const depPackagePathInYalcDir = join(
+        projectDir,
+        '.yalc',
+        values.depPackage
+      )
+      checkExists(depPackagePathInYalcDir)
+      checkThatPathIsNotASymlink(depPackagePathInYalcDir)
     })
-    it('copies remove package to node_modules', () => {
-      checkExists(join(projectDir, 'node_modules', values.depPackage))
+    it('sets up link to package in node_modules folder', () => {
+      const depPackagePathInNodeModulesDir = join(
+        projectDir,
+        'node_modules',
+        values.depPackage
+      )
+      checkExists(depPackagePathInNodeModulesDir)
+      checkThatPathIsSymlink(depPackagePathInNodeModulesDir)
     })
-    it('creates to yalc.lock', () => {
+    it('creates yalc.lock', () => {
       checkExists(join(projectDir, 'yalc.lock'))
     })
-    it('places yalc.lock correct info about file', () => {
+    it('places in yalc.lock correct info about file', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
@@ -476,7 +511,7 @@ describe('Yalc package manager', function() {
         workingDir: projectDir
       })
     })
-    it('places yalc.lock correct info about file', () => {
+    it('places in yalc.lock correct info about file', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
@@ -496,6 +531,38 @@ describe('Yalc package manager', function() {
       const installations = readInstallationsFile()
       deepEqual(installations, {
         [values.depPackage]: [projectDir]
+      })
+    })
+  })
+
+  describe('Add package after link', () => {
+    before(() => {
+      return addPackages([values.depPackage], {
+        workingDir: projectDir
+      })
+    })
+    it('copies package to .yalc folder', () => {
+      const pathToDepPackageInYalcDir = join(
+        projectDir,
+        '.yalc',
+        values.depPackage
+      )
+      checkExists(pathToDepPackageInYalcDir)
+      checkThatPathIsNotASymlink(pathToDepPackageInYalcDir)
+    })
+    it('copies package to node_modules folder (replacing existing symlink)', () => {
+      const pathToDepPackageInNodeModulesDir = join(
+        projectDir,
+        'node_modules',
+        values.depPackage
+      )
+      checkExists(pathToDepPackageInNodeModulesDir)
+      checkThatPathIsNotASymlink(pathToDepPackageInNodeModulesDir)
+    })
+    it('updates package.json', () => {
+      const pkg = readPackageManifest(projectDir)!
+      deepEqual(pkg.dependencies, {
+        [values.depPackage]: 'file:.yalc/' + values.depPackage
       })
     })
   })
