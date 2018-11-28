@@ -50,6 +50,14 @@ const emptyDirExcludeNodeModules = (path: string) => {
   })
 }
 
+const isSymlink = (path: string) => {
+  try {
+    return !!fs.readlinkSync(path)
+  } catch (e) {
+    return false
+  }
+}
+
 export const addPackages = async (
   packages: string[],
   options: AddPackagesOptions
@@ -119,6 +127,10 @@ export const addPackages = async (
       if (options.link || options.linkDep) {
         ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
       } else {
+        if (isSymlink(destModulesDir)) {
+          await fs.remove(destModulesDir)
+        }
+
         await replaceContentsOfDirectory(destModulesDir, destYalcCopyDir)
       }
 
