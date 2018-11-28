@@ -384,7 +384,9 @@ async function copyItems(
   items: FileSystemItem[]
 ): Promise<void> {
   const itemsToCopy = items.map(item =>
-    fs.copy(item.absolutePath, path.resolve(dirToCopyTo, item.relativePath))
+    fs.copy(item.absolutePath, path.resolve(dirToCopyTo, item.relativePath), {
+      preserveTimestamps: true
+    })
   )
   await Promise.all(itemsToCopy)
 }
