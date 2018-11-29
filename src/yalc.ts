@@ -14,17 +14,11 @@ import { showInstallations, cleanInstallations } from './installations'
 
 import { checkManifest } from './check'
 
+const publishFlags = ['knit', 'force', 'sig', 'changed', 'yarn', 'files']
+
 const cliCommand = values.myNameIs
 
-const publishFlags = [
-  'knit',
-  'force',
-  'sig',
-  'changed',
-  'yarn',
-  'files'
-]
-
+/* tslint:disable-next-line */
 yargs
   .usage(cliCommand + ' [command] [options] [package1 [package2...]]')
   .command({
@@ -43,10 +37,7 @@ yargs
     builder: () => {
       return yargs
         .default('sig', true)
-        .boolean([
-          'push',
-          'push-safe',
-        ].concat(publishFlags))
+        .boolean(['push', 'push-safe'].concat(publishFlags))
     },
     handler: argv => {
       const folder = argv._[1]
@@ -55,7 +46,7 @@ yargs
         push: argv.push,
         pushSafe: argv.pushSafe,
         force: argv.force,
-        knit: argv.knit,        
+        knit: argv.knit,
         signature: argv.sig,
         yarn: argv.yarn,
         changed: argv.changed,
