@@ -1,7 +1,6 @@
 import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import { join } from 'path'
-import * as del from 'del'
 import { addInstallations } from './installations'
 
 import { addPackageToLockfile } from './lockfile'
@@ -40,15 +39,6 @@ const getLatestPackageVersion = (packageName: string) => {
     .sort((a, b) => b.created - a.created)
     .map(x => x.version)[0]
   return latest || ''
-}
-
-const emptyDirExcludeNodeModules = (path: string) => {
-  // TODO: maybe use fs.remove + readdir for speed.
-  del.sync('**', {
-    dot: true,
-    cwd: path,
-    ignore: '**/node_modules/**'
-  })
 }
 
 const isSymlink = (path: string) => {
