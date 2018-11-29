@@ -235,19 +235,10 @@ async function replaceContentsOfDirectory(
     itemsInDestinationDirectoryExcludingNodeModulesDir
   )
 
-  const itemsInSourceDirectoryAsMap = convertFileSystemItemArrayToMapKeyedOnRelativePath(
-    itemsInSourceDirectoryExcludingNodeModulesDir
+  const { removedItems } = await findRemovedItems(
+    itemsInSourceDirectoryExcludingNodeModulesDir,
+    itemsInDestinationDirectoryExcludingNodeModulesDir
   )
-  const removedItems: FileSystemItem[] = []
-  for (const itemInDestinationDir of itemsInDestinationDirectoryExcludingNodeModulesDir) {
-    const itemInSourceDirectory = itemsInSourceDirectoryAsMap.get(
-      itemInDestinationDir.relativePath
-    )
-
-    if (itemInSourceDirectory === undefined) {
-      removedItems.push(itemInDestinationDir)
-    }
-  }
 
   await copyItems(destinationDirectory, newItems)
 
@@ -353,6 +344,27 @@ async function findNewAndChangedItems(
   }
 
   return { newItems, changedItems }
+}
+
+async function findRemovedItems(
+  sourceItems: FileSystemItem[],
+  destinationItems: FileSystemItem[]
+): Promise<{ removedItems: FileSystemItem[] }> {
+  const itemsInSourceDirectoryAsMap = convertFileSystemItemArrayToMapKeyedOnRelativePath(
+    sourceItems
+  )
+  const removedItems: FileSystemItem[] = []
+  for (const itemInDestinationDir of destinationItems) {
+    const itemInSourceDirectory = itemsInSourceDirectoryAsMap.get(
+      itemInDestinationDir.relativePath
+    )
+
+    if (itemInSourceDirectory === undefined) {
+      removedItems.push(itemInDestinationDir)
+    }
+  }
+
+  return { removedItems }
 }
 
 function convertFileSystemItemArrayToMapKeyedOnRelativePath(
