@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
 
-export async function replaceContentsOfDirectory(
+export async function mirrorDirectory(
   destinationDirectory: string,
   sourceDirectory: string
 ) {

@@ -5,7 +5,7 @@ import { addInstallations } from './installations'
 
 import { addPackageToLockfile } from './lockfile'
 
-import { replaceContentsOfDirectory } from './mirrorDirectory';
+import { mirrorDirectory } from './mirrorDirectory';
 
 import {
   getPackageStoreDir,
@@ -93,7 +93,7 @@ export const addPackages = async (
     }
     const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
 
-    await replaceContentsOfDirectory(destYalcCopyDir, storedPackageDir)
+    await mirrorDirectory(destYalcCopyDir, storedPackageDir)
 
     let replacedVersion = ''
     if (doPure) {
@@ -122,7 +122,7 @@ export const addPackages = async (
           await fs.remove(destModulesDir)
         }
 
-        await replaceContentsOfDirectory(destModulesDir, destYalcCopyDir)
+        await mirrorDirectory(destModulesDir, destYalcCopyDir)
       }
 
       if (!options.link) {
