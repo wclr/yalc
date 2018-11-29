@@ -27,6 +27,7 @@ export interface PublishPackageOptions {
   push?: boolean
   pushSafe?: boolean,
   yarn?: boolean
+  files?: boolean
 }
 
 const { join } = path

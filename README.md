@@ -39,17 +39,12 @@ Some documented features might not has been published yet, see [change log](./CH
 
 - Run `yalc publish` in your dependency package `my-package`.
 - It will copy [all the files that should be published in remote NPM registry](https://docs.npmjs.com/files/package.json#files).
-
 - It will run `preyalc` or `prepublish` scripts before, and `postyalc` or `postpublish` after. Use `--force` to publish without running scripts.
-
 - While copying package content, `yalc` calculates the hash signature of all files and, by default, adds this signature to the package manifest `version`. You can disable this by using the `--no-sig` option.
-
 - You may also use `.yalcignore` to exclude files from publishing to yalc repo, for example files like README.md, etc.
-
+- `--files` flag will show included files in published package
 - **NB!** Windows users should make sure the `LF` new line symbol is used in published sources; it may be needed for some packages to work correctly (for example, `bin` scripts). `yalc` won't convert line endings for you (because `npm` and `yarn` won't either).
-
 - **NB!** Note that, if you want to include `.yalc` folder in published package content, you should add `!.yalc` line to `.npmignore`.
-
 - [Easily propagate package updates everywhere.](#pushing-updates-automatically-to-all-installations)
 
 ### Add
@@ -59,7 +54,7 @@ Some documented features might not has been published yet, see [change log](./CH
 - You may specify a particular version with `yalc add my-package@version`. This version will be fixed in `yalc.lock` and during updates it will not affect newly published versions.
 - Use the `--link` option to add a `link:` dependency instead of `file:`.
 - Use the `--dev` option to add yalc package to dev dependencies.
-- With `--pure` flag it will not touch `package.json` file, nor will touch modules folder, this is useful for example when working with [**Yarn workspaces**](https://yarnpkg.com/lang/en/docs/workspaces/) (read below in _Advanced usage_ section)
+- With `--pure` flag it will not touch `package.json` file, nor it will touch modules folder, this is useful for example when working with [**Yarn workspaces**](https://yarnpkg.com/lang/en/docs/workspaces/) (read below in _Advanced usage_ section)
 
 ### Link
 
@@ -95,7 +90,6 @@ Some documented features might not has been published yet, see [change log](./CH
 - `scripts.postupdate` will be executed in host package dir, like while `update` operation.
 - With `--changed` flag yalc will first check if package content has changed before publishing and pushing, it is quick operation, maybe useful for _file watching scenarios_ with pushing on changes.
 
-
 ### Keep it out of git
 
 - If you are using `yalc'ed` modules temporary while development, first add `.yalc` and `yalc.lock` to `.gitignore`.
@@ -114,9 +108,9 @@ Some documented features might not has been published yet, see [change log](./CH
 
 ### Use with [**Yarn workspaces**](https://yarnpkg.com/lang/en/docs/workspaces/)!
 
-Use if you will try to `add` repo in `workspaces` enabled package, `--pure` option will be used by default, `package.json` nor modules folder will not be touched.
+Use if you will try to `add` repo in `workspaces` enabled package, `--pure` option will be used by default, so `package.json` and modules folder will not be touched.
 
-Then you add yalc'ed package folder to `workspaces` in `package.json` (you may just add `.yalc/*` and `.yalc/@*/*` patterns). When you will do `update` (or `push`) packages, content will be updated automatically and `yarn` will care about everything else.
+Then you add yalc'ed package folder to `workspaces` in `package.json` (you may just add `.yalc/*` and `.yalc/@*/*` patterns). While `update` (or `push`) operation, packages content will be updated automatically and `yarn` will care about everything else.
 
 If you want to override default pure behavior use `--no-pure` flag.
 

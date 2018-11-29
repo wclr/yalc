@@ -54,7 +54,8 @@ export const copyPackageToStore = async (
     workingDir: string
     signature?: boolean
     changed?: boolean
-    knit?: boolean
+    knit?: boolean,
+    files?: boolean
   }
 ) => {
   const { workingDir } = options
@@ -72,6 +73,13 @@ export const copyPackageToStore = async (
   const filesToCopy = (await npmPacklist({ path: workingDir })).filter(
     f => !ignoreRule.ignores(f)
   )
+  if (options.files) {
+    console.log('Files included in published content:')
+    filesToCopy.forEach(f => {
+      console.log(`- ${f}`)
+    })
+    console.log(`Total ${filesToCopy.length} files.`)
+  }
   const copyFilesToStore = async () => {
     await fs.remove(storePackageStoreDir)
     return Promise.all(
@@ -120,13 +128,15 @@ export const copyPackageToStore = async (
   }
 
   writeSignatureFile(storePackageStoreDir, signature)
-  if (options.signature && !options.knit) {
-    const shortSignature = signature.substr(0, shortSignatureLength)
-    const pkg = readPackageManifest(storePackageStoreDir)
-    if (pkg) {
-      pkg.version = [pkg.version, shortSignature].join('-')
-      writePackageManifest(storePackageStoreDir, pkg)
-    }
+  const versionPre =
+    options.signature && !options.knit
+      ? '-' + signature.substr(0, shortSignatureLength)
+      : ''
+  const pkgToWrite: PackageManifest = {
+    ...pkg,
+    version: pkg.version + versionPre,
+    devDependencies: undefined
   }
+  writePackageManifest(storePackageStoreDir, pkgToWrite)
   return signature
 }

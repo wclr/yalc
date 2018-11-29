@@ -4,6 +4,8 @@
 
 - `--pure` flag, yarn `workspaces` support
 - `--changed` option, publish/push only if package content changed
+- remove `devDependencies` from published content
+- `--files` option
 
 ## 1.0.0.pre.24 (2018-11-23)
 - `postupdate` script on `update` (and `push`)

@@ -16,7 +16,15 @@ import { checkManifest } from './check'
 
 const cliCommand = values.myNameIs
 
-// tslint:disable-next-line:no-unused-expression
+const publishFlags = [
+  'knit',
+  'force',
+  'sig',
+  'changed',
+  'yarn',
+  'files'
+]
+
 yargs
   .usage(cliCommand + ' [command] [options] [package1 [package2...]]')
   .command({
@@ -35,19 +43,23 @@ yargs
     builder: () => {
       return yargs
         .default('sig', true)
-        .boolean(['push', 'knit', 'force', 'push-safe', 'sig', 'changed', 'yarn'])
+        .boolean([
+          'push',
+          'push-safe',
+        ].concat(publishFlags))
     },
     handler: argv => {
       const folder = argv._[1]
       return publishPackage({
         workingDir: join(process.cwd(), folder || ''),
-        force: argv.force,
-        knit: argv.knit,
         push: argv.push,
         pushSafe: argv.pushSafe,
+        force: argv.force,
+        knit: argv.knit,        
         signature: argv.sig,
         yarn: argv.yarn,
-        changed: argv.changed
+        changed: argv.changed,
+        files: argv.files
       })
     }
   })
@@ -79,7 +91,7 @@ yargs
       return yargs
         .default('force', undefined)
         .default('sig', true)
-        .boolean(['knit', 'safe', 'force', 'sig', 'changed', 'yarn'])
+        .boolean(['safe'].concat(publishFlags))
     },
     handler: argv => {
       return publishPackage({
@@ -90,7 +102,8 @@ yargs
         pushSafe: argv.safe,
         signature: argv.sig,
         yarn: argv.yarn,
-        changed: argv.changed
+        changed: argv.changed,
+        files: argv.files
       })
     }
   })
