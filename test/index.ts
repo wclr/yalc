@@ -268,31 +268,12 @@ describe('Yalc package manager', function() {
       values.depPackage,
       'node_modules/file.txt'
     )
-    const notChangedInnerRootTxtFile = join(
-      projectDir,
-      'node_modules',
-      values.depPackage,
-      'root-file.txt'
-    )
-    let fileWatcher: fs.FSWatcher | undefined
-    let fileEvents: string[] = []
-
     before(async () => {
-      fileWatcher = fs.watch(notChangedInnerRootTxtFile, event => {
-        fileEvents.push(event)
-      })
       fs.ensureFileSync(innerNodeModulesFile)
       await updatePackages([values.depPackage], {
         workingDir: projectDir
       })
     })
-
-    after(() => {
-      if (fileWatcher) {
-        fileWatcher.close()
-      }
-    })
-
     it('does not change yalc.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
@@ -305,13 +286,6 @@ describe('Yalc package manager', function() {
     })
     it('does not remove inner node_modules', () => {
       checkExists(innerNodeModulesFile)
-    })
-    it('does not touch unchanged file', () => {
-      if (fileEvents.length > 0) {
-        throw new Error(
-          `Expected ${notChangedInnerRootTxtFile} to not be updated because it is the same but fs events [${fileEvents.toString()}] occurred`
-        )
-      }
     })
   })
 

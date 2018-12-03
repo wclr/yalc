@@ -139,4 +139,30 @@ describe('Mirror Directory', () => {
       destinationDirectory
     )
   })
+
+  it('should not touch file in destination if unchanged in source', async () => {
+    await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+    const pathToFileInRootInDestination = path.join(
+      destinationDirectory,
+      fileInRoot
+    )
+    let fileWatcher: fs.FSWatcher | undefined
+    let fileEvents: string[] = []
+    fileWatcher = fs.watch(pathToFileInRootInDestination, event => {
+      fileEvents.push(event)
+    })
+
+    await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+    if (fileWatcher) {
+      fileWatcher.close()
+    }
+
+    if (fileEvents.length > 0) {
+      throw new Error(
+        `Expected ${pathToFileInRootInDestination} to not be updated because it is the same but fs events [${fileEvents.toString()}] occurred`
+      )
+    }
+  })
 })
