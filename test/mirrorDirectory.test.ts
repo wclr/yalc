@@ -86,13 +86,17 @@ async function ensureFileSystemContainsDirectoryContents(
 describe('Mirror Directory', () => {
   const sourceDirectory = path.join(mirrorDirectoryTmpDir, 'source')
   const destinationDirectory = path.join(mirrorDirectoryTmpDir, 'destination')
+
+  const fileInRoot = 'file.txt'
+  const folderInRoot = 'folder'
+  const nestedFileInFolder = 'file.md'
   const sourceDirectoryContents: DirectoryContents = {
-    'file.txt': emptyFile,
+    [fileInRoot]: emptyFile,
     'package.json': fileWithContent(
       '{ "name": "dep-package", "version": "1.0.0" }'
     ),
-    folder: directoryWithContents({
-      'file.md': emptyFile,
+    [folderInRoot]: directoryWithContents({
+      [nestedFileInFolder]: emptyFile,
       'file.txt': emptyFile
     }),
     folder2: directoryWithContents({
@@ -102,7 +106,7 @@ describe('Mirror Directory', () => {
       'file.txt': emptyFile
     })
   }
-  before(async () => {
+  beforeEach(async () => {
     fs.removeSync(sourceDirectory)
     await writeDirectoryContents(sourceDirectoryContents, sourceDirectory)
     fs.removeSync(destinationDirectory)
@@ -112,6 +116,26 @@ describe('Mirror Directory', () => {
     await mirrorDirectory(destinationDirectory, sourceDirectory)
     await ensureFileSystemContainsDirectoryContents(
       sourceDirectoryContents,
+      destinationDirectory
+    )
+  })
+
+  it('should copy new content into destination', async () => {
+    await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+    const modifiedSourceDirectoryContent: DirectoryContents = Object.assign(
+      {},
+      sourceDirectoryContents,
+      { [fileInRoot]: fileWithContent('some content') }
+    )
+    await writeDirectoryContents(
+      modifiedSourceDirectoryContent,
+      sourceDirectory
+    )
+    await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+    await ensureFileSystemContainsDirectoryContents(
+      modifiedSourceDirectoryContent,
       destinationDirectory
     )
   })
