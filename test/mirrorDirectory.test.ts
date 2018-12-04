@@ -107,6 +107,7 @@ describe('Mirror Directory', () => {
   const fileInRoot = 'file.txt'
   const packageJsonInRoot = 'package.json'
   const folderInRoot = 'folder'
+  const folder2InRoot = 'folder2'
   const partialFolderContents: DirectoryContents = {
     'file.md': emptyFile
   }
@@ -115,7 +116,7 @@ describe('Mirror Directory', () => {
     ...partialFolderContents
   }
   const partialSourceDirectoryContents: DirectoryContents = {
-    folder2: directoryWithContents({
+    [folder2InRoot]: directoryWithContents({
       nested: directoryWithContents({
         'file.txt': emptyFile
       }),
@@ -246,6 +247,34 @@ describe('Mirror Directory', () => {
       await fs.ensureSymlink(
         symlinkRelativeSourcePath,
         fileToBeReplacedInDestination
+      )
+    })
+
+    it('should replace directory with symlink, if one of the same name exists and looks the same', async () => {
+      const folderToBeReplacedInDestination = path.join(
+        destinationDirectory,
+        folderInRoot
+      )
+      const stats = await fs.stat(folderToBeReplacedInDestination)
+
+      const symlinkSourceAbsolutePath = path.resolve(
+        sourceDirectory,
+        folder2InRoot
+      )
+      const symlinkRelativeSourcePath = path.relative(
+        sourceDirectory,
+        symlinkSourceAbsolutePath
+      )
+      const folderToReplaceInSource = path.join(sourceDirectory, folderInRoot)
+      await fs.remove(folderToReplaceInSource)
+      await fs.ensureSymlink(symlinkRelativeSourcePath, folderToReplaceInSource)
+      await fs.utimes(folderToReplaceInSource, stats.atime, stats.mtime)
+
+      await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+      await fs.ensureSymlink(
+        symlinkRelativeSourcePath,
+        folderToBeReplacedInDestination
       )
     })
 
