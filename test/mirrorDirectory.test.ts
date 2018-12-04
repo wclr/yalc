@@ -26,12 +26,16 @@ interface File {
   _: 'file'
   contents: any
 }
+interface Symlink {
+  _: 'symlink'
+  sourcePath: string
+}
 interface Directory {
   _: 'directory'
   contents: DirectoryContents
 }
 interface DirectoryContents {
-  [name: string]: File | Directory
+  [name: string]: File | Symlink | Directory
 }
 
 const fileWithContent = (content: string): File => ({
@@ -41,6 +45,10 @@ const fileWithContent = (content: string): File => ({
 const directoryWithContents = (contents: DirectoryContents): Directory => ({
   _: 'directory',
   contents: contents
+})
+const symlinkTo = (sourcePath: string): Symlink => ({
+  _: 'symlink',
+  sourcePath: sourcePath
 })
 const emptyFile: File = fileWithContent('')
 
@@ -58,6 +66,8 @@ async function writeDirectoryContents(
     } else if (item._ === 'directory') {
       await fs.ensureDir(itemDestinationPath)
       await writeDirectoryContents(item.contents, itemDestinationPath)
+    } else {
+      await fs.ensureSymlink(item.sourcePath, itemDestinationPath)
     }
   }
 }
@@ -78,6 +88,13 @@ async function ensureFileSystemContainsDirectoryContents(
       await ensureFileSystemContainsDirectoryContents(
         item.contents,
         itemDestinationPath
+      )
+    } else {
+      assertExists(itemDestinationPath)
+      const symlinkPathInfo = await fs.realpath(itemDestinationPath)
+      deepEqual(
+        symlinkPathInfo,
+        path.resolve(destinationDirectoryPath, item.sourcePath)
       )
     }
   }
@@ -101,7 +118,8 @@ describe('Mirror Directory', () => {
       nested: directoryWithContents({
         'file.txt': emptyFile
       }),
-      'file.txt': emptyFile
+      'file.txt': emptyFile,
+      'symlinkToFile.txt': symlinkTo('./file.txt')
     }),
     'package.json': fileWithContent(
       '{ "name": "dep-package", "version": "1.0.0" }'
