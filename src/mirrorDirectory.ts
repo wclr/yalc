@@ -61,9 +61,8 @@ async function getAllItemsInDirectory(
   )
 
   const statsPromises: Promise<fs.Stats>[] = []
-  for (let entry of allItemAbsolutePaths) {
-    const filePath = path.resolve(rootDir, entry)
-    statsPromises.push(fs.stat(filePath))
+  for (let absoluteItemPath of allItemAbsolutePaths) {
+    statsPromises.push(fs.stat(absoluteItemPath))
   }
   const allItemStats: fs.Stats[] = await Promise.all(statsPromises)
 
