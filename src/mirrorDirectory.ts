@@ -207,33 +207,28 @@ async function diffItems(
       return 'changed-types'
     }
 
-    if (
-      itemAtDestination.stats.isDirectory() ||
-      itemAtSource.stats.isDirectory() ||
-      itemAtDestination.stats.isSymbolicLink() ||
-      itemAtSource.stats.isSymbolicLink()
-    ) {
-      return 'changed-types'
-    }
+    if (itemAtDestination.stats.isFile() && itemAtSource.stats.isFile()) {
+      if (
+        itemAtDestination.stats.mtime.getTime() ===
+          itemAtSource.stats.mtime.getTime() &&
+        itemAtDestination.stats.size === itemAtSource.stats.size
+      ) {
+        const contentsForItemAtDestination = await fs.readFile(
+          itemAtDestination.absolutePath
+        )
+        const contentsForItemAtSource = await fs.readFile(
+          itemAtSource.absolutePath
+        )
 
-    if (
-      itemAtDestination.stats.mtime.getTime() ===
-        itemAtSource.stats.mtime.getTime() &&
-      itemAtDestination.stats.size === itemAtSource.stats.size
-    ) {
-      const contentsForItemAtDestination = await fs.readFile(
-        itemAtDestination.absolutePath
-      )
-      const contentsForItemAtSource = await fs.readFile(
-        itemAtSource.absolutePath
-      )
-
-      if (contentsForItemAtDestination.equals(contentsForItemAtSource)) {
-        return 'same'
+        if (contentsForItemAtDestination.equals(contentsForItemAtSource)) {
+          return 'same'
+        }
       }
+
+      return 'changed-contents'
     }
 
-    return 'changed-contents'
+    return 'changed-types'
   }
 
   return 'new'

@@ -3,16 +3,33 @@ import { doesNotThrow, deepEqual } from 'assert'
 import * as path from 'path'
 import { mirrorDirectory } from '../src/mirrorDirectory'
 
-const assertExists = (path: string) =>
-  doesNotThrow(() => fs.accessSync(path), path + ' does not exist')
+const assertExists = (pathToCheck: string) =>
+  doesNotThrow(
+    () => fs.accessSync(pathToCheck),
+    pathToCheck + ' does not exist'
+  )
 
-const assertFileContentsMatch = async (
-  expectedContents: string,
-  path: string
-) => {
-  assertExists(path)
-  const actualContents = await fs.readFile(path, 'utf-8')
+const assertFile = async (expectedContents: string, pathToCheck: string) => {
+  assertExists(pathToCheck)
+  const actualContents = await fs.readFile(pathToCheck, 'utf-8')
   deepEqual(actualContents, expectedContents)
+}
+
+const assertDirectory = async (pathToCheck: string) => {
+  assertExists(pathToCheck)
+  const stat = await fs.lstat(pathToCheck)
+  deepEqual(stat.isDirectory(), true)
+}
+
+const assertSymlink = async (
+  expectedSourcePath: string,
+  pathToCheck: string
+) => {
+  assertExists(pathToCheck)
+  const stat = await fs.lstat(pathToCheck)
+  deepEqual(stat.isSymbolicLink(), true)
+  const realPath = await fs.realpath(pathToCheck)
+  deepEqual(realPath, expectedSourcePath)
 }
 
 const tmpDirectory = path.join(__dirname, 'tmp')
@@ -76,25 +93,23 @@ async function ensureFileSystemContainsDirectoryContents(
   contents: DirectoryContents,
   destinationDirectoryPath: string
 ): Promise<void> {
-  assertExists(destinationDirectoryPath)
+  await assertDirectory(destinationDirectoryPath)
 
   for (const itemName in contents) {
     const item = contents[itemName]
     const itemDestinationPath = path.join(destinationDirectoryPath, itemName)
 
     if (item._ === 'file') {
-      await assertFileContentsMatch(item.contents, itemDestinationPath)
+      await assertFile(item.contents, itemDestinationPath)
     } else if (item._ === 'directory') {
       await ensureFileSystemContainsDirectoryContents(
         item.contents,
         itemDestinationPath
       )
     } else {
-      assertExists(itemDestinationPath)
-      const symlinkPathInfo = await fs.realpath(itemDestinationPath)
-      deepEqual(
-        symlinkPathInfo,
-        path.resolve(destinationDirectoryPath, item.sourcePath)
+      await assertSymlink(
+        path.resolve(destinationDirectoryPath, item.sourcePath),
+        itemDestinationPath
       )
     }
   }
@@ -108,6 +123,7 @@ describe('Mirror Directory', () => {
   const packageJsonInRoot = 'package.json'
   const folderInRoot = 'folder'
   const folder2InRoot = 'folder2'
+  const symlinkInRoot = 'symlinkToFolder'
   const partialFolderContents: DirectoryContents = {
     'file.md': emptyFile
   }
@@ -121,11 +137,12 @@ describe('Mirror Directory', () => {
         'file.txt': emptyFile
       }),
       'file.txt': emptyFile,
-      'symlinkToFile.txt': symlinkTo('./file.txt')
+      'symlinkToFile.txt': symlinkTo(`./${fileInRoot}`)
     }),
     [packageJsonInRoot]: fileWithContent(
       '{ "name": "dep-package", "version": "1.0.0" }'
-    )
+    ),
+    [symlinkInRoot]: symlinkTo(`./${folder2InRoot}`)
   }
   const sourceDirectoryContents: DirectoryContents = {
     [fileInRoot]: emptyFile,
@@ -198,7 +215,7 @@ describe('Mirror Directory', () => {
 
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
-      await fs.ensureDir(fileToBeReplacedInDestination)
+      await assertDirectory(fileToReplaceWithFolder)
     })
 
     it('should replace directory with file, if one of the same name exists and looks the same', async () => {
@@ -219,7 +236,7 @@ describe('Mirror Directory', () => {
 
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
-      await fs.ensureFile(directoryToBeReplacedInDestination)
+      await assertFile('', directoryToBeReplacedInDestination)
     })
 
     it('should replace file with symlink, if one of the same name exists and looks the same', async () => {
@@ -244,8 +261,8 @@ describe('Mirror Directory', () => {
 
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
-      await fs.ensureSymlink(
-        symlinkRelativeSourcePath,
+      await assertSymlink(
+        path.resolve(destinationDirectory, symlinkRelativeSourcePath),
         fileToBeReplacedInDestination
       )
     })
@@ -272,10 +289,44 @@ describe('Mirror Directory', () => {
 
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
-      await fs.ensureSymlink(
-        symlinkRelativeSourcePath,
+      await assertSymlink(
+        path.resolve(destinationDirectory, symlinkRelativeSourcePath),
         folderToBeReplacedInDestination
       )
+    })
+
+    it('should replace symlink with file, if one of the same name exists and looks the same', async () => {
+      const symlinkToBeReplacedInDestination = path.join(
+        destinationDirectory,
+        symlinkInRoot
+      )
+      const stats = await fs.lstat(symlinkToBeReplacedInDestination)
+
+      const symlinkToReplaceInSource = path.join(sourceDirectory, symlinkInRoot)
+      await fs.remove(symlinkToReplaceInSource)
+      await fs.ensureFile(symlinkToReplaceInSource)
+      await fs.utimes(symlinkToReplaceInSource, stats.atime, stats.mtime)
+
+      await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+      await assertFile('', symlinkToBeReplacedInDestination)
+    })
+
+    it('should replace symlink with directory, if one of the same name exists and looks the same', async () => {
+      const symlinkToBeReplacedInDestination = path.join(
+        destinationDirectory,
+        symlinkInRoot
+      )
+      const stats = await fs.lstat(symlinkToBeReplacedInDestination)
+
+      const symlinkToReplaceInSource = path.join(sourceDirectory, symlinkInRoot)
+      await fs.remove(symlinkToReplaceInSource)
+      await fs.ensureDir(symlinkToReplaceInSource)
+      await fs.utimes(symlinkToReplaceInSource, stats.atime, stats.mtime)
+
+      await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+      await assertDirectory(symlinkToBeReplacedInDestination)
     })
 
     it('should not touch file in destination if unchanged in source', async () => {
