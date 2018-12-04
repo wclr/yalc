@@ -124,14 +124,13 @@ describe('Mirror Directory', () => {
   const folderInRoot = 'folder'
   const folder2InRoot = 'folder2'
   const symlinkInRoot = 'symlinkToFolder'
-  const partialFolderContents: DirectoryContents = {
+  const folderInRootContents = {
+    [fileInRoot]: emptyFile,
     'file.md': emptyFile
   }
-  const folderContents: DirectoryContents = {
-    'file.txt': emptyFile,
-    ...partialFolderContents
-  }
-  const partialSourceDirectoryContents: DirectoryContents = {
+  const sourceDirectoryContents: DirectoryContents = {
+    [fileInRoot]: emptyFile,
+    [folderInRoot]: directoryWithContents(folderInRootContents),
     [folder2InRoot]: directoryWithContents({
       nested: directoryWithContents({
         'file.txt': emptyFile
@@ -143,11 +142,6 @@ describe('Mirror Directory', () => {
       '{ "name": "dep-package", "version": "1.0.0" }'
     ),
     [symlinkInRoot]: symlinkTo(`./${folder2InRoot}`)
-  }
-  const sourceDirectoryContents: DirectoryContents = {
-    [fileInRoot]: emptyFile,
-    [folderInRoot]: directoryWithContents(folderContents),
-    ...partialSourceDirectoryContents
   }
   beforeEach(async () => {
     await fs.remove(sourceDirectory)
@@ -185,18 +179,24 @@ describe('Mirror Directory', () => {
     })
 
     it('should remove old content', async () => {
+      const modifiedFolderInRootContent = { ...folderInRootContents }
+      delete modifiedFolderInRootContent[fileInRoot]
+
+      const modifiedSourceDirectoryContent = {
+        ...sourceDirectoryContents,
+        [folderInRoot]: directoryWithContents(modifiedFolderInRootContent)
+      }
+
       await fs.remove(sourceDirectory)
       await writeDirectoryContents(
-        {
-          [folderInRoot]: directoryWithContents(partialFolderContents),
-          ...partialSourceDirectoryContents
-        },
+        modifiedSourceDirectoryContent,
         sourceDirectory
       )
+
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
       await ensureFileSystemContainsDirectoryContents(
-        partialSourceDirectoryContents,
+        modifiedSourceDirectoryContent,
         destinationDirectory
       )
     })
