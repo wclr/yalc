@@ -215,7 +215,7 @@ describe('Mirror Directory', () => {
 
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
-      await assertDirectory(fileToReplaceWithFolder)
+      await assertDirectory(fileToBeReplacedInDestination)
     })
 
     it('should replace directory with file, if one of the same name exists and looks the same', async () => {
