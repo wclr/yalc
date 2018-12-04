@@ -105,6 +105,7 @@ describe('Mirror Directory', () => {
   const destinationDirectory = path.join(mirrorDirectoryTmpDir, 'destination')
 
   const fileInRoot = 'file.txt'
+  const packageJsonInRoot = 'package.json'
   const folderInRoot = 'folder'
   const partialFolderContents: DirectoryContents = {
     'file.md': emptyFile
@@ -121,7 +122,7 @@ describe('Mirror Directory', () => {
       'file.txt': emptyFile,
       'symlinkToFile.txt': symlinkTo('./file.txt')
     }),
-    'package.json': fileWithContent(
+    [packageJsonInRoot]: fileWithContent(
       '{ "name": "dep-package", "version": "1.0.0" }'
     )
   }
@@ -218,6 +219,34 @@ describe('Mirror Directory', () => {
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
       await fs.ensureFile(directoryToBeReplacedInDestination)
+    })
+
+    it('should replace file with symlink, if one of the same name exists and looks the same', async () => {
+      const fileToBeReplacedInDestination = path.join(
+        destinationDirectory,
+        fileInRoot
+      )
+      const stats = await fs.stat(fileToBeReplacedInDestination)
+
+      const symlinkSourceAbsolutePath = path.resolve(
+        sourceDirectory,
+        packageJsonInRoot
+      )
+      const symlinkRelativeSourcePath = path.relative(
+        sourceDirectory,
+        symlinkSourceAbsolutePath
+      )
+      const fileToReplaceInSource = path.join(sourceDirectory, fileInRoot)
+      await fs.remove(fileToReplaceInSource)
+      await fs.ensureSymlink(symlinkRelativeSourcePath, fileToReplaceInSource)
+      await fs.utimes(fileToReplaceInSource, stats.atime, stats.mtime)
+
+      await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+      await fs.ensureSymlink(
+        symlinkRelativeSourcePath,
+        fileToBeReplacedInDestination
+      )
     })
 
     it('should not touch file in destination if unchanged in source', async () => {

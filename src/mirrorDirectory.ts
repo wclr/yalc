@@ -60,7 +60,7 @@ async function getAllItemsInDirectory(
     return []
   }
 
-  const rootDirPathStats = await fs.stat(rootDir)
+  const rootDirPathStats = await fs.lstat(rootDir)
   if (!rootDirPathStats.isDirectory()) {
     throw new Error(
       `Cannot get items from given path '${rootDir}' because it is not a directory`
@@ -73,7 +73,7 @@ async function getAllItemsInDirectory(
 
   const statsPromises: Promise<fs.Stats>[] = []
   for (let absoluteItemPath of allItemAbsolutePaths) {
-    statsPromises.push(fs.stat(absoluteItemPath))
+    statsPromises.push(fs.lstat(absoluteItemPath))
   }
   const allItemStats: fs.Stats[] = await Promise.all(statsPromises)
 
@@ -191,8 +191,27 @@ async function diffItems(
     }
 
     if (
+      itemAtDestination.stats.isSymbolicLink() &&
+      itemAtSource.stats.isSymbolicLink()
+    ) {
+      const destinationSymlinkRealPath = await fs.realpath(
+        itemAtDestination.absolutePath
+      )
+      const sourceSymlinkRealPath = await fs.realpath(
+        itemAtDestination.absolutePath
+      )
+      if (destinationSymlinkRealPath === sourceSymlinkRealPath) {
+        return 'same'
+      }
+
+      return 'changed-types'
+    }
+
+    if (
       itemAtDestination.stats.isDirectory() ||
-      itemAtSource.stats.isDirectory()
+      itemAtSource.stats.isDirectory() ||
+      itemAtDestination.stats.isSymbolicLink() ||
+      itemAtSource.stats.isSymbolicLink()
     ) {
       return 'changed-types'
     }
