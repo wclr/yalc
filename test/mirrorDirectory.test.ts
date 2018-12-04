@@ -164,6 +164,23 @@ describe('Mirror Directory', () => {
       )
     })
 
+    it('should replace file with directory, if one of the same name exists and looks the same', async () => {
+      const fileToBeReplacedInDestination = path.join(
+        destinationDirectory,
+        fileInRoot
+      )
+      const stats = await fs.stat(fileToBeReplacedInDestination)
+
+      const fileToReplaceWithFolder = path.join(sourceDirectory, fileInRoot)
+      await fs.remove(fileToReplaceWithFolder)
+      await fs.ensureDir(fileToReplaceWithFolder)
+      await fs.utimes(fileToReplaceWithFolder, stats.atime, stats.mtime)
+
+      await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+      await fs.ensureDir(fileToBeReplacedInDestination)
+    })
+
     it('should not touch file in destination if unchanged in source', async () => {
       const pathToFileInRootInDestination = path.join(
         destinationDirectory,

@@ -15,7 +15,11 @@ export async function mirrorDirectory(
     isNodeModulesDirectory
   )
 
-  const { newItems, changedItems } = await findNewAndChangedItems(
+  const {
+    newItems,
+    itemsWithChangedContents,
+    itemsWithChangedTypes
+  } = await findNewAndChangedItems(
     itemsInSourceDirectoryExcludingNodeModulesDir,
     itemsInDestinationDirectoryExcludingNodeModulesDir
   )
@@ -27,9 +31,12 @@ export async function mirrorDirectory(
 
   await copyItems(destinationDirectory, newItems)
 
-  await copyItems(destinationDirectory, changedItems)
+  await copyItems(destinationDirectory, itemsWithChangedContents)
 
-  await removeItems(removedItems)
+  await removeItems(destinationDirectory, itemsWithChangedTypes)
+  await copyItems(sourceDirectory, itemsWithChangedTypes)
+
+  await removeItems(destinationDirectory, removedItems)
 }
 
 interface FileSystemItem {
@@ -98,13 +105,18 @@ const isNodeModulesDirectory = (item: FileSystemItem) =>
 async function findNewAndChangedItems(
   sourceItems: FileSystemItem[],
   destinationItems: FileSystemItem[]
-): Promise<{ newItems: FileSystemItem[]; changedItems: FileSystemItem[] }> {
+): Promise<{
+  newItems: FileSystemItem[]
+  itemsWithChangedContents: FileSystemItem[]
+  itemsWithChangedTypes: FileSystemItem[]
+}> {
   const destinationItemsAsMapKeyedOnRelativeItemPath = convertFileSystemItemArrayToMapKeyedOnRelativePath(
     destinationItems
   )
 
   const newItems: FileSystemItem[] = []
-  const changedItems: FileSystemItem[] = []
+  const itemsWithChangedContents: FileSystemItem[] = []
+  const itemsWithChangedTypes: FileSystemItem[] = []
   for (const itemInSourceDirectory of sourceItems) {
     const itemInDestinationDirectory = destinationItemsAsMapKeyedOnRelativeItemPath.get(
       itemInSourceDirectory.relativePath
@@ -116,8 +128,11 @@ async function findNewAndChangedItems(
     )
 
     switch (itemDiffResults) {
-      case 'changed':
-        changedItems.push(itemInSourceDirectory)
+      case 'changed-contents':
+        itemsWithChangedContents.push(itemInSourceDirectory)
+        break
+      case 'changed-types':
+        itemsWithChangedTypes.push(itemInSourceDirectory)
         break
       case 'new':
         newItems.push(itemInSourceDirectory)
@@ -127,7 +142,7 @@ async function findNewAndChangedItems(
     }
   }
 
-  return { newItems, changedItems }
+  return { newItems, itemsWithChangedContents, itemsWithChangedTypes }
 }
 
 async function findRemovedItems(
@@ -162,8 +177,22 @@ function convertFileSystemItemArrayToMapKeyedOnRelativePath(
 async function diffItems(
   itemAtSource: FileSystemItem,
   itemAtDestination: FileSystemItem | undefined
-): Promise<'changed' | 'new' | 'same'> {
+): Promise<'changed-types' | 'changed-contents' | 'new' | 'same'> {
   if (itemAtDestination !== undefined) {
+    if (
+      itemAtDestination.stats.isDirectory() &&
+      itemAtSource.stats.isDirectory()
+    ) {
+      return 'same'
+    }
+
+    if (
+      itemAtDestination.stats.isDirectory() ||
+      itemAtSource.stats.isDirectory()
+    ) {
+      return 'changed-types'
+    }
+
     if (
       itemAtDestination.stats.mtime.getTime() ===
         itemAtSource.stats.mtime.getTime() &&
@@ -181,7 +210,7 @@ async function diffItems(
       }
     }
 
-    return 'changed'
+    return 'changed-contents'
   }
 
   return 'new'
@@ -205,7 +234,12 @@ async function copyItems(
   await Promise.all(itemsToCopy)
 }
 
-async function removeItems(items: FileSystemItem[]): Promise<void> {
-  const removeItemsPromises = items.map(item => fs.remove(item.absolutePath))
+async function removeItems(
+  dirPath: string,
+  items: FileSystemItem[]
+): Promise<void> {
+  const removeItemsPromises = items.map(item =>
+    fs.remove(path.resolve(dirPath, item.relativePath))
+  )
   await Promise.all(removeItemsPromises)
 }
