@@ -29,12 +29,16 @@ export async function mirrorDirectory(
     itemsInDestinationDirectoryExcludingNodeModulesDir
   )
 
-  await copyItems(destinationDirectory, newItems)
+  await copyItems(sourceDirectory, destinationDirectory, newItems)
 
-  await copyItems(destinationDirectory, itemsWithChangedContents)
+  await copyItems(
+    sourceDirectory,
+    destinationDirectory,
+    itemsWithChangedContents
+  )
 
   await removeItems(destinationDirectory, itemsWithChangedTypes)
-  await copyItems(sourceDirectory, itemsWithChangedTypes)
+  await copyItems(sourceDirectory, destinationDirectory, itemsWithChangedTypes)
 
   await removeItems(destinationDirectory, removedItems)
 }
@@ -217,17 +221,19 @@ async function diffItems(
 }
 
 async function copyItems(
+  dirToCopyFrom: string,
   dirToCopyTo: string,
   items: FileSystemItem[]
 ): Promise<void> {
   const itemsToCopy = items.map(item => {
+    const sourceItemPath = path.resolve(dirToCopyFrom, item.relativePath)
     const destinationItemPath = path.resolve(dirToCopyTo, item.relativePath)
 
     if (item.stats.isDirectory()) {
       return fs.ensureDir(destinationItemPath)
     }
 
-    return fs.copy(item.absolutePath, destinationItemPath, {
+    return fs.copy(sourceItemPath, destinationItemPath, {
       preserveTimestamps: true
     })
   })
