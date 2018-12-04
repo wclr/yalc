@@ -75,6 +75,8 @@ async function getAllItemsInDirectory(
     }
 
     if (!ignoreItemFunc(item)) {
+      contents.push(item)
+
       if (item.stats.isDirectory()) {
         const subDirItems = await getAllItemsInDirectory(
           item.absolutePath,
@@ -82,8 +84,6 @@ async function getAllItemsInDirectory(
           parentRootDir
         )
         contents.push(...subDirItems)
-      } else {
-        contents.push(item)
       }
     }
   }
@@ -191,11 +191,17 @@ async function copyItems(
   dirToCopyTo: string,
   items: FileSystemItem[]
 ): Promise<void> {
-  const itemsToCopy = items.map(item =>
-    fs.copy(item.absolutePath, path.resolve(dirToCopyTo, item.relativePath), {
+  const itemsToCopy = items.map(item => {
+    const destinationItemPath = path.resolve(dirToCopyTo, item.relativePath)
+
+    if (item.stats.isDirectory()) {
+      return fs.ensureDir(destinationItemPath)
+    }
+
+    return fs.copy(item.absolutePath, destinationItemPath, {
       preserveTimestamps: true
     })
-  )
+  })
   await Promise.all(itemsToCopy)
 }
 
