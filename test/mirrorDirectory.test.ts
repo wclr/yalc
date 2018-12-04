@@ -89,80 +89,103 @@ describe('Mirror Directory', () => {
 
   const fileInRoot = 'file.txt'
   const folderInRoot = 'folder'
-  const nestedFileInFolder = 'file.md'
-  const sourceDirectoryContents: DirectoryContents = {
-    [fileInRoot]: emptyFile,
-    'package.json': fileWithContent(
-      '{ "name": "dep-package", "version": "1.0.0" }'
-    ),
-    [folderInRoot]: directoryWithContents({
-      [nestedFileInFolder]: emptyFile,
-      'file.txt': emptyFile
-    }),
+  const partialFolderContents: DirectoryContents = {
+    'file.md': emptyFile
+  }
+  const folderContents: DirectoryContents = {
+    'file.txt': emptyFile,
+    ...partialFolderContents
+  }
+  const partialSourceDirectoryContents: DirectoryContents = {
     folder2: directoryWithContents({
       nested: directoryWithContents({
         'file.txt': emptyFile
       }),
       'file.txt': emptyFile
-    })
+    }),
+    'package.json': fileWithContent(
+      '{ "name": "dep-package", "version": "1.0.0" }'
+    )
+  }
+  const sourceDirectoryContents: DirectoryContents = {
+    [fileInRoot]: emptyFile,
+    [folderInRoot]: directoryWithContents(folderContents),
+    ...partialSourceDirectoryContents
   }
   beforeEach(async () => {
-    fs.removeSync(sourceDirectory)
+    await fs.remove(sourceDirectory)
     await writeDirectoryContents(sourceDirectoryContents, sourceDirectory)
-    fs.removeSync(destinationDirectory)
+    await fs.remove(destinationDirectory)
+    await mirrorDirectory(destinationDirectory, sourceDirectory)
   })
 
   it('should copy contents from source into destination', async () => {
-    await mirrorDirectory(destinationDirectory, sourceDirectory)
     await ensureFileSystemContainsDirectoryContents(
       sourceDirectoryContents,
       destinationDirectory
     )
   })
 
-  it('should copy new content into destination', async () => {
-    await mirrorDirectory(destinationDirectory, sourceDirectory)
+  describe('when copying changed content from source', () => {
+    it('should copy new content', async () => {
+      const modifiedSourceDirectoryContent: DirectoryContents = {
+        ...sourceDirectoryContents,
+        ...{
+          [fileInRoot]: fileWithContent('some content'),
+          'some-new-file.txt': emptyFile
+        }
+      }
+      await writeDirectoryContents(
+        modifiedSourceDirectoryContent,
+        sourceDirectory
+      )
+      await mirrorDirectory(destinationDirectory, sourceDirectory)
 
-    const modifiedSourceDirectoryContent: DirectoryContents = Object.assign(
-      {},
-      sourceDirectoryContents,
-      { [fileInRoot]: fileWithContent('some content') }
-    )
-    await writeDirectoryContents(
-      modifiedSourceDirectoryContent,
-      sourceDirectory
-    )
-    await mirrorDirectory(destinationDirectory, sourceDirectory)
-
-    await ensureFileSystemContainsDirectoryContents(
-      modifiedSourceDirectoryContent,
-      destinationDirectory
-    )
-  })
-
-  it('should not touch file in destination if unchanged in source', async () => {
-    await mirrorDirectory(destinationDirectory, sourceDirectory)
-
-    const pathToFileInRootInDestination = path.join(
-      destinationDirectory,
-      fileInRoot
-    )
-    let fileWatcher: fs.FSWatcher | undefined
-    let fileEvents: string[] = []
-    fileWatcher = fs.watch(pathToFileInRootInDestination, event => {
-      fileEvents.push(event)
+      await ensureFileSystemContainsDirectoryContents(
+        modifiedSourceDirectoryContent,
+        destinationDirectory
+      )
     })
 
-    await mirrorDirectory(destinationDirectory, sourceDirectory)
-
-    if (fileWatcher) {
-      fileWatcher.close()
-    }
-
-    if (fileEvents.length > 0) {
-      throw new Error(
-        `Expected ${pathToFileInRootInDestination} to not be updated because it is the same but fs events [${fileEvents.toString()}] occurred`
+    it('should remove old content', async () => {
+      await fs.remove(sourceDirectory)
+      await writeDirectoryContents(
+        {
+          [folderInRoot]: directoryWithContents(partialFolderContents),
+          ...partialSourceDirectoryContents
+        },
+        sourceDirectory
       )
-    }
+      await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+      await ensureFileSystemContainsDirectoryContents(
+        partialSourceDirectoryContents,
+        destinationDirectory
+      )
+    })
+
+    it('should not touch file in destination if unchanged in source', async () => {
+      const pathToFileInRootInDestination = path.join(
+        destinationDirectory,
+        fileInRoot
+      )
+      let fileWatcher: fs.FSWatcher | undefined
+      let fileEvents: string[] = []
+      fileWatcher = fs.watch(pathToFileInRootInDestination, event => {
+        fileEvents.push(event)
+      })
+
+      await mirrorDirectory(destinationDirectory, sourceDirectory)
+
+      if (fileWatcher) {
+        fileWatcher.close()
+      }
+
+      if (fileEvents.length > 0) {
+        throw new Error(
+          `Expected ${pathToFileInRootInDestination} to not be updated because it is the same but fs events [${fileEvents.toString()}] occurred`
+        )
+      }
+    })
   })
 })
