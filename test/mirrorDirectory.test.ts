@@ -95,7 +95,7 @@ async function writeDirectoryContents(
   }
 }
 
-async function ensureFileSystemContainsDirectoryContents(
+async function assertFileSystemContainsDirectoryContents(
   contents: DirectoryContents,
   destinationDirectoryPath: string
 ): Promise<void> {
@@ -108,7 +108,7 @@ async function ensureFileSystemContainsDirectoryContents(
     if (item._ === 'file') {
       await assertFile(item.contents, itemDestinationPath)
     } else if (item._ === 'directory') {
-      await ensureFileSystemContainsDirectoryContents(
+      await assertFileSystemContainsDirectoryContents(
         item.contents,
         itemDestinationPath
       )
@@ -172,7 +172,7 @@ describe('Mirror Directory', () => {
   })
 
   it('should copy contents from source into destination', async () => {
-    await ensureFileSystemContainsDirectoryContents(
+    await assertFileSystemContainsDirectoryContents(
       sourceDirectoryContents,
       destinationDirectory
     )
@@ -193,7 +193,7 @@ describe('Mirror Directory', () => {
       )
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
-      await ensureFileSystemContainsDirectoryContents(
+      await assertFileSystemContainsDirectoryContents(
         modifiedSourceDirectoryContent,
         destinationDirectory
       )
@@ -216,7 +216,7 @@ describe('Mirror Directory', () => {
 
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
-      await ensureFileSystemContainsDirectoryContents(
+      await assertFileSystemContainsDirectoryContents(
         modifiedSourceDirectoryContent,
         destinationDirectory
       )
