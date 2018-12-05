@@ -16,20 +16,18 @@ export async function mirrorDirectory(
   )
 
   const {
-    newItems,
+    itemsThatAreNew,
     itemsWithChangedContents,
-    itemsWithChangedTypes
-  } = await findNewAndChangedItems(
+    itemsWithChangedTypes,
+    itemsToRemove
+  } = await diffItemsInDirectories(
+    sourceDirectory,
     itemsInSourceDirectoryExcludingNodeModulesDir,
+    destinationDirectory,
     itemsInDestinationDirectoryExcludingNodeModulesDir
   )
 
-  const { removedItems } = await findRemovedItems(
-    itemsInSourceDirectoryExcludingNodeModulesDir,
-    itemsInDestinationDirectoryExcludingNodeModulesDir
-  )
-
-  await copyItems(sourceDirectory, destinationDirectory, newItems)
+  await copyItems(sourceDirectory, destinationDirectory, itemsThatAreNew)
 
   await copyItems(
     sourceDirectory,
@@ -40,212 +38,257 @@ export async function mirrorDirectory(
   await removeItems(destinationDirectory, itemsWithChangedTypes)
   await copyItems(sourceDirectory, destinationDirectory, itemsWithChangedTypes)
 
-  await removeItems(destinationDirectory, removedItems)
+  await removeItems(destinationDirectory, itemsToRemove)
 }
 
 interface FileSystemItem {
-  absolutePath: string
-  relativePath: string
   stats: fs.Stats
+  absolutePath: string
+}
+interface NonDirectoryFileSystemItemDescription {
+  stats: fs.Stats
+  dirContents: undefined
+}
+interface DirectoryDescription {
+  stats: fs.Stats
+  dirContents: DirectoryContents
+}
+type FileSystemItemDescription =
+  | NonDirectoryFileSystemItemDescription
+  | DirectoryDescription
+interface DirectoryContents {
+  [name: string]: FileSystemItemDescription
 }
 
 async function getAllItemsInDirectory(
-  rootDir: string,
-  ignoreItemFunc: (item: FileSystemItem) => boolean,
-  parentRootDir?: string
-): Promise<FileSystemItem[]> {
-  parentRootDir = parentRootDir || rootDir
-
-  if (!fs.existsSync(rootDir)) {
-    return []
+  directoryPath: string,
+  ignoreItemFunc: (item: FileSystemItem) => boolean
+): Promise<DirectoryContents> {
+  if (!fs.existsSync(directoryPath)) {
+    return {}
   }
 
-  const rootDirPathStats = await fs.lstat(rootDir)
+  const rootDirPathStats = await fs.lstat(directoryPath)
   if (!rootDirPathStats.isDirectory()) {
     throw new Error(
-      `Cannot get items from given path '${rootDir}' because it is not a directory`
+      `Cannot get items from given path '${directoryPath}' because it is not a directory`
     )
   }
 
-  const allItemAbsolutePaths: string[] = (await fs.readdir(rootDir)).map(
-    itemPath => path.resolve(rootDir, itemPath)
-  )
+  const itemRelativePaths: string[] = await fs.readdir(directoryPath)
 
   const statsPromises: Promise<fs.Stats>[] = []
-  for (let absoluteItemPath of allItemAbsolutePaths) {
-    statsPromises.push(fs.lstat(absoluteItemPath))
+  for (let itemPath of itemRelativePaths) {
+    statsPromises.push(fs.lstat(path.resolve(directoryPath, itemPath)))
   }
   const allItemStats: fs.Stats[] = await Promise.all(statsPromises)
 
-  const contents: FileSystemItem[] = []
-  for (let i = 0; i < allItemAbsolutePaths.length; i++) {
-    const item = {
-      absolutePath: allItemAbsolutePaths[i],
-      relativePath: path.relative(parentRootDir, allItemAbsolutePaths[i]),
+  const contents: DirectoryContents = {}
+  for (let i = 0; i < itemRelativePaths.length; i++) {
+    const relativePath = itemRelativePaths[i]
+    const itemDescription = {
+      absolutePath: path.resolve(directoryPath, relativePath),
       stats: allItemStats[i]
     }
 
-    if (!ignoreItemFunc(item)) {
-      contents.push(item)
-
-      if (item.stats.isDirectory()) {
-        const subDirItems = await getAllItemsInDirectory(
-          item.absolutePath,
-          ignoreItemFunc,
-          parentRootDir
-        )
-        contents.push(...subDirItems)
-      }
+    if (!ignoreItemFunc(itemDescription)) {
+      contents[relativePath] = await getFileSystemItemDescription(
+        itemDescription,
+        ignoreItemFunc
+      )
     }
   }
 
   return contents
 }
 
+async function getFileSystemItemDescription(
+  itemDescription: FileSystemItem,
+  ignoreItemFunc: (item: FileSystemItem) => boolean
+): Promise<FileSystemItemDescription> {
+  if (itemDescription.stats.isDirectory()) {
+    const subDirItems = await getAllItemsInDirectory(
+      itemDescription.absolutePath,
+      ignoreItemFunc
+    )
+    return {
+      dirContents: subDirItems,
+      stats: itemDescription.stats
+    }
+  }
+  return {
+    dirContents: undefined,
+    stats: itemDescription.stats
+  }
+}
+
 const isNodeModulesDirectory = (item: FileSystemItem) =>
   item.stats.isDirectory() &&
   path.parse(item.absolutePath).base === 'node_modules'
 
-async function findNewAndChangedItems(
-  sourceItems: FileSystemItem[],
-  destinationItems: FileSystemItem[]
+async function diffItemsInDirectories(
+  sourceDirectoryPath: string,
+  sourceDirectoryContents: DirectoryContents,
+  destinationDirectoryPath: string,
+  destinationDirectoryContents: DirectoryContents
 ): Promise<{
-  newItems: FileSystemItem[]
-  itemsWithChangedContents: FileSystemItem[]
-  itemsWithChangedTypes: FileSystemItem[]
+  itemsThatAreNew: string[]
+  itemsWithChangedContents: string[]
+  itemsWithChangedTypes: string[]
+  itemsToRemove: string[]
 }> {
-  const destinationItemsAsMapKeyedOnRelativeItemPath = convertFileSystemItemArrayToMapKeyedOnRelativePath(
-    destinationItems
-  )
+  const itemsThatAreNew: string[] = []
+  const itemsWithChangedContents: string[] = []
+  const itemsWithChangedTypes: string[] = []
+  const itemsToRemove: string[] = []
+  for (const itemRelativePath in sourceDirectoryContents) {
+    const destinationItemDescription: FileSystemItemDescription | undefined =
+      destinationDirectoryContents[itemRelativePath]
 
-  const newItems: FileSystemItem[] = []
-  const itemsWithChangedContents: FileSystemItem[] = []
-  const itemsWithChangedTypes: FileSystemItem[] = []
-  for (const itemInSourceDirectory of sourceItems) {
-    const itemInDestinationDirectory = destinationItemsAsMapKeyedOnRelativeItemPath.get(
-      itemInSourceDirectory.relativePath
+    if (destinationItemDescription === undefined) {
+      itemsThatAreNew.push(itemRelativePath)
+      continue
+    }
+
+    const sourceItemDescription = sourceDirectoryContents[itemRelativePath]
+    const sourceItemAbsolutePath = path.resolve(
+      sourceDirectoryPath,
+      itemRelativePath
+    )
+    const destinationItemAbsolutePath = path.resolve(
+      destinationDirectoryPath,
+      itemRelativePath
     )
 
-    const itemDiffResults = await diffItems(
-      itemInSourceDirectory,
-      itemInDestinationDirectory
-    )
+    if (
+      sourceItemDescription.dirContents !== undefined &&
+      (destinationItemDescription !== undefined &&
+        destinationItemDescription.dirContents !== undefined)
+    ) {
+      const subDiffResults = await diffItemsInDirectories(
+        sourceItemAbsolutePath,
+        sourceItemDescription.dirContents,
+        destinationItemAbsolutePath,
+        destinationItemDescription.dirContents
+      )
+      const appendCurrentRelativePath = (subItemRelativePath: string) =>
+        path.join(itemRelativePath, subItemRelativePath)
+      itemsThatAreNew.push(
+        ...subDiffResults.itemsThatAreNew.map(appendCurrentRelativePath)
+      )
+      itemsWithChangedContents.push(
+        ...subDiffResults.itemsWithChangedContents.map(
+          appendCurrentRelativePath
+        )
+      )
+      itemsWithChangedTypes.push(
+        ...subDiffResults.itemsWithChangedTypes.map(appendCurrentRelativePath)
+      )
+      itemsToRemove.push(
+        ...subDiffResults.itemsToRemove.map(appendCurrentRelativePath)
+      )
+    }
 
+    const sourceItem: FileSystemItem = {
+      absolutePath: sourceItemAbsolutePath,
+      stats: sourceItemDescription.stats
+    }
+
+    const destinationItem: FileSystemItem = {
+      absolutePath: destinationItemAbsolutePath,
+      stats: destinationItemDescription.stats
+    }
+
+    const itemDiffResults = await diffItems(sourceItem, destinationItem)
     switch (itemDiffResults) {
       case 'changed-contents':
-        itemsWithChangedContents.push(itemInSourceDirectory)
+        itemsWithChangedContents.push(itemRelativePath)
         break
       case 'changed-types':
-        itemsWithChangedTypes.push(itemInSourceDirectory)
-        break
-      case 'new':
-        newItems.push(itemInSourceDirectory)
+        itemsWithChangedTypes.push(itemRelativePath)
         break
       case 'same':
         break
     }
   }
 
-  return { newItems, itemsWithChangedContents, itemsWithChangedTypes }
-}
+  for (const itemRelativePath in destinationDirectoryContents) {
+    const sourceItemDescription: FileSystemItemDescription | undefined =
+      sourceDirectoryContents[itemRelativePath]
 
-async function findRemovedItems(
-  sourceItems: FileSystemItem[],
-  destinationItems: FileSystemItem[]
-): Promise<{ removedItems: FileSystemItem[] }> {
-  const itemsInSourceDirectoryAsMap = convertFileSystemItemArrayToMapKeyedOnRelativePath(
-    sourceItems
-  )
-  const removedItems: FileSystemItem[] = []
-  for (const itemInDestinationDir of destinationItems) {
-    const itemInSourceDirectory = itemsInSourceDirectoryAsMap.get(
-      itemInDestinationDir.relativePath
-    )
-
-    if (itemInSourceDirectory === undefined) {
-      removedItems.push(itemInDestinationDir)
+    if (sourceItemDescription === undefined) {
+      itemsToRemove.push(itemRelativePath)
     }
   }
 
-  return { removedItems }
-}
-
-function convertFileSystemItemArrayToMapKeyedOnRelativePath(
-  items: FileSystemItem[]
-): Map<string, FileSystemItem> {
-  return new Map<string, FileSystemItem>(
-    items.map<[string, FileSystemItem]>(item => [item.relativePath, item])
-  )
+  return {
+    itemsThatAreNew,
+    itemsWithChangedContents,
+    itemsWithChangedTypes,
+    itemsToRemove
+  }
 }
 
 async function diffItems(
   itemAtSource: FileSystemItem,
-  itemAtDestination: FileSystemItem | undefined
-): Promise<'changed-types' | 'changed-contents' | 'new' | 'same'> {
-  if (itemAtDestination !== undefined) {
-    if (
-      itemAtDestination.stats.isDirectory() &&
-      itemAtSource.stats.isDirectory()
-    ) {
+  itemAtDestination: FileSystemItem
+): Promise<'changed-types' | 'changed-contents' | 'same'> {
+  if (
+    itemAtDestination.stats.isDirectory() &&
+    itemAtSource.stats.isDirectory()
+  ) {
+    return 'same'
+  }
+
+  if (
+    itemAtDestination.stats.isSymbolicLink() &&
+    itemAtSource.stats.isSymbolicLink()
+  ) {
+    const destinationSymlinkRealPath = await fs.realpath(
+      itemAtDestination.absolutePath
+    )
+    const sourceSymlinkRealPath = await fs.realpath(
+      itemAtDestination.absolutePath
+    )
+    if (destinationSymlinkRealPath === sourceSymlinkRealPath) {
       return 'same'
-    }
-
-    if (
-      itemAtDestination.stats.isSymbolicLink() &&
-      itemAtSource.stats.isSymbolicLink()
-    ) {
-      const destinationSymlinkRealPath = await fs.realpath(
-        itemAtDestination.absolutePath
-      )
-      const sourceSymlinkRealPath = await fs.realpath(
-        itemAtDestination.absolutePath
-      )
-      if (destinationSymlinkRealPath === sourceSymlinkRealPath) {
-        return 'same'
-      }
-
-      return 'changed-types'
-    }
-
-    if (itemAtDestination.stats.isFile() && itemAtSource.stats.isFile()) {
-      if (
-        itemAtDestination.stats.mtime.getTime() ===
-          itemAtSource.stats.mtime.getTime() &&
-        itemAtDestination.stats.size === itemAtSource.stats.size
-      ) {
-        const contentsForItemAtDestination = await fs.readFile(
-          itemAtDestination.absolutePath
-        )
-        const contentsForItemAtSource = await fs.readFile(
-          itemAtSource.absolutePath
-        )
-
-        if (contentsForItemAtDestination.equals(contentsForItemAtSource)) {
-          return 'same'
-        }
-      }
-
-      return 'changed-contents'
     }
 
     return 'changed-types'
   }
 
-  return 'new'
+  if (itemAtDestination.stats.isFile() && itemAtSource.stats.isFile()) {
+    if (
+      itemAtDestination.stats.mtime.getTime() ===
+        itemAtSource.stats.mtime.getTime() &&
+      itemAtDestination.stats.size === itemAtSource.stats.size
+    ) {
+      const contentsForItemAtDestination = await fs.readFile(
+        itemAtDestination.absolutePath
+      )
+      const contentsForItemAtSource = await fs.readFile(
+        itemAtSource.absolutePath
+      )
+
+      if (contentsForItemAtDestination.equals(contentsForItemAtSource)) {
+        return 'same'
+      }
+    }
+
+    return 'changed-contents'
+  }
+
+  return 'changed-types'
 }
 
 async function copyItems(
   dirToCopyFrom: string,
   dirToCopyTo: string,
-  items: FileSystemItem[]
+  itemRelativePaths: string[]
 ): Promise<void> {
-  const itemsToCopy = items.map(item => {
-    const sourceItemPath = path.resolve(dirToCopyFrom, item.relativePath)
-    const destinationItemPath = path.resolve(dirToCopyTo, item.relativePath)
-
-    if (item.stats.isDirectory()) {
-      return fs.ensureDir(destinationItemPath)
-    }
+  const itemsToCopy = itemRelativePaths.map(itemRelativePath => {
+    const sourceItemPath = path.resolve(dirToCopyFrom, itemRelativePath)
+    const destinationItemPath = path.resolve(dirToCopyTo, itemRelativePath)
 
     return fs.copy(sourceItemPath, destinationItemPath, {
       preserveTimestamps: true
@@ -255,11 +298,11 @@ async function copyItems(
 }
 
 async function removeItems(
-  dirPath: string,
-  items: FileSystemItem[]
+  dirToRemoveFrom: string,
+  itemsRelativePaths: string[]
 ): Promise<void> {
-  const removeItemsPromises = items.map(item =>
-    fs.remove(path.resolve(dirPath, item.relativePath))
+  const removeItemsPromises = itemsRelativePaths.map(itemRelativePath =>
+    fs.remove(path.resolve(dirToRemoveFrom, itemRelativePath))
   )
   await Promise.all(removeItemsPromises)
 }

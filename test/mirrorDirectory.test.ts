@@ -52,8 +52,9 @@ interface Directory {
   contents: DirectoryContents
 }
 interface DirectoryContents {
-  [name: string]: File | Symlink | Directory
+  [name: string]: FileSystemItem
 }
+type FileSystemItem = File | Symlink | Directory
 
 const fileWithContent = (content: string): File => ({
   _: 'file',
@@ -113,6 +114,21 @@ async function ensureFileSystemContainsDirectoryContents(
       )
     }
   }
+
+  const actualDirectoryFilePaths = await fs.readdir(destinationDirectoryPath)
+  for (const filePath of actualDirectoryFilePaths) {
+    const expectedItemInContents: undefined | FileSystemItem =
+      contents[filePath]
+
+    if (expectedItemInContents === undefined) {
+      throw new Error(
+        `Expected item at ${path.resolve(
+          destinationDirectoryPath,
+          filePath
+        )} to have been removed`
+      )
+    }
+  }
 }
 
 describe('Mirror Directory', () => {
@@ -135,7 +151,7 @@ describe('Mirror Directory', () => {
       nested: directoryWithContents({
         'file.txt': emptyFile
       }),
-      'file.txt': emptyFile,
+      [fileInRoot]: emptyFile,
       'symlinkToFile.txt': symlinkTo(`./${fileInRoot}`)
     }),
     [packageJsonInRoot]: fileWithContent(
@@ -292,6 +308,11 @@ describe('Mirror Directory', () => {
       await assertSymlink(
         path.resolve(destinationDirectory, symlinkRelativeSourcePath),
         folderToBeReplacedInDestination
+      )
+      // should also not delete file.txt located in the symlinked folder
+      await assertFile(
+        '',
+        path.resolve(destinationDirectory, folder2InRoot, fileInRoot)
       )
     })
 
