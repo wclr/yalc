@@ -39,36 +39,41 @@ const mirrorDirectoryTmpDir = path.join(
   'mirror-directory-test-fixtures'
 )
 
-interface File {
+interface FileDescription {
   _: 'file'
   contents: any
 }
-interface Symlink {
+interface SymlinkDescription {
   _: 'symlink'
   sourcePath: string
 }
-interface Directory {
+interface DirectoryDescription {
   _: 'directory'
   contents: DirectoryContents
 }
 interface DirectoryContents {
-  [name: string]: FileSystemItem
+  [name: string]: FileSystemItemDescription
 }
-type FileSystemItem = File | Symlink | Directory
+type FileSystemItemDescription =
+  | FileDescription
+  | SymlinkDescription
+  | DirectoryDescription
 
-const fileWithContent = (content: string): File => ({
+const fileWithContent = (content: string): FileDescription => ({
   _: 'file',
   contents: content
 })
-const directoryWithContents = (contents: DirectoryContents): Directory => ({
+const directoryWithContents = (
+  contents: DirectoryContents
+): DirectoryDescription => ({
   _: 'directory',
   contents: contents
 })
-const symlinkTo = (sourcePath: string): Symlink => ({
+const symlinkTo = (sourcePath: string): SymlinkDescription => ({
   _: 'symlink',
   sourcePath: sourcePath
 })
-const emptyFile: File = fileWithContent('')
+const emptyFile: FileDescription = fileWithContent('')
 
 async function writeDirectoryContents(
   contents: DirectoryContents,
@@ -117,7 +122,7 @@ async function ensureFileSystemContainsDirectoryContents(
 
   const actualDirectoryFilePaths = await fs.readdir(destinationDirectoryPath)
   for (const filePath of actualDirectoryFilePaths) {
-    const expectedItemInContents: undefined | FileSystemItem =
+    const expectedItemInContents: undefined | FileSystemItemDescription =
       contents[filePath]
 
     if (expectedItemInContents === undefined) {
