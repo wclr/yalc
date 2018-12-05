@@ -360,17 +360,14 @@ describe('Mirror Directory', () => {
         destinationDirectory,
         fileInRoot
       )
-      let fileWatcher: fs.FSWatcher | undefined
-      let fileEvents: string[] = []
-      fileWatcher = fs.watch(pathToFileInRootInDestination, event => {
+      const fileEvents: string[] = []
+      const fileWatcher = fs.watch(pathToFileInRootInDestination, event => {
         fileEvents.push(event)
       })
 
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
-      if (fileWatcher) {
-        fileWatcher.close()
-      }
+      fileWatcher.close()
 
       if (fileEvents.length > 0) {
         throw new Error(
