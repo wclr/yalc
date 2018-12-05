@@ -162,8 +162,7 @@ async function diffItemsInDirectories(
 
     if (
       sourceItemDescription.dirContents !== undefined &&
-      (destinationItemDescription !== undefined &&
-        destinationItemDescription.dirContents !== undefined)
+      destinationItemDescription.dirContents !== undefined
     ) {
       const subDiffResults = await diffItemsInDirectories(
         sourceItemAbsolutePath,
@@ -173,6 +172,7 @@ async function diffItemsInDirectories(
       )
       const appendCurrentRelativePath = (subItemRelativePath: string) =>
         path.join(itemRelativePath, subItemRelativePath)
+
       itemsThatAreNew.push(
         ...subDiffResults.itemsThatAreNew.map(appendCurrentRelativePath)
       )
