@@ -80,19 +80,14 @@ async function getAllItemsInDirectory(
   }
 
   const itemRelativePaths: string[] = await fs.readdir(directoryPath)
-
-  const statsPromises: Promise<fs.Stats>[] = []
-  for (let itemPath of itemRelativePaths) {
-    statsPromises.push(fs.lstat(path.resolve(directoryPath, itemPath)))
-  }
-  const allItemStats: fs.Stats[] = await Promise.all(statsPromises)
+  const itemStats = await getItemStats(directoryPath, itemRelativePaths)
 
   const contents: DirectoryContents = {}
   for (let i = 0; i < itemRelativePaths.length; i++) {
     const relativePath = itemRelativePaths[i]
     const itemDescription = {
       absolutePath: path.resolve(directoryPath, relativePath),
-      stats: allItemStats[i]
+      stats: itemStats[i]
     }
 
     if (!ignoreItemFunc(itemDescription)) {
@@ -104,6 +99,19 @@ async function getAllItemsInDirectory(
   }
 
   return contents
+}
+
+async function getItemStats(
+  directoryPath: string,
+  relativeItemPaths: string[]
+): Promise<fs.Stats[]> {
+  const statsPromises = relativeItemPaths.map(async itemPath => {
+    const itemAbsolutePath = path.resolve(directoryPath, itemPath)
+    const itemStat = await fs.lstat(itemAbsolutePath)
+    return itemStat
+  })
+
+  return await Promise.all(statsPromises)
 }
 
 async function getFileSystemItemDescription(
