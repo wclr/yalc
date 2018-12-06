@@ -15,17 +15,35 @@ export async function mirrorDirectory(
     isNodeModulesDirectory
   )
 
-  const {
-    itemsThatAreNew,
-    itemsWithChangedContents,
-    itemsWithChangedTypes,
-    itemsToRemove
-  } = await diffItemsInDirectories(
+  const itemDiffResults = await diffItemsInDirectories(
     sourceDirectory,
     itemsInSourceDirectoryExcludingNodeModulesDir,
     destinationDirectory,
     itemsInDestinationDirectoryExcludingNodeModulesDir
   )
+
+  const itemsThatAreNew: string[] = []
+  const itemsWithChangedContents: string[] = []
+  const itemsWithChangedTypes: string[] = []
+  const itemsToRemove: string[] = []
+  for (const itemDiffResult of itemDiffResults) {
+    switch (itemDiffResult.type) {
+      case 'added':
+        itemsThatAreNew.push(itemDiffResult.itemRelativePath)
+        break
+      case 'changed-contents':
+        itemsWithChangedContents.push(itemDiffResult.itemRelativePath)
+        break
+      case 'changed-types':
+        itemsWithChangedTypes.push(itemDiffResult.itemRelativePath)
+        break
+      case 'equal':
+        break
+      case 'removed':
+        itemsToRemove.push(itemDiffResult.itemRelativePath)
+        break
+    }
+  }
 
   await copyItems(sourceDirectory, destinationDirectory, itemsThatAreNew)
 
@@ -163,27 +181,30 @@ const isNodeModulesDirectory = (item: FileSystemItem) =>
   item.stats.isDirectory() &&
   path.parse(item.absolutePath).base === 'node_modules'
 
+type ItemDiffResultType =
+  | 'added'
+  | 'changed-types'
+  | 'changed-contents'
+  | 'equal'
+  | 'removed'
+interface ItemDiffResult {
+  itemRelativePath: string
+  type: ItemDiffResultType
+}
+
 async function diffItemsInDirectories(
   sourceDirectoryPath: string,
   sourceDirectoryContents: DirectoryContents,
   destinationDirectoryPath: string,
   destinationDirectoryContents: DirectoryContents
-): Promise<{
-  itemsThatAreNew: string[]
-  itemsWithChangedContents: string[]
-  itemsWithChangedTypes: string[]
-  itemsToRemove: string[]
-}> {
-  const itemsThatAreNew: string[] = []
-  const itemsWithChangedContents: string[] = []
-  const itemsWithChangedTypes: string[] = []
-  const itemsToRemove: string[] = []
+): Promise<ItemDiffResult[]> {
+  const itemDiffResults: ItemDiffResult[] = []
   for (const itemRelativePath in sourceDirectoryContents) {
     const destinationItemDescription: FileSystemItemDescription | undefined =
       destinationDirectoryContents[itemRelativePath]
 
     if (destinationItemDescription === undefined) {
-      itemsThatAreNew.push(itemRelativePath)
+      itemDiffResults.push({ itemRelativePath, type: 'added' })
       continue
     }
 
@@ -210,19 +231,11 @@ async function diffItemsInDirectories(
       const appendCurrentRelativePath = (subItemRelativePath: string) =>
         path.join(itemRelativePath, subItemRelativePath)
 
-      itemsThatAreNew.push(
-        ...subDiffResults.itemsThatAreNew.map(appendCurrentRelativePath)
-      )
-      itemsWithChangedContents.push(
-        ...subDiffResults.itemsWithChangedContents.map(
-          appendCurrentRelativePath
-        )
-      )
-      itemsWithChangedTypes.push(
-        ...subDiffResults.itemsWithChangedTypes.map(appendCurrentRelativePath)
-      )
-      itemsToRemove.push(
-        ...subDiffResults.itemsToRemove.map(appendCurrentRelativePath)
+      itemDiffResults.push(
+        ...subDiffResults.map(result => ({
+          ...result,
+          itemRelativePath: appendCurrentRelativePath(result.itemRelativePath)
+        }))
       )
     }
 
@@ -236,17 +249,8 @@ async function diffItemsInDirectories(
       stats: destinationItemDescription.stats
     }
 
-    const itemDiffResults = await diffItems(sourceItem, destinationItem)
-    switch (itemDiffResults) {
-      case 'changed-contents':
-        itemsWithChangedContents.push(itemRelativePath)
-        break
-      case 'changed-types':
-        itemsWithChangedTypes.push(itemRelativePath)
-        break
-      case 'same':
-        break
-    }
+    const itemDiffType = await diffItems(sourceItem, destinationItem)
+    itemDiffResults.push({ itemRelativePath, type: itemDiffType })
   }
 
   for (const itemRelativePath in destinationDirectoryContents) {
@@ -254,27 +258,22 @@ async function diffItemsInDirectories(
       sourceDirectoryContents[itemRelativePath]
 
     if (sourceItemDescription === undefined) {
-      itemsToRemove.push(itemRelativePath)
+      itemDiffResults.push({ itemRelativePath, type: 'removed' })
     }
   }
 
-  return {
-    itemsThatAreNew,
-    itemsWithChangedContents,
-    itemsWithChangedTypes,
-    itemsToRemove
-  }
+  return itemDiffResults
 }
 
 async function diffItems(
   itemAtSource: FileSystemItem,
   itemAtDestination: FileSystemItem
-): Promise<'changed-types' | 'changed-contents' | 'same'> {
+): Promise<ItemDiffResultType> {
   if (
     itemAtDestination.stats.isDirectory() &&
     itemAtSource.stats.isDirectory()
   ) {
-    return 'same'
+    return 'equal'
   }
 
   if (itemAtDestination.stats.isFile() && itemAtSource.stats.isFile()) {
@@ -291,7 +290,7 @@ async function diffItems(
       )
 
       if (contentsForItemAtDestination.equals(contentsForItemAtSource)) {
-        return 'same'
+        return 'equal'
       }
     }
 
