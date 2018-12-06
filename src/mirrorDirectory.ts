@@ -244,23 +244,6 @@ async function diffItems(
     return 'same'
   }
 
-  if (
-    itemAtDestination.stats.isSymbolicLink() &&
-    itemAtSource.stats.isSymbolicLink()
-  ) {
-    const destinationSymlinkRealPath = await fs.realpath(
-      itemAtDestination.absolutePath
-    )
-    const sourceSymlinkRealPath = await fs.realpath(
-      itemAtDestination.absolutePath
-    )
-    if (destinationSymlinkRealPath === sourceSymlinkRealPath) {
-      return 'same'
-    }
-
-    return 'changed-types'
-  }
-
   if (itemAtDestination.stats.isFile() && itemAtSource.stats.isFile()) {
     if (
       itemAtDestination.stats.mtime.getTime() ===

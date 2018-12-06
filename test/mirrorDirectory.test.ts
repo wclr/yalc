@@ -20,18 +20,6 @@ const assertDirectory = async (pathToCheck: string) => {
   const stat = await fs.lstat(pathToCheck)
   deepEqual(stat.isDirectory(), true)
 }
-
-const assertSymlink = async (
-  expectedSourcePath: string,
-  pathToCheck: string
-) => {
-  assertExists(pathToCheck)
-  const stat = await fs.lstat(pathToCheck)
-  deepEqual(stat.isSymbolicLink(), true)
-  const realPath = await fs.realpath(pathToCheck)
-  deepEqual(realPath, expectedSourcePath)
-}
-
 const tmpDirectory = path.join(__dirname, 'tmp')
 
 const mirrorDirectoryTmpDir = path.join(
@@ -43,10 +31,6 @@ interface FileDescription {
   _: 'file'
   contents: any
 }
-interface SymlinkDescription {
-  _: 'symlink'
-  sourcePath: string
-}
 interface DirectoryDescription {
   _: 'directory'
   contents: DirectoryContents
@@ -54,10 +38,7 @@ interface DirectoryDescription {
 interface DirectoryContents {
   [name: string]: FileSystemItemDescription
 }
-type FileSystemItemDescription =
-  | FileDescription
-  | SymlinkDescription
-  | DirectoryDescription
+type FileSystemItemDescription = FileDescription | DirectoryDescription
 
 const fileWithContent = (content: string): FileDescription => ({
   _: 'file',
@@ -68,10 +49,6 @@ const directoryWithContents = (
 ): DirectoryDescription => ({
   _: 'directory',
   contents: contents
-})
-const symlinkTo = (sourcePath: string): SymlinkDescription => ({
-  _: 'symlink',
-  sourcePath: sourcePath
 })
 const emptyFile: FileDescription = fileWithContent('')
 
@@ -86,11 +63,9 @@ async function writeDirectoryContents(
 
     if (item._ === 'file') {
       await fs.writeFile(itemDestinationPath, item.contents)
-    } else if (item._ === 'directory') {
+    } else {
       await fs.ensureDir(itemDestinationPath)
       await writeDirectoryContents(item.contents, itemDestinationPath)
-    } else {
-      await fs.ensureSymlink(item.sourcePath, itemDestinationPath)
     }
   }
 }
@@ -107,14 +82,9 @@ async function assertFileSystemContainsDirectoryContents(
 
     if (item._ === 'file') {
       await assertFile(item.contents, itemDestinationPath)
-    } else if (item._ === 'directory') {
+    } else {
       await assertFileSystemContainsDirectoryContents(
         item.contents,
-        itemDestinationPath
-      )
-    } else {
-      await assertSymlink(
-        path.resolve(destinationDirectoryPath, item.sourcePath),
         itemDestinationPath
       )
     }
@@ -144,7 +114,6 @@ describe('Mirror Directory', () => {
   const packageJsonInRoot = 'package.json'
   const folderInRoot = 'folder'
   const folder2InRoot = 'folder2'
-  const symlinkInRoot = 'symlinkToFolder'
   const folderInRootContents = {
     [fileInRoot]: emptyFile,
     'file.md': emptyFile
@@ -156,13 +125,11 @@ describe('Mirror Directory', () => {
       nested: directoryWithContents({
         'file.txt': emptyFile
       }),
-      [fileInRoot]: emptyFile,
-      'symlinkToFile.txt': symlinkTo(`./${fileInRoot}`)
+      [fileInRoot]: emptyFile
     }),
     [packageJsonInRoot]: fileWithContent(
       '{ "name": "dep-package", "version": "1.0.0" }'
-    ),
-    [symlinkInRoot]: symlinkTo(`./${folder2InRoot}`)
+    )
   }
   beforeEach(async () => {
     await fs.remove(sourceDirectory)
@@ -258,101 +225,6 @@ describe('Mirror Directory', () => {
       await mirrorDirectory(destinationDirectory, sourceDirectory)
 
       await assertFile('', directoryToBeReplacedInDestination)
-    })
-
-    it('should replace file with symlink, if one of the same name exists and looks the same', async () => {
-      const fileToBeReplacedInDestination = path.join(
-        destinationDirectory,
-        fileInRoot
-      )
-      const stats = await fs.stat(fileToBeReplacedInDestination)
-
-      const symlinkSourceAbsolutePath = path.resolve(
-        sourceDirectory,
-        packageJsonInRoot
-      )
-      const symlinkRelativeSourcePath = path.relative(
-        sourceDirectory,
-        symlinkSourceAbsolutePath
-      )
-      const fileToReplaceInSource = path.join(sourceDirectory, fileInRoot)
-      await fs.remove(fileToReplaceInSource)
-      await fs.ensureSymlink(symlinkRelativeSourcePath, fileToReplaceInSource)
-      await fs.utimes(fileToReplaceInSource, stats.atime, stats.mtime)
-
-      await mirrorDirectory(destinationDirectory, sourceDirectory)
-
-      await assertSymlink(
-        path.resolve(destinationDirectory, symlinkRelativeSourcePath),
-        fileToBeReplacedInDestination
-      )
-    })
-
-    it('should replace directory with symlink, if one of the same name exists and looks the same', async () => {
-      const folderToBeReplacedInDestination = path.join(
-        destinationDirectory,
-        folderInRoot
-      )
-      const stats = await fs.stat(folderToBeReplacedInDestination)
-
-      const symlinkSourceAbsolutePath = path.resolve(
-        sourceDirectory,
-        folder2InRoot
-      )
-      const symlinkRelativeSourcePath = path.relative(
-        sourceDirectory,
-        symlinkSourceAbsolutePath
-      )
-      const folderToReplaceInSource = path.join(sourceDirectory, folderInRoot)
-      await fs.remove(folderToReplaceInSource)
-      await fs.ensureSymlink(symlinkRelativeSourcePath, folderToReplaceInSource)
-      await fs.utimes(folderToReplaceInSource, stats.atime, stats.mtime)
-
-      await mirrorDirectory(destinationDirectory, sourceDirectory)
-
-      await assertSymlink(
-        path.resolve(destinationDirectory, symlinkRelativeSourcePath),
-        folderToBeReplacedInDestination
-      )
-      // should also not delete file.txt located in the symlinked folder
-      await assertFile(
-        '',
-        path.resolve(destinationDirectory, folder2InRoot, fileInRoot)
-      )
-    })
-
-    it('should replace symlink with file, if one of the same name exists and looks the same', async () => {
-      const symlinkToBeReplacedInDestination = path.join(
-        destinationDirectory,
-        symlinkInRoot
-      )
-      const stats = await fs.lstat(symlinkToBeReplacedInDestination)
-
-      const symlinkToReplaceInSource = path.join(sourceDirectory, symlinkInRoot)
-      await fs.remove(symlinkToReplaceInSource)
-      await fs.ensureFile(symlinkToReplaceInSource)
-      await fs.utimes(symlinkToReplaceInSource, stats.atime, stats.mtime)
-
-      await mirrorDirectory(destinationDirectory, sourceDirectory)
-
-      await assertFile('', symlinkToBeReplacedInDestination)
-    })
-
-    it('should replace symlink with directory, if one of the same name exists and looks the same', async () => {
-      const symlinkToBeReplacedInDestination = path.join(
-        destinationDirectory,
-        symlinkInRoot
-      )
-      const stats = await fs.lstat(symlinkToBeReplacedInDestination)
-
-      const symlinkToReplaceInSource = path.join(sourceDirectory, symlinkInRoot)
-      await fs.remove(symlinkToReplaceInSource)
-      await fs.ensureDir(symlinkToReplaceInSource)
-      await fs.utimes(symlinkToReplaceInSource, stats.atime, stats.mtime)
-
-      await mirrorDirectory(destinationDirectory, sourceDirectory)
-
-      await assertDirectory(symlinkToBeReplacedInDestination)
     })
 
     it('should not touch file in destination if unchanged in source', async () => {
