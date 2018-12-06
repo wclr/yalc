@@ -200,57 +200,19 @@ async function diffItemsInDirectories(
 ): Promise<ItemDiffResult[]> {
   const itemDiffResults: ItemDiffResult[] = []
   for (const itemRelativePath in sourceDirectoryContents) {
+    const sourceItemDescription = sourceDirectoryContents[itemRelativePath]
     const destinationItemDescription: FileSystemItemDescription | undefined =
       destinationDirectoryContents[itemRelativePath]
 
-    if (destinationItemDescription === undefined) {
-      itemDiffResults.push({ itemRelativePath, type: 'added' })
-      continue
-    }
-
-    const sourceItemDescription = sourceDirectoryContents[itemRelativePath]
-    const sourceItemAbsolutePath = path.resolve(
-      sourceDirectoryPath,
-      itemRelativePath
+    itemDiffResults.push(
+      ...(await diffItemInDirectory(
+        sourceDirectoryPath,
+        destinationDirectoryPath,
+        itemRelativePath,
+        sourceItemDescription,
+        destinationItemDescription
+      ))
     )
-    const destinationItemAbsolutePath = path.resolve(
-      destinationDirectoryPath,
-      itemRelativePath
-    )
-
-    if (
-      sourceItemDescription.dirContents !== undefined &&
-      destinationItemDescription.dirContents !== undefined
-    ) {
-      const subDiffResults = await diffItemsInDirectories(
-        sourceItemAbsolutePath,
-        sourceItemDescription.dirContents,
-        destinationItemAbsolutePath,
-        destinationItemDescription.dirContents
-      )
-      const appendCurrentRelativePath = (subItemRelativePath: string) =>
-        path.join(itemRelativePath, subItemRelativePath)
-
-      itemDiffResults.push(
-        ...subDiffResults.map(result => ({
-          ...result,
-          itemRelativePath: appendCurrentRelativePath(result.itemRelativePath)
-        }))
-      )
-    }
-
-    const sourceItem: FileSystemItem = {
-      absolutePath: sourceItemAbsolutePath,
-      stats: sourceItemDescription.stats
-    }
-
-    const destinationItem: FileSystemItem = {
-      absolutePath: destinationItemAbsolutePath,
-      stats: destinationItemDescription.stats
-    }
-
-    const itemDiffType = await diffItems(sourceItem, destinationItem)
-    itemDiffResults.push({ itemRelativePath, type: itemDiffType })
   }
 
   for (const itemRelativePath in destinationDirectoryContents) {
@@ -263,6 +225,59 @@ async function diffItemsInDirectories(
   }
 
   return itemDiffResults
+}
+
+async function diffItemInDirectory(
+  sourceDirectoryPath: string,
+  destinationDirectoryPath: string,
+  itemRelativePath: string,
+  sourceItemDescription: FileSystemItemDescription,
+  destinationItemDescription: FileSystemItemDescription | undefined
+): Promise<ItemDiffResult[]> {
+  if (destinationItemDescription === undefined) {
+    return [{ itemRelativePath, type: 'added' }]
+  }
+
+  const sourceItemAbsolutePath = path.resolve(
+    sourceDirectoryPath,
+    itemRelativePath
+  )
+  const destinationItemAbsolutePath = path.resolve(
+    destinationDirectoryPath,
+    itemRelativePath
+  )
+
+  if (
+    sourceItemDescription.dirContents !== undefined &&
+    destinationItemDescription.dirContents !== undefined
+  ) {
+    const subDiffResults = await diffItemsInDirectories(
+      sourceItemAbsolutePath,
+      sourceItemDescription.dirContents,
+      destinationItemAbsolutePath,
+      destinationItemDescription.dirContents
+    )
+    const appendCurrentRelativePath = (subItemRelativePath: string) =>
+      path.join(itemRelativePath, subItemRelativePath)
+
+    return subDiffResults.map(result => ({
+      ...result,
+      itemRelativePath: appendCurrentRelativePath(result.itemRelativePath)
+    }))
+  }
+
+  const sourceItem: FileSystemItem = {
+    absolutePath: sourceItemAbsolutePath,
+    stats: sourceItemDescription.stats
+  }
+
+  const destinationItem: FileSystemItem = {
+    absolutePath: destinationItemAbsolutePath,
+    stats: destinationItemDescription.stats
+  }
+
+  const itemDiffType = await diffItems(sourceItem, destinationItem)
+  return [{ itemRelativePath, type: itemDiffType }]
 }
 
 async function diffItems(
