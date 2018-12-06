@@ -82,23 +82,12 @@ async function getAllItemsInDirectory(
   const itemRelativePaths: string[] = await fs.readdir(directoryPath)
   const itemStats = await getItemStats(directoryPath, itemRelativePaths)
 
-  const contents: DirectoryContents = {}
-  for (let i = 0; i < itemRelativePaths.length; i++) {
-    const relativePath = itemRelativePaths[i]
-    const itemDescription = {
-      absolutePath: path.resolve(directoryPath, relativePath),
-      stats: itemStats[i]
-    }
-
-    if (!ignoreItemFunc(itemDescription)) {
-      contents[relativePath] = await getFileSystemItemDescription(
-        itemDescription,
-        ignoreItemFunc
-      )
-    }
-  }
-
-  return contents
+  return await getDirectoryContents(
+    directoryPath,
+    itemRelativePaths,
+    itemStats,
+    ignoreItemFunc
+  )
 }
 
 async function getItemStats(
@@ -114,23 +103,59 @@ async function getItemStats(
   return await Promise.all(statsPromises)
 }
 
+async function getDirectoryContents(
+  directoryPath: string,
+  relativeItemPaths: string[],
+  itemStats: fs.Stats[],
+  ignoreItemFunc: (item: FileSystemItem) => boolean
+): Promise<DirectoryContents> {
+  const contents = relativeItemPaths
+    .map((itemRelativePath, index) => {
+      return {
+        relativePath: itemRelativePath,
+        absolutePath: path.resolve(directoryPath, itemRelativePath),
+        stats: itemStats[index]
+      }
+    })
+    .filter(item => {
+      return !ignoreItemFunc(item)
+    })
+    .map(async item => {
+      const itemDescription = await getFileSystemItemDescription(
+        item,
+        ignoreItemFunc
+      )
+      return {
+        relativePath: item.relativePath,
+        description: itemDescription
+      }
+    })
+
+  return (await Promise.all(contents)).reduce(
+    (contents, item) => {
+      return { ...contents, [item.relativePath]: item.description }
+    },
+    {} as DirectoryContents
+  )
+}
+
 async function getFileSystemItemDescription(
-  itemDescription: FileSystemItem,
+  item: FileSystemItem,
   ignoreItemFunc: (item: FileSystemItem) => boolean
 ): Promise<FileSystemItemDescription> {
-  if (itemDescription.stats.isDirectory()) {
+  if (item.stats.isDirectory()) {
     const subDirItems = await getAllItemsInDirectory(
-      itemDescription.absolutePath,
+      item.absolutePath,
       ignoreItemFunc
     )
     return {
       dirContents: subDirItems,
-      stats: itemDescription.stats
+      stats: item.stats
     }
   }
   return {
     dirContents: undefined,
-    stats: itemDescription.stats
+    stats: item.stats
   }
 }
 
