@@ -198,22 +198,26 @@ async function diffItemsInDirectories(
   destinationDirectoryPath: string,
   destinationDirectoryContents: DirectoryContents
 ): Promise<ItemDiffResult[]> {
-  const itemDiffResults: ItemDiffResult[] = []
-  for (const itemRelativePath in sourceDirectoryContents) {
+  const itemDiffsForEachItemInSourceDirectoryPromises = Object.keys(
+    sourceDirectoryContents
+  ).map(async itemRelativePath => {
     const sourceItemDescription = sourceDirectoryContents[itemRelativePath]
     const destinationItemDescription: FileSystemItemDescription | undefined =
       destinationDirectoryContents[itemRelativePath]
 
-    itemDiffResults.push(
-      ...(await diffItemInDirectory(
-        sourceDirectoryPath,
-        destinationDirectoryPath,
-        itemRelativePath,
-        sourceItemDescription,
-        destinationItemDescription
-      ))
+    return await diffItemInDirectory(
+      sourceDirectoryPath,
+      destinationDirectoryPath,
+      itemRelativePath,
+      sourceItemDescription,
+      destinationItemDescription
     )
-  }
+  })
+  const itemDiffsForItemsInSourceDirectory = (await Promise.all(
+    itemDiffsForEachItemInSourceDirectoryPromises
+  )).reduce((prev, curr) => prev.concat(curr), [])
+
+  const itemDiffResults: ItemDiffResult[] = itemDiffsForItemsInSourceDirectory
 
   for (const itemRelativePath in destinationDirectoryContents) {
     const sourceItemDescription: FileSystemItemDescription | undefined =
