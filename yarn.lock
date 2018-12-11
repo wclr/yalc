@@ -454,6 +454,11 @@ get-caller-file@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/get-caller-file/-/get-caller-file-1.0.2.tgz#f702e63127e7e231c160a80c1554acb70d5047e5"
 
+get-caller-file@^1.0.2:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/get-caller-file/-/get-caller-file-1.0.3.tgz#f978fa4c90d1dfe7ff2d6beda2a515e713bdcf4a"
+  integrity sha512-3t6rVToeoZfYSGd8YoLFR2DJkiQrIiUrGcjvFX2mDw3bn6k2OtwHN0TNCLbBO+w8qTvimhDkv+LSscbJY1vE6w==
+
 get-stdin@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/get-stdin/-/get-stdin-4.0.1.tgz#b968c6b0a04384324902e8bf1a5df32579a450fe"
@@ -860,6 +865,14 @@ mocha@^5.2.0:
     mkdirp "0.5.1"
     supports-color "5.4.0"
 
+mock-require@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/mock-require/-/mock-require-3.0.2.tgz#7ce759b559e3b194be5f20a5b1cece0eb363f53d"
+  integrity sha512-aD/Y1ZFHqw5pHg3HVQ50dLbfaAAcytS6sqLuhP51Dk3TSPdFb2VkSAa3mjrHifLIlGAtwQHJHINafAyqAne7vA==
+  dependencies:
+    get-caller-file "^1.0.2"
+    normalize-path "^2.1.1"
+
 mount-point@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/mount-point/-/mount-point-3.0.0.tgz#665cb9edebe80d110e658db56c31d0aef51a8f97"
@@ -905,6 +918,13 @@ normalize-package-data@^2.3.4:
 normalize-path@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/normalize-path/-/normalize-path-1.0.0.tgz#32d0e472f91ff345701c15a8311018d3b0a90379"
+
+normalize-path@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/normalize-path/-/normalize-path-2.1.1.tgz#1ab28b556e198363a8c1a6f7e6fa20137fe6aed9"
+  integrity sha1-GrKLVW4Zg2Oowab35vogE3/mrtk=
+  dependencies:
+    remove-trailing-separator "^1.0.1"
 
 npm-bundled@^1.0.1:
   version "1.0.5"
@@ -1148,6 +1168,11 @@ registry-url@^3.0.3:
   integrity sha1-PU74cPc93h138M+aOBQyRE4XSUI=
   dependencies:
     rc "^1.0.1"
+
+remove-trailing-separator@^1.0.1:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/remove-trailing-separator/-/remove-trailing-separator-1.1.0.tgz#c24bce2a283adad5bc3f58e0d48249b92379d8ef"
+  integrity sha1-wkvOKig62tW8P1jg1IJJuSN52O8=
 
 repeating@^2.0.0:
   version "2.0.1"
@@ -1396,6 +1421,15 @@ tsutils@^2.27.2:
   dependencies:
     tslib "^1.8.1"
 
+typescript-tslint-plugin@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/typescript-tslint-plugin/-/typescript-tslint-plugin-0.1.2.tgz#2523a003ad399eeaf8b0b97fe1f0d80614cc5ecd"
+  integrity sha512-L50Bn6+HAQa5XTWB45Onb+xaxzuR75sdZclsMs6XKqMUr4lCaUH+JomliOHFuHierX0oUl6c5k5oyQ1Bjplxew==
+  dependencies:
+    minimatch "^3.0.4"
+    mock-require "^3.0.2"
+    vscode-languageserver "^5.1.0"
+
 typescript@^3.2.0-rc:
   version "3.2.0-rc"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.2.0-rc.tgz#7c3816f1c761b096f4f1712382e872f4da8f263e"
@@ -1458,6 +1492,37 @@ validate-npm-package-license@^3.0.1:
   dependencies:
     spdx-correct "~1.0.0"
     spdx-expression-parse "~1.0.0"
+
+vscode-jsonrpc@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/vscode-jsonrpc/-/vscode-jsonrpc-4.0.0.tgz#a7bf74ef3254d0a0c272fab15c82128e378b3be9"
+  integrity sha512-perEnXQdQOJMTDFNv+UF3h1Y0z4iSiaN9jIlb0OqIYgosPCZGYh/MCUlkFtV2668PL69lRDO32hmvL2yiidUYg==
+
+vscode-languageserver-protocol@3.13.0:
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver-protocol/-/vscode-languageserver-protocol-3.13.0.tgz#710d8e42119bb3affb1416e1e104bd6b4d503595"
+  integrity sha512-2ZGKwI+P2ovQll2PGAp+2UfJH+FK9eait86VBUdkPd9HRlm8e58aYT9pV/NYanHOcp3pL6x2yTLVCFMcTer0mg==
+  dependencies:
+    vscode-jsonrpc "^4.0.0"
+    vscode-languageserver-types "3.13.0"
+
+vscode-languageserver-types@3.13.0:
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver-types/-/vscode-languageserver-types-3.13.0.tgz#b704b024cef059f7b326611c99b9c8753c0a18b4"
+  integrity sha512-BnJIxS+5+8UWiNKCP7W3g9FlE7fErFw0ofP5BXJe7c2tl0VeWh+nNHFbwAS2vmVC4a5kYxHBjRy0UeOtziemVA==
+
+vscode-languageserver@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/vscode-languageserver/-/vscode-languageserver-5.1.0.tgz#012a28f154cc7a848c443d217894942e4c3eeb39"
+  integrity sha512-CIsrgx2Y5VHS317g/HwkSTWYBIQmy0DwEyZPmB2pEpVOhYFwVsYpbiJwHIIyLQsQtmRaO4eA2xM8KPjNSdXpBw==
+  dependencies:
+    vscode-languageserver-protocol "3.13.0"
+    vscode-uri "^1.0.6"
+
+vscode-uri@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/vscode-uri/-/vscode-uri-1.0.6.tgz#6b8f141b0bbc44ad7b07e94f82f168ac7608ad4d"
+  integrity sha512-sLI2L0uGov3wKVb9EB+vIQBl9tVP90nqRvxSoJ35vI3NjxE8jfsE5DSOhWgSunHSZmKS4OCi2jrtfxK7uyp2ww==
 
 which-module@^1.0.0:
   version "1.0.0"
