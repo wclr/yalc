@@ -15,7 +15,8 @@ import {
   getPackageManager,
   updatePackages,
   readPackageManifest,
-  getStorePackagesDir
+  getStorePackagesDir,
+  PackageScripts
 } from '.'
 
 export interface PublishPackageOptions {
@@ -23,9 +24,9 @@ export interface PublishPackageOptions {
   signature?: boolean
   knit?: boolean
   force?: boolean
-  changed?: boolean,
+  changed?: boolean
   push?: boolean
-  pushSafe?: boolean,
+  pushSafe?: boolean
   yarn?: boolean
   files?: boolean
 }
@@ -60,7 +61,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   if (!pkg) {
     return
   }
-
+  const scripts = pkg.scripts || ({} as PackageScripts)
   const changeDirCmd = 'cd ' + options.workingDir + ' && '
   const scriptRunCmd =
     !options.force && pkg.scripts
@@ -68,17 +69,17 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       : ''
 
   if (scriptRunCmd) {
-    if (pkg.scripts!.preyalc) {
-      console.log('Running preloc script: ' + pkg.scripts!.preyalc)
-      execSync(scriptRunCmd + values.prescript, execLoudOptions)
-    } else if (pkg.scripts!.prepublishOnly) {
-      console.log(
-        'Running prepublishOnly script: ' + pkg.scripts!.prepublishOnly
-      )
-      execSync(scriptRunCmd + 'prepublishOnly', execLoudOptions)
-    } else if (pkg.scripts!.prepublish) {
-      console.log('Running prepublish script: ' + pkg.scripts!.prepublish)
-      execSync(scriptRunCmd + 'prepublish', execLoudOptions)
+    const scriptNames: (keyof PackageScripts)[] = [
+      'preyalc',
+      'prepare',
+      'prepublishOnly',
+      'prepublish'
+    ]
+    const scriptName = scriptNames.filter(name => !!scripts[name])[0]
+    if (scriptName) {
+      const scriptCmd = scripts[scriptName]
+      console.log(`Running ${scriptName} script: ${scriptCmd}`)
+      execSync(scriptRunCmd + scriptCmd, execLoudOptions)
     }
   }
   const copyRes = await copyPackageToStore(pkg, options)
@@ -87,12 +88,12 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     return
   }
   if (scriptRunCmd) {
-    if (pkg.scripts!.postyalc) {
-      console.log('Running postloc script: ' + pkg.scripts!.postyalc)
-      execSync(scriptRunCmd + values.postscript, execLoudOptions)
-    } else if (pkg.scripts!.postpublish) {
-      console.log('Running pospublish script: ' + pkg.scripts!.postpublish)
-      execSync(scriptRunCmd + 'postpublish', execLoudOptions)
+    const scriptNames: (keyof PackageScripts)[] = ['postyalc', 'postpublish']
+    const scriptName = scriptNames.filter(name => !!scripts[name])[0]
+    if (scriptName) {
+      const scriptCmd = scripts[scriptName]
+      console.log(`Running ${scriptName} script: ${scriptCmd}`)
+      execSync(scriptRunCmd + scriptCmd, execLoudOptions)
     }
   }
 
@@ -110,7 +111,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       installationsToRemove.concat(installationsToRemoveForPkg)
     }
     await removeInstallations(installationsToRemove)
-  }  
+  }
   //await workaroundYarnCacheBug(pkg)
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const publishedPkg = readPackageManifest(publishedPackageDir)!

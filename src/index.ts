@@ -58,6 +58,19 @@ export function getStorePackagesDir(): string {
 export const getPackageStoreDir = (packageName: string, version = '') =>
   path.join(getStorePackagesDir(), packageName, version)
 
+export type PackageScripts = Partial<{
+  preinstall: string
+  postupdate: string
+  postpush: string
+  prepare: string
+  install: string
+  prepublish: string
+  prepublishOnly: string
+  postpublish: string
+  preyalc: string
+  postyalc: string
+}>
+
 export interface PackageManifest {
   name: string
   version: string
@@ -66,17 +79,7 @@ export interface PackageManifest {
   dependencies?: { [name: string]: string }
   devDependencies?: { [name: string]: string }
   workspaces?: string[]
-  scripts?: {
-    preinstall?: string
-    postupdate: string
-    postpush: string
-    install?: string
-    prepublish?: string
-    prepublishOnly?: string
-    postpublish?: string
-    preyalc?: string
-    postyalc?: string
-  }
+  scripts?: PackageScripts
   __JSONSpaces: number
 }
 
