@@ -1,11 +1,10 @@
-
 # sudo: false
 language: node_js
 node_js:
-- 6.9.1
+  - 10.0.0
 script: yarn ci
 branches:
   only:
-  - master
-cache: 
+    - master
+cache:
   yarn: true

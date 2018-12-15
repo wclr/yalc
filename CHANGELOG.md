@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.26
+
+- `prepare` script
+
 ## 1.0.0.pre.25 (2018-12-14)
 
 - `--pure` flag, yarn `workspaces` support
