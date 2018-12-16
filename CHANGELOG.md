@@ -3,6 +3,7 @@
 ## 1.0.0.pre.26
 
 - `prepare` script
+- `--private` flag to publish `private` package
 
 ## 1.0.0.pre.25 (2018-12-14)
 

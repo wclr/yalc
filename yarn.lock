@@ -930,9 +930,10 @@ npm-bundled@^1.0.1:
   version "1.0.5"
   resolved "https://registry.npmjs.org/npm-bundled/-/npm-bundled-1.0.5.tgz#3c1732b7ba936b3a10325aef616467c0ccbcc979"
 
-npm-packlist@^1.1.12:
+npm-packlist-fixed@^1.1.12:
   version "1.1.12"
-  resolved "https://registry.npmjs.org/npm-packlist/-/npm-packlist-1.1.12.tgz#22bde2ebc12e72ca482abd67afc51eb49377243a"
+  resolved "https://registry.yarnpkg.com/npm-packlist-fixed/-/npm-packlist-fixed-1.1.12.tgz#0d9b0e5458d6977113432777af79df900c832d61"
+  integrity sha512-PbQqWvKR5oxfQzK/+HyUPaWt1r92HSzTzuUYv5QDW4PmIBisrjr13CUKrCxyeKG/2ClpAxpCe74pWeyY1Pi7Lg==
   dependencies:
     ignore-walk "^3.0.1"
     npm-bundled "^1.0.1"

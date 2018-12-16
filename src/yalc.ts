@@ -50,7 +50,8 @@ yargs
         signature: argv.sig,
         yarn: argv.yarn,
         changed: argv.changed,
-        files: argv.files
+        files: argv.files,
+        private: argv.private
       })
     }
   })
@@ -94,7 +95,8 @@ yargs
         signature: argv.sig,
         yarn: argv.yarn,
         changed: argv.changed,
-        files: argv.files
+        files: argv.files,
+        private: argv.private
       })
     }
   })

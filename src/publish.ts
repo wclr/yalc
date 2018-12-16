@@ -29,6 +29,7 @@ export interface PublishPackageOptions {
   pushSafe?: boolean
   yarn?: boolean
   files?: boolean
+  private?: boolean
 }
 
 const { join } = path
@@ -59,6 +60,13 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   const workingDir = options.workingDir
   const pkg = readPackageManifest(workingDir)
   if (!pkg) {
+    return
+  }
+  if (pkg.private && !options.private) {
+    console.log(
+      'Will not publish package with `private: true`' +
+        ' use --private flag to force publishing.'
+    )
     return
   }
   const scripts = pkg.scripts || ({} as PackageScripts)

@@ -1,6 +1,7 @@
 import * as fs from 'fs-extra'
 import * as crypto from 'crypto'
-import * as npmPacklist from 'npm-packlist'
+//import * as npmPacklist from 'npm-packlist'
+const npmPacklist = require('npm-packlist-fixed')
 import ignore from 'ignore'
 
 import { join, dirname } from 'path'
@@ -54,7 +55,7 @@ export const copyPackageToStore = async (
     workingDir: string
     signature?: boolean
     changed?: boolean
-    knit?: boolean,
+    knit?: boolean
     files?: boolean
   }
 ) => {
@@ -70,9 +71,8 @@ export const copyPackageToStore = async (
   const ignoreFileContent = readIgnoreFile(workingDir)
 
   const ignoreRule = ignore().add(ignoreFileContent)
-  const filesToCopy = (await npmPacklist({ path: workingDir })).filter(
-    f => !ignoreRule.ignores(f)
-  )
+  const npmList: string[] = await npmPacklist({ path: workingDir })
+  const filesToCopy = npmList.filter(f => !ignoreRule.ignores(f))
   if (options.files) {
     console.log('Files included in published content:')
     filesToCopy.forEach(f => {
