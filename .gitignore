@@ -5,3 +5,4 @@ tmp
 *.js.map
 /.yalc
 yalc.lock
+*.log

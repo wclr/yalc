@@ -18,15 +18,31 @@ const publishFlags = ['knit', 'force', 'sig', 'changed', 'yarn', 'files']
 
 const cliCommand = values.myNameIs
 
+const getVersionMessage = () => {
+  const pkg = require(__dirname + '/../package.json')
+  return pkg.version
+}
+
+const showVersion = () => {
+  console.log(getVersionMessage())
+}
+
 /* tslint:disable-next-line */
 yargs
   .usage(cliCommand + ' [command] [options] [package1 [package2...]]')
   .command({
     command: '*',
+    builder: () => {
+      return yargs.boolean(['version'])
+    },
     handler: argv => {
       let msg = 'Use `yalc help` to see available commands.'
       if (argv._[0]) {
-        msg = 'Unknown commmand `' + argv._[0] + '`. ' + msg
+        msg = 'Unknown command `' + argv._[0] + '`. ' + msg
+      } else {
+        if (argv.version) {
+          msg = getVersionMessage()
+        }
       }
       console.log(msg)
     }

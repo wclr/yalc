@@ -4,6 +4,7 @@
 
 - `prepare` script
 - `--private` flag to publish `private` package
+- `--version` flag
 
 ## 1.0.0.pre.25 (2018-12-14)
 
