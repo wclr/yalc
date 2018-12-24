@@ -73,6 +73,7 @@ yargs
   })
   .command({
     command: 'installations',
+    describe: 'Work with installations file: show/clean',
     builder: () => {
       return yargs.boolean(['dry'])
     },

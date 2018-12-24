@@ -1,10 +1,11 @@
 # Yalc changelog
 
-## 1.0.0.pre.26
+## 1.0.0.pre.26 (2018-12-24)
 
 - `prepare` script
 - `--private` flag to publish `private` package
 - `--version` flag
+- fix of `npm-packlist` that may not include nested `package.json`
 
 ## 1.0.0.pre.25 (2018-12-14)
 
