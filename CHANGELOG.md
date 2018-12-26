@@ -1,5 +1,7 @@
 # Yalc changelog
 
+## 1.0.0.pre.28
+
 ## 1.0.0.pre.26 (2018-12-24)
 
 - `prepare` script

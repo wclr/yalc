@@ -87,7 +87,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     if (scriptName) {
       const scriptCmd = scripts[scriptName]
       console.log(`Running ${scriptName} script: ${scriptCmd}`)
-      execSync(scriptRunCmd + scriptCmd, execLoudOptions)
+      execSync(scriptRunCmd + scriptName, execLoudOptions)
     }
   }
   const copyRes = await copyPackageToStore(pkg, options)
@@ -101,7 +101,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     if (scriptName) {
       const scriptCmd = scripts[scriptName]
       console.log(`Running ${scriptName} script: ${scriptCmd}`)
-      execSync(scriptRunCmd + scriptCmd, execLoudOptions)
+      execSync(scriptRunCmd + scriptName, execLoudOptions)
     }
   }
 
