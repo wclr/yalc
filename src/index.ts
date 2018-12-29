@@ -1,10 +1,8 @@
 import * as fs from 'fs-extra'
-import * as path from 'path'
+import { join } from 'path'
 import { PackageName } from './installations'
 
 const userHome = require('user-home')
-
-const { join } = path
 
 export const values = {
   myNameIs: 'yalc',
@@ -56,7 +54,7 @@ export function getStorePackagesDir(): string {
 }
 
 export const getPackageStoreDir = (packageName: string, version = '') =>
-  path.join(getStorePackagesDir(), packageName, version)
+  join(getStorePackagesDir(), packageName, version)
 
 export type PackageScripts = Partial<{
   preinstall: string
@@ -83,8 +81,8 @@ export interface PackageManifest {
   __JSONSpaces: number
 }
 
-export const getPackageManager = (workingDir: string) =>
-  fs.existsSync('yarn.lock') ? 'yarn' : 'npm'
+export const getPackageManager = (cwd: string) =>
+  fs.existsSync(join(cwd, 'yarn.lock')) ? 'yarn' : 'npm'
 
 export const execLoudOptions = { stdio: 'inherit' }
 

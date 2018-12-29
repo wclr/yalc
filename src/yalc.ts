@@ -7,7 +7,8 @@ import {
   addPackages,
   updatePackages,
   removePackages,
-  getStoreMainDir
+  getStoreMainDir,
+  getPackageManager
 } from '.'
 
 import { showInstallations, cleanInstallations } from './installations'
@@ -23,9 +24,8 @@ const getVersionMessage = () => {
   return pkg.version
 }
 
-const showVersion = () => {
-  console.log(getVersionMessage())
-}
+const isYarn = (cwd: string = process.cwd()) =>
+  getPackageManager(cwd) === 'yarn'
 
 /* tslint:disable-next-line */
 yargs
@@ -53,6 +53,7 @@ yargs
     builder: () => {
       return yargs
         .default('sig', true)
+        .default('yarn', isYarn())
         .boolean(['push', 'push-safe'].concat(publishFlags))
     },
     handler: argv => {
@@ -100,6 +101,7 @@ yargs
       return yargs
         .default('force', undefined)
         .default('sig', true)
+        .default('yarn', isYarn())
         .boolean(['safe'].concat(publishFlags))
     },
     handler: argv => {
@@ -122,7 +124,7 @@ yargs
     describe: 'Add package from yalc repo to the project',
     builder: () => {
       return yargs
-        .default('yarn', false)
+        .default('yarn', isYarn())
         .boolean(['file', 'dev', 'save-dev', 'link', 'yarn', 'pure'])
         .help(true)
     },
@@ -144,11 +146,12 @@ yargs
     command: 'link',
     describe: 'Link package from yalc repo to the project',
     builder: () => {
-      return yargs.default('yarn', true).help(true)
+      return yargs.default('yarn', isYarn()).help(true)
     },
     handler: argv => {
       return addPackages(argv._.slice(1), {
         link: true,
+        yarn: argv.yarn,
         workingDir: process.cwd()
       })
     }
