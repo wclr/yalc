@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
-import { getStoreMainDir, values, readPackageManifest } from '.'
+import { getStoreMainDir, values } from '.'
 import { readLockfile } from './lockfile'
 
 export type PackageName = string & { __packageName: true }
