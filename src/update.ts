@@ -4,7 +4,13 @@ import { PackageInstallation, removeInstallations } from './installations'
 
 import { readLockfile } from './lockfile'
 
-import { parsePackageName, addPackages, readPackageManifest, values } from '.'
+import {
+  parsePackageName,
+  addPackages,
+  readPackage,
+  values,
+  findPackage
+} from '.'
 
 export interface UpdatePackagesOptions {
   workingDir: string
@@ -16,7 +22,10 @@ export const updatePackages = async (
   packages: string[],
   options: UpdatePackagesOptions
 ) => {
-  const { workingDir } = options
+  const workingDir = findPackage(options.workingDir)
+  if (!workingDir) {
+    return
+  }
   const lockfile = readLockfile({ workingDir })
 
   let packagesToUpdate: string[] = []
@@ -30,7 +39,7 @@ export const updatePackages = async (
         }
         packagesToUpdate.push(name)
       } else {
-        installationsToRemove.push({ name, path: options.workingDir })
+        installationsToRemove.push({ name, path: workingDir })
         console.log(
           `Did not find package ${name} in lockfile, ` +
             `please use 'add' command to add it explicitly.`
@@ -51,33 +60,34 @@ export const updatePackages = async (
   }))
 
   const packagesFiles = lockPackages.filter(p => p.file).map(p => p.name)
-  await addPackages(packagesFiles, { workingDir: options.workingDir })
+  await addPackages(packagesFiles, { workingDir })
 
   const packagesLinks = lockPackages
     .filter(p => !p.file && !p.link && !p.pure)
     .map(p => p.name)
+
   await addPackages(packagesLinks, {
-    workingDir: options.workingDir,
+    workingDir,
     link: true,
     pure: false
   })
 
   const packagesLinkDep = lockPackages.filter(p => p.link).map(p => p.name)
   await addPackages(packagesLinkDep, {
-    workingDir: options.workingDir,
+    workingDir,
     linkDep: true,
     pure: false
   })
 
   const packagesPure = lockPackages.filter(p => p.pure).map(p => p.name)
   await addPackages(packagesPure, {
-    workingDir: options.workingDir,
+    workingDir,
     pure: true
   })
 
   for (const packageName of packages) {
-    const pkg = readPackageManifest(
-      join(options.workingDir, values.yalcPackagesFolder, packageName)
+    const pkg = readPackage(
+      join(workingDir, values.yalcPackagesFolder, packageName)
     )
     const postupdate = pkg && pkg.scripts && pkg.scripts.postupdate
     if (postupdate) {
@@ -90,7 +100,7 @@ export const updatePackages = async (
 
   if (options.yarn) {
     console.log('Running yarn:')
-    execSync('yarn', { cwd: options.workingDir })
+    execSync('yarn', { cwd: workingDir })
   }
 
   if (!options.noInstallationsRemove) {

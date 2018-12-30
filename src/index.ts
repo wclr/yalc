@@ -1,8 +1,9 @@
 import * as fs from 'fs-extra'
-import { join } from 'path'
+import { homedir } from 'os'
+import * as path from 'path'
 import { PackageName } from './installations'
 
-const userHome = require('user-home')
+const { join } = path
 
 export const values = {
   myNameIs: 'yalc',
@@ -46,7 +47,7 @@ export function getStoreMainDir(): string {
   if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
     return join(process.env.LOCALAPPDATA, values.myNameIsCapitalized)
   }
-  return join(userHome, '.' + values.myNameIs)
+  return join(homedir(), '.' + values.myNameIs)
 }
 
 export function getStorePackagesDir(): string {
@@ -102,28 +103,38 @@ const getJSONSpaces = (jsonStr: string) => {
   return match && match[1] ? match[1].length : null
 }
 
-export function readPackageManifest(workingDir: string) {
+export function findPackage(workingDir: string) {
+  let dir = path.resolve(workingDir)
+  while (true) {
+    const pkg = join(dir, 'package.json')
+    if (fs.existsSync(pkg)) return dir
+    if (dir === '/') return null
+    dir = path.dirname(dir)
+  }
+}
+
+export function readPackage(packageDir: string) {
   let pkg: PackageManifest
-  const packagePath = join(workingDir, 'package.json')
+  const manifestPath = join(packageDir, 'package.json')
   try {
-    const fileData = fs.readFileSync(packagePath, 'utf-8')
+    const fileData = fs.readFileSync(manifestPath, 'utf-8')
     pkg = JSON.parse(fileData) as PackageManifest
     if (!pkg.name && pkg.version) {
       console.log(
         'Package manifest',
-        packagePath,
+        manifestPath,
         'should contain name and version.'
       )
       return null
     }
     const formatSpaces = getJSONSpaces(fileData) || 2
     if (!formatSpaces) {
-      console.log('Could not get JSON formatting for', packagePath, 'using 2')
+      console.log('Could not get JSON formatting for', manifestPath, 'using 2')
     }
     pkg.__JSONSpaces = formatSpaces
     return pkg
   } catch (e) {
-    console.error('Could not read', packagePath)
+    console.error('Could not read', manifestPath)
     return null
   }
 }
@@ -169,23 +180,26 @@ const sortDependencies = (dependencies: { [name: string]: string }) => {
     )
 }
 
-export function writePackageManifest(workingDir: string, pkg: PackageManifest) {
+export function writePackage(packageDir: string, pkg: PackageManifest) {
   pkg = Object.assign({}, pkg)
+
   if (pkg.dependencies) {
     pkg.dependencies = sortDependencies(pkg.dependencies)
   }
   if (pkg.devDependencies) {
     pkg.devDependencies = sortDependencies(pkg.devDependencies)
   }
+
   const formatSpaces = pkg.__JSONSpaces
   delete pkg.__JSONSpaces
-  const packagePath = join(workingDir, 'package.json')
+
+  const manifestPath = join(packageDir, 'package.json')
   try {
     fs.writeFileSync(
-      packagePath,
+      manifestPath,
       JSON.stringify(pkg, null, formatSpaces) + '\n'
     )
   } catch (e) {
-    console.error('Could not write ', packagePath)
+    console.error('Could not write ', manifestPath)
   }
 }
