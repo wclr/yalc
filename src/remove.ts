@@ -11,8 +11,9 @@ import { readLockfile, writeLockfile, removeLockfile } from './lockfile'
 import {
   values,
   parsePackageName,
-  readPackageManifest,
-  writePackageManifest
+  readPackage,
+  writePackage,
+  findPackage
 } from '.'
 
 export interface RemovePackagesOptions {
@@ -32,10 +33,13 @@ export const removePackages = async (
   packages: string[],
   options: RemovePackagesOptions
 ) => {
-  const { workingDir } = options
-  const lockFileConfig = readLockfile({ workingDir: workingDir })
-  const pkg = readPackageManifest(workingDir)
+  const workingDir = findPackage(options.workingDir)
+  if (!workingDir) return
+
+  const pkg = readPackage(workingDir)
   if (!pkg) return
+
+  const lockFileConfig = readLockfile({ workingDir })
   let packagesToRemove: PackageName[] = []
 
   if (packages.length) {
@@ -62,7 +66,7 @@ export const removePackages = async (
   }
 
   let lockfileUpdated = false
-  const removedPackagedFromManifect: string[] = []
+  let localPkgChanged = false
   packagesToRemove.forEach(name => {
     const lockedPackage = lockFileConfig.packages[name]
 
@@ -74,7 +78,12 @@ export const removePackages = async (
       depsWithPackage = pkg.devDependencies
     }
     if (depsWithPackage && isYalcFileAddress(depsWithPackage[name], name)) {
-      removedPackagedFromManifect.push(name)
+      localPkgChanged = true
+
+      // Remove symlink from node_modules
+      fs.removeSync(join(workingDir, 'node_modules', name))
+
+      // Update the package.json
       if (lockedPackage && lockedPackage.replaced) {
         depsWithPackage[name] = lockedPackage.replaced
       } else {
@@ -87,6 +96,10 @@ export const removePackages = async (
     }
   })
 
+  if (localPkgChanged) {
+    writePackage(workingDir, pkg)
+  }
+
   if (lockfileUpdated) {
     writeLockfile(lockFileConfig, { workingDir })
   }
@@ -96,28 +109,16 @@ export const removePackages = async (
     removeLockfile({ workingDir })
   }
 
-  if (removedPackagedFromManifect.length) {
-    writePackageManifest(workingDir, pkg)
-  }
-
-  const installationsToRemove: PackageInstallation[] = packagesToRemove.map(
-    name => ({
-      name,
-      version: '',
-      path: workingDir
-    })
-  )
-
-  removedPackagedFromManifect.forEach(name => {
-    fs.removeSync(join(workingDir, 'node_modules', name))
-  })
-  packagesToRemove.forEach(name => {
-    if (!options.retreat) {
-      fs.removeSync(join(workingDir, values.yalcPackagesFolder, name))
-    }
-  })
-
   if (!options.retreat) {
-    await removeInstallations(installationsToRemove)
+    await removeInstallations(
+      packagesToRemove.map(name => {
+        fs.removeSync(join(workingDir, values.yalcPackagesFolder, name))
+        return {
+          name,
+          version: '',
+          path: workingDir
+        }
+      })
+    )
   }
 }

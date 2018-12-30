@@ -9,8 +9,7 @@ import { readIgnoreFile, readSignatureFile } from '.'
 import {
   PackageManifest,
   getStorePackagesDir,
-  readPackageManifest,
-  writePackageManifest,
+  writePackage,
   writeSignatureFile
 } from '.'
 
@@ -137,6 +136,6 @@ export const copyPackageToStore = async (
     version: pkg.version + versionPre,
     devDependencies: undefined
   }
-  writePackageManifest(storePackageStoreDir, pkgToWrite)
+  writePackage(storePackageStoreDir, pkgToWrite)
   return signature
 }

@@ -201,10 +201,7 @@ yargs
     command: 'check',
     describe: 'Check package.json for yalc packages',
     builder: () => {
-      return yargs
-        .boolean(['commit'])
-        .usage('check usage here')
-        .help(true)
+      return yargs.usage('check usage here').help(true)
     },
     handler: argv => {
       const gitParams = process.env.GIT_PARAMS
@@ -212,7 +209,6 @@ yargs
         console.log('gitParams', gitParams)
       }
       checkManifest({
-        commit: argv.commit,
         all: argv.all,
         workingDir: process.cwd()
       })
