@@ -174,6 +174,26 @@ export const addPackages = async (
           replacedVersion =
             replacedVersion == localAddress ? '' : replacedVersion
         }
+
+        if (pkg.bin) {
+          const binDir = join(workingDir, 'node_modules', '.bin')
+          const addBinScript = (src: string, dest: string) => {
+            const srcPath = join(destYalcCopyDir, src)
+            const destPath = join(binDir, dest)
+            ensureSymlinkSync(srcPath, destPath)
+            fs.chmodSync(srcPath, 0o755)
+          }
+          if (typeof pkg.bin === 'string') {
+            fs.ensureDirSync(binDir)
+            addBinScript(pkg.bin, pkg.name)
+          } else if (typeof pkg.bin === 'object') {
+            fs.ensureDirSync(binDir)
+            for (const name in pkg.bin) {
+              addBinScript(pkg.bin[name], name)
+            }
+          }
+        }
+
         const addedAction = options.link ? 'linked' : 'added'
         console.log(
           `Package ${pkg.name}@${

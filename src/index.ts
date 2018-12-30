@@ -73,7 +73,7 @@ export interface PackageManifest {
   name: string
   version: string
   private?: boolean
-  files: string[]
+  bin?: string | { [name: string]: string }
   dependencies?: { [name: string]: string }
   devDependencies?: { [name: string]: string }
   workspaces?: string[]
