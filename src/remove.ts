@@ -83,6 +83,15 @@ export const removePackages = async (
       // Remove symlink from node_modules
       fs.removeSync(join(workingDir, 'node_modules', name))
 
+      // Remove symlinks from node_modules/.bin
+      if (pkg.bin) {
+        const names =
+          typeof pkg.bin === 'string' ? [pkg.name] : Object.keys(pkg.bin)
+        names.forEach(name => {
+          fs.removeSync(join(workingDir, 'node_modules', '.bin', name))
+        })
+      }
+
       // Update the package.json
       if (lockedPackage && lockedPackage.replaced) {
         depsWithPackage[name] = lockedPackage.replaced
