@@ -177,6 +177,25 @@ export const addPackages = async (
           fs.copySync(localPackageDir, nodeModulesDest)
         }
 
+        if (pkg.bin) {
+          const binDir = join(workingDir, 'node_modules', '.bin')
+          const addBinScript = (src: string, dest: string) => {
+            const srcPath = join(localPackageDir, src)
+            const destPath = join(binDir, dest)
+            ensureSymlinkSync(srcPath, destPath)
+            fs.chmodSync(destPath, 700)
+          }
+          if (typeof pkg.bin === 'string') {
+            fs.ensureDirSync(binDir)
+            addBinScript(pkg.bin, pkg.name)
+          } else if (typeof pkg.bin === 'object') {
+            fs.ensureDirSync(binDir)
+            for (const name in pkg.bin) {
+              addBinScript(name, pkg.bin[name])
+            }
+          }
+        }
+
         const addedAction = options.noSave ? 'linked' : 'added'
         console.log(
           `Package ${pkg.name}@${
