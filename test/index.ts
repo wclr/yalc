@@ -8,7 +8,7 @@ import {
   publishPackage,
   removePackages,
   yalcGlobal,
-  readPackageManifest
+  readPackage
 } from '../src'
 
 import { readInstallationsFile } from '../src/installations'
@@ -141,7 +141,7 @@ describe('Yalc package manager', function() {
     })
 
     it('Adds signature to package.json version', () => {
-      const pkg = readPackageManifest(publishedPackagePath)!
+      const pkg = readPackage(publishedPackagePath)!
       const versionLength =
         values.depPackageVersion.length + shortSignatureLength + 1
       ok(pkg.version.length === versionLength)
@@ -225,7 +225,7 @@ describe('Yalc package manager', function() {
       })
     })
     it('updates package.json', () => {
-      const pkg = readPackageManifest(projectDir)!
+      const pkg = readPackage(projectDir)!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: 'file:.yalc/' + values.depPackage
       })
@@ -306,7 +306,7 @@ describe('Yalc package manager', function() {
     })
 
     it('updates package.json', () => {
-      const pkg = readPackageManifest(projectDir)!
+      const pkg = readPackage(projectDir)!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: values.depPackageVersion
       })
@@ -336,7 +336,7 @@ describe('Yalc package manager', function() {
     })
 
     it('updates package.json', () => {
-      const pkg = readPackageManifest(projectDir)!
+      const pkg = readPackage(projectDir)!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: 'file:.yalc/' + values.depPackage
       })
@@ -356,7 +356,7 @@ describe('Yalc package manager', function() {
     })
 
     it('updates package.json', () => {
-      const pkg = readPackageManifest(projectDir)!
+      const pkg = readPackage(projectDir)!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: values.depPackageVersion
       })
@@ -402,7 +402,7 @@ describe('Yalc package manager', function() {
       })
     })
     it('updates package.json', () => {
-      const pkg = readPackageManifest(projectDir)!
+      const pkg = readPackage(projectDir)!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: 'link:.yalc/' + values.depPackage
       })
@@ -432,7 +432,7 @@ describe('Yalc package manager', function() {
       })
     })
     it('updates package.json', () => {
-      const pkg = readPackageManifest(projectDir)!
+      const pkg = readPackage(projectDir)!
       deepEqual(pkg.dependencies, {
         [values.depPackage]: 'link:.yalc/' + values.depPackage
       })
