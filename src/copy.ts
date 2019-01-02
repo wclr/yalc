@@ -4,8 +4,9 @@ import * as crypto from 'crypto'
 const npmPacklist = require('npm-packlist-fixed')
 import ignore from 'ignore'
 
+import { execSync } from 'child_process'
 import { join, dirname } from 'path'
-import { readIgnoreFile, readSignatureFile } from '.'
+import { readIgnoreFile, readSignatureFile, getPackageManager } from '.'
 import {
   PackageManifest,
   getStorePackagesDir,
@@ -73,6 +74,14 @@ export const copyPackageToStore = async (
   const ignoreRule = ignore().add(ignoreFileContent)
   const npmList: string[] = await npmPacklist({ path: workingDir })
   const filesToCopy = npmList.filter(f => !ignoreRule.ignores(f))
+
+  // Ensure the lockfile is always copied.
+  const npmBin = getPackageManager(workingDir)
+  const lockfileName = npmBin === 'yarn' ? 'yarn.lock' : 'package-lock.json'
+  if (fs.existsSync(join(workingDir, lockfileName))) {
+    filesToCopy.push(lockfileName)
+  }
+
   if (options.files) {
     console.log('Files included in published content:')
     filesToCopy.forEach(f => {
@@ -114,6 +123,10 @@ export const copyPackageToStore = async (
       await copyFilesToStore()
     }
   }
+
+  // Install dependencies for the copied package.
+  console.log('Installing dependencies...')
+  execSync(`${npmBin} install --production`, { cwd: storePackageStoreDir })
 
   if (options.knit) {
     fs.removeSync(storePackageStoreDir)
