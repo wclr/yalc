@@ -167,6 +167,7 @@ yargs
   })
   .command({
     command: 'remove',
+    aliases: ['rm', 'unlink'],
     describe: 'Remove packages from the project',
     builder: () => {
       return yargs.boolean(['retreat', 'all']).help(true)
