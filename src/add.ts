@@ -20,10 +20,9 @@ const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
 export interface AddPackagesOptions {
   dev?: boolean
   link?: boolean
-  linkDep?: boolean
   yarn?: boolean
-  safe?: boolean
   pure?: boolean
+  noSave?: boolean
   workingDir: string
 }
 
@@ -71,7 +70,8 @@ export const addPackages = async (
     return
   }
   const doPure =
-    options.pure === false ? false : options.pure || !!localPkg.workspaces
+    options.pure !== undefined ? options.pure : !!localPkg.workspaces
+
   const addedInstalls = packages
     .map(packageName => {
       const { name, version = '' } = parsePackageName(packageName)
@@ -127,19 +127,15 @@ export const addPackages = async (
       }
       if (!doPure) {
         const destModulesDir = join(workingDir, 'node_modules', name)
-        if (options.link || options.linkDep || isSymlink(destModulesDir)) {
-          fs.removeSync(destModulesDir)
-        }
-
-        if (options.link || options.linkDep) {
+        fs.removeSync(destModulesDir)
+        if (options.link) {
           ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
         } else {
-          emptyDirExcludeNodeModules(destModulesDir)
           fs.copySync(destYalcCopyDir, destModulesDir)
         }
 
-        if (!options.link) {
-          const protocol = options.linkDep ? 'link:' : 'file:'
+        if (!options.noSave) {
+          const protocol = options.link ? 'link:' : 'file:'
           const localAddress =
             protocol + values.yalcPackagesFolder + '/' + pkg.name
 
@@ -174,7 +170,8 @@ export const addPackages = async (
           replacedVersion =
             replacedVersion == localAddress ? '' : replacedVersion
         }
-        const addedAction = options.link ? 'linked' : 'added'
+
+        const addedAction = options.noSave ? 'linked' : 'added'
         console.log(
           `Package ${pkg.name}@${
             pkg.version
@@ -204,8 +201,8 @@ export const addPackages = async (
       version: i!.version,
       replaced: i!.replaced,
       pure: doPure,
-      file: !options.link && !options.linkDep && !doPure,
-      link: options.linkDep && !doPure,
+      file: !options.link && !doPure,
+      link: options.link && !doPure,
       signature: i.signature
     })),
     { workingDir: options.workingDir }
