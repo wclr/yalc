@@ -6,7 +6,7 @@ import ignore from 'ignore'
 
 import { execSync } from 'child_process'
 import { join, dirname } from 'path'
-import { readIgnoreFile, readSignatureFile, getPackageManager } from '.'
+import { readIgnoreFile, readSignatureFile, getPackageManager, values } from '.'
 import {
   PackageManifest,
   getStorePackagesDir,
@@ -67,11 +67,15 @@ export const copyPackageToStore = async (
   const npmList: string[] = await npmPacklist({ path: workingDir })
   const filesToCopy = npmList.filter(f => !ignoreRule.ignores(f))
 
-  // Ensure the lockfile is always copied.
+  // Ensure any lockfiles are copied...
   const npmBin = getPackageManager(workingDir)
   const lockfileName = npmBin === 'yarn' ? 'yarn.lock' : 'package-lock.json'
   if (fs.existsSync(join(workingDir, lockfileName))) {
     filesToCopy.push(lockfileName)
+  }
+  // ...including "yalc.lock"
+  if (fs.existsSync(join(workingDir, values.lockfileName))) {
+    filesToCopy.push(values.lockfileName)
   }
 
   if (options.files) {
@@ -90,6 +94,16 @@ export const copyPackageToStore = async (
 
   const copyFilesToStore = async () => {
     await fs.remove(storePackageStoreDir)
+
+    // The local ".yalc" directory is copied but not hashed.
+    const yalcLocalCacheDir = join(workingDir, values.yalcPackagesFolder)
+    if (fs.existsSync(yalcLocalCacheDir)) {
+      fs.copySync(
+        yalcLocalCacheDir,
+        join(storePackageStoreDir, values.yalcPackagesFolder)
+      )
+    }
+
     return Promise.all(
       filesToCopy
         .sort()
