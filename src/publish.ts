@@ -9,7 +9,6 @@ import {
 } from './installations'
 
 import {
-  values,
   PackageManifest,
   execLoudOptions,
   getPackageManager,

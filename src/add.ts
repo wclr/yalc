@@ -2,7 +2,7 @@ import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import { join } from 'path'
 import * as del from 'del'
-import { PackageInstallation, addInstallations } from './installations'
+import { addInstallations } from './installations'
 
 import { addPackageToLockfile } from './lockfile'
 
