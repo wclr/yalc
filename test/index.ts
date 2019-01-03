@@ -379,7 +379,7 @@ describe('Yalc package manager', function() {
     before(() => {
       return addPackages([values.depPackage], {
         workingDir: projectDir,
-        linkDep: true
+        link: true
       })
     })
     it('copies package to .yalc folder', () => {
