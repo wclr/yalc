@@ -1,8 +1,8 @@
-import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
-import { join } from 'path'
 import * as del from 'del'
-import { PackageInstallation, addInstallations } from './installations'
+import { execSync } from 'child_process'
+import { dirname, join, relative } from 'path'
+import { addInstallations } from './installations'
 
 import { addPackageToLockfile } from './lockfile'
 
@@ -172,7 +172,8 @@ export const addPackages = async (
         const nodeModulesDest = join(workingDir, 'node_modules', name)
         fs.removeSync(nodeModulesDest)
         if (options.link) {
-          ensureSymlinkSync(localPackageDir, nodeModulesDest, 'junction')
+          const target = relative(dirname(nodeModulesDest), nodeModulesDest)
+          ensureSymlinkSync(target, nodeModulesDest)
         } else {
           fs.copySync(localPackageDir, nodeModulesDest)
         }
@@ -180,7 +181,7 @@ export const addPackages = async (
         if (pkg.bin) {
           const binDir = join(workingDir, 'node_modules', '.bin')
           const addBinScript = (src: string, dest: string) => {
-            const srcPath = join(localPackageDir, src)
+            const srcPath = relative(binDir, join(localPackageDir, src))
             const destPath = join(binDir, dest)
             ensureSymlinkSync(srcPath, destPath)
             fs.chmodSync(destPath, 700)
