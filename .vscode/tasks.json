@@ -7,13 +7,9 @@
     {
       "taskName": "tsc",
       "command": "node",
-      "args": [
-        "./node_modules/typescript/lib/tsc.js",
-        "-w",
-        "-p",
-        "."
-      ],
+      "args": ["./node_modules/typescript/lib/tsc.js", "-w", "-p", "."],
       "isBackground": true,
       "problemMatcher": "$tsc-watch"
-    }]
-  }
+    }
+  ]
+}

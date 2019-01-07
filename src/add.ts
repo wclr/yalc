@@ -20,10 +20,9 @@ const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
 export interface AddPackagesOptions {
   dev?: boolean
   link?: boolean
-  linkDep?: boolean
   yarn?: boolean
-  safe?: boolean
   pure?: boolean
+  noSave?: boolean
   workingDir: string
 }
 
@@ -71,7 +70,8 @@ export const addPackages = async (
     return
   }
   const doPure =
-    options.pure === false ? false : options.pure || !!localPkg.workspaces
+    options.pure !== undefined ? options.pure : !!localPkg.workspaces
+
   const addedInstalls = packages
     .map(packageName => {
       const { name, version = '' } = parsePackageName(packageName)
@@ -87,10 +87,9 @@ export const addPackages = async (
         )
         return null
       }
+
       const versionToInstall = version || getLatestPackageVersion(name)
-
       const storedPackageDir = getPackageStoreDir(name, versionToInstall)
-
       if (!fs.existsSync(storedPackageDir)) {
         console.log(
           `Could not find package \`${packageName}\` ` + storedPackageDir,
@@ -101,13 +100,10 @@ export const addPackages = async (
 
       const pkg = readPackageManifest(storedPackageDir)
       if (!pkg) {
-        return
+        return null
       }
-      const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
 
-      emptyDirExcludeNodeModules(destYalcCopyDir)
-      fs.copySync(storedPackageDir, destYalcCopyDir)
-
+      const signature = readSignatureFile(storedPackageDir)
       let replacedVersion = ''
       if (doPure) {
         if (localPkg.workspaces) {
@@ -126,61 +122,69 @@ export const addPackages = async (
         )
       }
       if (!doPure) {
-        const destModulesDir = join(workingDir, 'node_modules', name)
-        if (options.link || options.linkDep || isSymlink(destModulesDir)) {
-          fs.removeSync(destModulesDir)
-        }
-
-        if (options.link || options.linkDep) {
-          ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
-        } else {
-          emptyDirExcludeNodeModules(destModulesDir)
-          fs.copySync(destYalcCopyDir, destModulesDir)
-        }
-
         if (!options.link) {
-          const protocol = options.linkDep ? 'link:' : 'file:'
+          const protocol = options.link ? 'link:' : 'file:'
           const localAddress =
             protocol + values.yalcPackagesFolder + '/' + pkg.name
 
           const dependencies = localPkg.dependencies || {}
           const devDependencies = localPkg.devDependencies || {}
-          let whereToAdd = options.dev ? devDependencies : dependencies
 
-          if (options.dev) {
-            if (dependencies[pkg.name]) {
-              replacedVersion = dependencies[pkg.name]
-              delete dependencies[pkg.name]
+          const whereToRemove = devDependencies[pkg.name]
+            ? devDependencies
+            : dependencies
+
+          replacedVersion = whereToRemove[pkg.name] || ''
+          if (replacedVersion !== localAddress) {
+            const whereToAdd =
+              options.dev || whereToRemove === devDependencies
+                ? devDependencies
+                : dependencies
+
+            localPkgUpdated = true
+            whereToAdd[pkg.name] = localAddress
+            if (whereToAdd !== whereToRemove) {
+              delete whereToRemove[pkg.name]
             }
           } else {
-            if (!dependencies[pkg.name]) {
-              if (devDependencies[pkg.name]) {
-                whereToAdd = devDependencies
-              }
-            }
+            replacedVersion = ''
           }
-
-          if (whereToAdd[pkg.name] !== localAddress) {
-            replacedVersion = replacedVersion || whereToAdd[pkg.name]
-            whereToAdd[pkg.name] = localAddress
-            localPkg.dependencies =
-              whereToAdd === dependencies ? dependencies : localPkg.dependencies
-            localPkg.devDependencies =
-              whereToAdd === devDependencies
-                ? devDependencies
-                : localPkg.devDependencies
-            localPkgUpdated = true
-          }
-          replacedVersion =
-            replacedVersion == localAddress ? '' : replacedVersion
         }
-        const addedAction = options.link ? 'linked' : 'added'
+
+        const localPackageDir = join(
+          workingDir,
+          values.yalcPackagesFolder,
+          name
+        )
+
+        if (signature === readSignatureFile(localPackageDir)) {
+          console.log(
+            `"${packageName}" already exists in the local ".yalc" directory`
+          )
+          return null
+        }
+
+        // Replace the local ".yalc/{name}" directory.
+        fs.removeSync(localPackageDir)
+        fs.copySync(storedPackageDir, localPackageDir)
+
+        // Replace the local "node_modules/{name}" symlink.
+        const nodeModulesDest = join(workingDir, 'node_modules', name)
+        fs.removeSync(nodeModulesDest)
+        if (options.link) {
+          ensureSymlinkSync(localPackageDir, nodeModulesDest, 'junction')
+        } else {
+          fs.copySync(localPackageDir, nodeModulesDest)
+        }
+
+        const addedAction = options.noSave ? 'linked' : 'added'
         console.log(
-          `Package ${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}.`
+          `Package ${pkg.name}@${
+            pkg.version
+          } ${addedAction} ==> ${nodeModulesDest}.`
         )
       }
 
-      const signature = readSignatureFile(storedPackageDir)
       return {
         signature,
         name,
@@ -202,8 +206,8 @@ export const addPackages = async (
       version: i!.version,
       replaced: i!.replaced,
       pure: doPure,
-      file: !options.link && !options.linkDep && !doPure,
-      link: options.linkDep && !doPure,
+      file: !options.link && !doPure,
+      link: options.link && !doPure,
       signature: i.signature
     })),
     { workingDir: options.workingDir }
@@ -213,6 +217,6 @@ export const addPackages = async (
 
   if (options.yarn) {
     console.log('Running yarn:')
-    execSync('yarn', {cwd: options.workingDir})
+    execSync('yarn', { cwd: options.workingDir })
   }
 }
