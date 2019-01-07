@@ -1,5 +1,4 @@
 import * as fs from 'fs-extra'
-import * as del from 'del'
 import { execSync } from 'child_process'
 import { dirname, join, relative } from 'path'
 import { addInstallations } from './installations'
@@ -38,26 +37,6 @@ const getLatestPackageVersion = (packageName: string) => {
     .map(x => x.version)[0]
   return latest || ''
 }
-
-const emptyDirExcludeNodeModules = (path: string) => {
-  // TODO: maybe use fs.remove + readdir for speed.
-  del.sync('**', {
-    dot: true,
-    cwd: path,
-    ignore: '**/node_modules/**'
-  })
-}
-
-const isSymlink = (path: string) => {
-  try {
-    return !!fs.readlinkSync(path)
-  } catch (e) {
-    return false
-  }
-}
-
-const gracefulFs = require('graceful-fs')
-gracefulFs.gracefulify(fs)
 
 export const addPackages = async (
   packages: string[],
