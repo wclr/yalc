@@ -14,9 +14,10 @@ import {
   execLoudOptions,
   getPackageManager,
   updatePackages,
-  readPackageManifest,
+  readPackage,
   getStorePackagesDir,
-  PackageScripts
+  PackageScripts,
+  findPackage
 } from '.'
 
 export interface PublishPackageOptions {
@@ -57,11 +58,12 @@ const workaroundYarnCacheBug = async (pkg: PackageManifest) => {
 }
 
 export const publishPackage = async (options: PublishPackageOptions) => {
-  const workingDir = options.workingDir
-  const pkg = readPackageManifest(workingDir)
-  if (!pkg) {
-    return
-  }
+  const workingDir = findPackage(options.workingDir)
+  if (!workingDir) return
+
+  const pkg = readPackage(workingDir)
+  if (!pkg) return
+
   if (pkg.private && !options.private) {
     console.log(
       'Will not publish package with `private: true`' +
@@ -69,8 +71,9 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     )
     return
   }
+
   const scripts = pkg.scripts || ({} as PackageScripts)
-  const changeDirCmd = 'cd ' + options.workingDir + ' && '
+  const changeDirCmd = 'cd ' + workingDir + ' && '
   const scriptRunCmd =
     !options.force && pkg.scripts
       ? changeDirCmd + getPackageManager(workingDir) + ' run '
@@ -90,11 +93,13 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       execSync(scriptRunCmd + scriptName, execLoudOptions)
     }
   }
+
   const copyRes = await copyPackageToStore(pkg, options)
   if (options.changed && !copyRes) {
     console.log('Package content has not changed, skipping publishing.')
     return
   }
+
   if (scriptRunCmd) {
     const scriptNames: (keyof PackageScripts)[] = ['postyalc', 'postpublish']
     const scriptName = scriptNames.filter(name => !!scripts[name])[0]
@@ -116,13 +121,15 @@ export const publishPackage = async (options: PublishPackageOptions) => {
         noInstallationsRemove: true,
         yarn: options.yarn
       })
-      installationsToRemove.concat(installationsToRemoveForPkg)
+      if (installationsToRemoveForPkg) {
+        installationsToRemove.push(...installationsToRemoveForPkg)
+      }
     }
     await removeInstallations(installationsToRemove)
   }
   //await workaroundYarnCacheBug(pkg)
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
-  const publishedPkg = readPackageManifest(publishedPackageDir)!
+  const publishedPkg = readPackage(publishedPackageDir)!
   console.log(
     `${publishedPkg.name}@${publishedPkg.version} published in store.`
   )

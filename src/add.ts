@@ -10,9 +10,10 @@ import {
   getPackageStoreDir,
   values,
   parsePackageName,
-  readPackageManifest,
-  writePackageManifest,
-  readSignatureFile
+  readPackage,
+  writePackage,
+  readSignatureFile,
+  findPackage
 } from '.'
 
 const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
@@ -64,14 +65,16 @@ export const addPackages = async (
   packages: string[],
   options: AddPackagesOptions
 ) => {
-  const workingDir = options.workingDir
-  const localPkg = readPackageManifest(workingDir)
+  const workingDir = findPackage(options.workingDir)
+  if (!workingDir) return
+
+  const localPkg = readPackage(workingDir)
+  if (!localPkg) return
+
   let localPkgUpdated = false
-  if (!localPkg) {
-    return
-  }
   const doPure =
     options.pure === false ? false : options.pure || !!localPkg.workspaces
+
   const addedInstalls = packages
     .map(packageName => {
       const { name, version = '' } = parsePackageName(packageName)
@@ -87,10 +90,9 @@ export const addPackages = async (
         )
         return null
       }
+
       const versionToInstall = version || getLatestPackageVersion(name)
-
       const storedPackageDir = getPackageStoreDir(name, versionToInstall)
-
       if (!fs.existsSync(storedPackageDir)) {
         console.log(
           `Could not find package \`${packageName}\` ` + storedPackageDir,
@@ -99,12 +101,12 @@ export const addPackages = async (
         return null
       }
 
-      const pkg = readPackageManifest(storedPackageDir)
+      const pkg = readPackage(storedPackageDir)
       if (!pkg) {
         return
       }
-      const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
 
+      const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
       emptyDirExcludeNodeModules(destYalcCopyDir)
       fs.copySync(storedPackageDir, destYalcCopyDir)
 
@@ -124,8 +126,7 @@ export const addPackages = async (
             name
           )} purely`
         )
-      }
-      if (!doPure) {
+      } else {
         const destModulesDir = join(workingDir, 'node_modules', name)
         if (options.link || options.linkDep || isSymlink(destModulesDir)) {
           fs.removeSync(destModulesDir)
@@ -174,9 +175,31 @@ export const addPackages = async (
           replacedVersion =
             replacedVersion == localAddress ? '' : replacedVersion
         }
+
+        if (pkg.bin) {
+          const binDir = join(workingDir, 'node_modules', '.bin')
+          const addBinScript = (src: string, dest: string) => {
+            const srcPath = join(destYalcCopyDir, src)
+            const destPath = join(binDir, dest)
+            ensureSymlinkSync(srcPath, destPath)
+            fs.chmodSync(destPath, 700)
+          }
+          if (typeof pkg.bin === 'string') {
+            fs.ensureDirSync(binDir)
+            addBinScript(pkg.bin, pkg.name)
+          } else if (typeof pkg.bin === 'object') {
+            fs.ensureDirSync(binDir)
+            for (const name in pkg.bin) {
+              addBinScript(pkg.bin[name], name)
+            }
+          }
+        }
+
         const addedAction = options.link ? 'linked' : 'added'
         console.log(
-          `Package ${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}.`
+          `Package ${pkg.name}@${
+            pkg.version
+          } ${addedAction} ==> ${destModulesDir}.`
         )
       }
 
@@ -193,7 +216,7 @@ export const addPackages = async (
     .map(_ => _!)
 
   if (localPkgUpdated) {
-    writePackageManifest(workingDir, localPkg)
+    writePackage(workingDir, localPkg)
   }
 
   addPackageToLockfile(
@@ -213,6 +236,6 @@ export const addPackages = async (
 
   if (options.yarn) {
     console.log('Running yarn:')
-    execSync('yarn', {cwd: options.workingDir})
+    execSync('yarn', { cwd: options.workingDir })
   }
 }
