@@ -73,6 +73,11 @@ Some documented features might not has been published yet, see [change log](./CH
 - Run `yalc remove my-package`, it will remove package info from `package.json` and `yalc.lock`
 - Run `yalc remove --all` to remove all packages from project.
 
+### Installations
+
+- Run `yalc installations clean my-package` to unpublish a package published with `yalc publish`
+- Run `yalc installations show my-package` to show all packages to which `my-package` has been installed.
+
 ---
 
 **NB!** Currently, `yalc` copies (or links) added/updated package content to the `node_modules` folder, but it doesn't execute `yarn/npm` install/update commands after this, so dependencies must be updated manually if necessary.
