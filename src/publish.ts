@@ -28,6 +28,7 @@ export interface PublishPackageOptions {
   push?: boolean
   pushSafe?: boolean
   yarn?: boolean
+  npm?: boolean
   files?: boolean
   private?: boolean
 }
@@ -40,20 +41,6 @@ const execute = (cmd: string) => {
       err ? reject(err) : resolve({ stdout, stderr })
     })
   })
-}
-
-// https://github.com/yarnpkg/yarn/issues/2165
-const workaroundYarnCacheBug = async (pkg: PackageManifest) => {
-  try {
-    const yarnCacheDir = (await execute('yarn cache dir')).stdout
-    if (yarnCacheDir) {
-      const cachedVersionPath = join(
-        yarnCacheDir,
-        ['npm', pkg.name, pkg.version].join('-')
-      )
-      fs.removeSync(cachedVersionPath)
-    }
-  } catch (e) {}
 }
 
 export const publishPackage = async (options: PublishPackageOptions) => {
@@ -105,6 +92,12 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     }
   }
 
+  const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
+  const publishedPkg = readPackageManifest(publishedPackageDir)!
+  console.log(
+    `${publishedPkg.name}@${publishedPkg.version} published in store.`
+  )
+
   if (options.push || options.pushSafe) {
     const installationsConfig = readInstallationsFile()
     const installationPaths = installationsConfig[pkg.name] || []
@@ -120,10 +113,4 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     }
     await removeInstallations(installationsToRemove)
   }
-  //await workaroundYarnCacheBug(pkg)
-  const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
-  const publishedPkg = readPackageManifest(publishedPackageDir)!
-  console.log(
-    `${publishedPkg.name}@${publishedPkg.version} published in store.`
-  )
 }

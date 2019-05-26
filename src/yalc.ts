@@ -7,8 +7,7 @@ import {
   addPackages,
   updatePackages,
   removePackages,
-  getStoreMainDir,
-  getPackageManager
+  getStoreMainDir,  
 } from '.'
 
 import { showInstallations, cleanInstallations } from './installations'
@@ -23,9 +22,6 @@ const getVersionMessage = () => {
   const pkg = require(__dirname + '/../package.json')
   return pkg.version
 }
-
-const isYarn = (cwd: string = process.cwd()) =>
-  getPackageManager(cwd) === 'yarn'
 
 /* tslint:disable-next-line */
 yargs
@@ -53,7 +49,6 @@ yargs
     builder: () => {
       return yargs
         .default('sig', true)
-        .default('yarn', isYarn())
         .boolean(['push', 'push-safe'].concat(publishFlags))
     },
     handler: argv => {
@@ -65,7 +60,7 @@ yargs
         force: argv.force,
         knit: argv.knit,
         signature: argv.sig,
-        yarn: argv.yarn,
+        yarn: argv.yarn || argv.npm,
         changed: argv.changed,
         files: argv.files,
         private: argv.private
@@ -101,7 +96,6 @@ yargs
       return yargs
         .default('force', undefined)
         .default('sig', true)
-        .default('yarn', isYarn())
         .boolean(['safe'].concat(publishFlags))
     },
     handler: argv => {
@@ -112,7 +106,7 @@ yargs
         push: true,
         pushSafe: argv.safe,
         signature: argv.sig,
-        yarn: argv.yarn,
+        yarn: argv.yarn || argv.npm,
         changed: argv.changed,
         files: argv.files,
         private: argv.private
@@ -124,7 +118,6 @@ yargs
     describe: 'Add package from yalc repo to the project',
     builder: () => {
       return yargs
-        .default('yarn', isYarn())
         .boolean(['file', 'dev', 'save-dev', 'link', 'yarn', 'pure'])
         .help(true)
     },
@@ -135,7 +128,7 @@ yargs
       )
       return addPackages(argv._.slice(1), {
         dev: argv.dev || argv.saveDev,
-        yarn: argv.yarn,
+        yarn: argv.yarn || argv.npm,
         linkDep: argv.link,
         pure: hasPureArg ? argv.pure : undefined,
         workingDir: process.cwd()
@@ -146,12 +139,12 @@ yargs
     command: 'link',
     describe: 'Link package from yalc repo to the project',
     builder: () => {
-      return yargs.default('yarn', isYarn()).help(true)
+      return yargs.help(true)
     },
     handler: argv => {
       return addPackages(argv._.slice(1), {
         link: true,
-        yarn: argv.yarn,
+        yarn: argv.yarn || argv.npm,
         workingDir: process.cwd()
       })
     }

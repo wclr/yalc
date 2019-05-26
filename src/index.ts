@@ -1,3 +1,4 @@
+import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import { join } from 'path'
 import { PackageName } from './installations'
@@ -83,6 +84,9 @@ export interface PackageManifest {
 
 export const getPackageManager = (cwd: string) =>
   fs.existsSync(join(cwd, 'yarn.lock')) ? 'yarn' : 'npm'
+
+export const getPackageManagerInstallCmd = (cwd: string) =>
+  getPackageManager(cwd) === 'yarn' ? 'yarn' : 'npm install'
 
 export const execLoudOptions = { stdio: 'inherit' }
 
@@ -187,5 +191,23 @@ export function writePackageManifest(workingDir: string, pkg: PackageManifest) {
     )
   } catch (e) {
     console.error('Could not write ', packagePath)
+  }
+}
+
+export const isYarn = (cwd: string) => getPackageManager(cwd) === 'yarn'
+
+export const runOrWarnPackageManagerInstall = (
+  workingDir: string,
+  doRun?: boolean
+) => {
+  const pkgMgrCmd = getPackageManagerInstallCmd(workingDir)
+  if (doRun) {
+    console.log(`Running ${pkgMgrCmd} in ${workingDir}`)
+    execSync(pkgMgrCmd, { cwd: workingDir, ...execLoudOptions })
+  } else {
+    console.log(
+      `Don't forget you may need to run ${pkgMgrCmd}` +
+        ` after adding packages with yalc to install/update dependencies/bin scripts.`
+    )
   }
 }

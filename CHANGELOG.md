@@ -1,6 +1,7 @@
 # Yalc changelog
 
-## 1.0.0.pre.28
+## 1.0.0.pre.28 (2019-05-26)
+- updates .bin scripts with permissions
 
 ## 1.0.0.pre.26 (2018-12-24)
 

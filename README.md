@@ -80,7 +80,7 @@ Some documented features might not has been published yet, see [change log](./CH
 
 ---
 
-**NB!** Currently, `yalc` copies (or links) added/updated package content to the `node_modules` folder, but it doesn't execute `yarn/npm` install/update commands after this, so dependencies must be updated manually if necessary.
+**NB!** Currently, `yalc` copies (or links) added/updated package content to the `node_modules` folder, but it doesn't execute `yarn/npm` install/update (unless you use --yarn/npm flag) commands after this, so to update dependencies you should execute them.
 
 ---
 

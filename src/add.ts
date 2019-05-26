@@ -12,7 +12,9 @@ import {
   parsePackageName,
   readPackageManifest,
   writePackageManifest,
-  readSignatureFile
+  readSignatureFile,
+  getPackageManagerInstallCmd,
+  runOrWarnPackageManagerInstall
 } from '.'
 
 const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
@@ -64,6 +66,7 @@ export const addPackages = async (
   packages: string[],
   options: AddPackagesOptions
 ) => {
+  if (!packages.length) return
   const workingDir = options.workingDir
   const localPkg = readPackageManifest(workingDir)
   let localPkgUpdated = false
@@ -233,8 +236,5 @@ export const addPackages = async (
 
   await addInstallations(addedInstalls)
 
-  if (options.yarn) {
-    console.log('Running yarn:')
-    execSync('yarn', { cwd: options.workingDir })
-  }
+  runOrWarnPackageManagerInstall(options.workingDir, options.yarn)
 }

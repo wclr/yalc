@@ -4,7 +4,13 @@ import { PackageInstallation, removeInstallations } from './installations'
 
 import { readLockfile } from './lockfile'
 
-import { parsePackageName, addPackages, readPackageManifest, values } from '.'
+import {
+  parsePackageName,
+  addPackages,
+  readPackageManifest,
+  values,
+  runOrWarnPackageManagerInstall
+} from '.'
 
 export interface UpdatePackagesOptions {
   workingDir: string
@@ -51,7 +57,10 @@ export const updatePackages = async (
   }))
 
   const packagesFiles = lockPackages.filter(p => p.file).map(p => p.name)
-  await addPackages(packagesFiles, { workingDir: options.workingDir })
+  await addPackages(packagesFiles, {
+    workingDir: options.workingDir,
+    yarn: false
+  })
 
   const packagesLinks = lockPackages
     .filter(p => !p.file && !p.link && !p.pure)
@@ -59,20 +68,23 @@ export const updatePackages = async (
   await addPackages(packagesLinks, {
     workingDir: options.workingDir,
     link: true,
-    pure: false
+    pure: false,
+    yarn: false
   })
 
   const packagesLinkDep = lockPackages.filter(p => p.link).map(p => p.name)
   await addPackages(packagesLinkDep, {
     workingDir: options.workingDir,
     linkDep: true,
-    pure: false
+    pure: false,
+    yarn: false
   })
 
   const packagesPure = lockPackages.filter(p => p.pure).map(p => p.name)
   await addPackages(packagesPure, {
     workingDir: options.workingDir,
-    pure: true
+    pure: true,
+    yarn: false
   })
 
   for (const packageName of packages) {
@@ -86,11 +98,6 @@ export const updatePackages = async (
       )
       execSync(postupdate, { cwd: workingDir })
     }
-  }
-
-  if (options.yarn) {
-    console.log('Running yarn:')
-    execSync('yarn', { cwd: options.workingDir })
   }
 
   if (!options.noInstallationsRemove) {
