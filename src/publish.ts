@@ -9,7 +9,6 @@ import {
 } from './installations'
 
 import {
-  values,
   PackageManifest,
   execLoudOptions,
   getPackageManager,
@@ -111,6 +110,8 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       })
       installationsToRemove.concat(installationsToRemoveForPkg)
     }
-    await removeInstallations(installationsToRemove)
+    if (installationsToRemove.length) {
+      await removeInstallations(installationsToRemove)
+    }
   }
 }
