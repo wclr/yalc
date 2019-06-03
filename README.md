@@ -109,7 +109,7 @@ Some documented features might not have been published yet, see the [change log]
 
 ### Publish/push sub-projects
 
-- Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish package-dir will perform publish operation in nested`package` folder of current working dir.
+- Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish some-project` will perform publish operation in the `./some-project` directory relative to `process.cwd()`
 
 ### Use with [**Yarn workspaces**](https://yarnpkg.com/lang/en/docs/workspaces/)!
 
