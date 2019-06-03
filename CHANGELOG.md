@@ -1,6 +1,11 @@
 # Yalc changelog
 
+## 1.0.0.pre.29 (2019-06-23)
+
+- new safe copy method
+
 ## 1.0.0.pre.28 (2019-05-26)
+
 - updates .bin scripts with permissions
 
 ## 1.0.0.pre.26 (2018-12-24)

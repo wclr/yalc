@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync, ExecSyncOptions } from 'child_process'
 import * as fs from 'fs-extra'
 import { join } from 'path'
 import { PackageName } from './installations'
@@ -88,7 +88,7 @@ export const getPackageManager = (cwd: string) =>
 export const getPackageManagerInstallCmd = (cwd: string) =>
   getPackageManager(cwd) === 'yarn' ? 'yarn' : 'npm install'
 
-export const execLoudOptions = { stdio: 'inherit' }
+export const execLoudOptions = { stdio: 'inherit' } as ExecSyncOptions
 
 export const parsePackageName = (packageName: string) => {
   const match = packageName.match(/(^@[^/]+\/)?([^@]+)@?(.*)/) || []

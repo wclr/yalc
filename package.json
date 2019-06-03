@@ -1,7 +1,7 @@
 {
   "name": "yalc",
-  "version": "1.0.0-pre.28",
-  "description": "Work yarn packages locally like a boss.",
+  "version": "1.0.0-pre.29",
+  "description": "Work with npm/yarn packages locally like a boss.",
   "homepage": "https://github.com/whitecolor/yalc",
   "repository": {
     "type": "git",
@@ -30,21 +30,17 @@
     }
   },
   "dependencies": {
-    "del": "^2.2.2",
-    "fs-extra": "^4.0.2",
-    "graceful-fs": "^4.1.15",
+    "fs-extra": "^8.0.1",
+    "glob": "^7.1.4",
     "ignore": "^5.0.4",
-    "npm-packlist-fixed": "^1.1.12",
+    "npm-packlist": "^1.4.1",
     "user-home": "^2.0.0",
     "yargs": "^7.1.0"
   },
   "devDependencies": {
-    "@types/del": "^2.2.32",
-    "@types/fs-extra": "^4.0.2",
+    "@types/fs-extra": "^7.0.0",
     "@types/glob": "^5.0.30",
-    "@types/klaw": "^1.3.2",
     "@types/mocha": "^2.2.40",
-    "@types/node": "^6.0.48",
     "@types/npm-packlist": "^1.1.0",
     "@types/yargs": "^6.6.0",
     "clean-ts-built": "^1.0.0",
@@ -53,6 +49,7 @@
     "prettier": "^1.14.2",
     "pretty-quick": "^1.8.0",
     "trash-cli": "^1.4.0",
+    "ts-node-dev": "^1.0.0-pre.39",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
     "tslint-plugin-prettier": "^1.3.0",

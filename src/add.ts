@@ -1,8 +1,7 @@
-import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
 import { join } from 'path'
-import * as del from 'del'
-import { PackageInstallation, addInstallations } from './installations'
+import { copyDirSafe } from './sync-dir'
+import { addInstallations } from './installations'
 
 import { addPackageToLockfile } from './lockfile'
 
@@ -13,7 +12,6 @@ import {
   readPackageManifest,
   writePackageManifest,
   readSignatureFile,
-  getPackageManagerInstallCmd,
   runOrWarnPackageManagerInstall
 } from '.'
 
@@ -42,15 +40,6 @@ const getLatestPackageVersion = (packageName: string) => {
   return latest || ''
 }
 
-const emptyDirExcludeNodeModules = (path: string) => {
-  // TODO: maybe use fs.remove + readdir for speed.
-  del.sync('**', {
-    dot: true,
-    cwd: path,
-    ignore: '**/node_modules/**'
-  })
-}
-
 const isSymlink = (path: string) => {
   try {
     return !!fs.readlinkSync(path)
@@ -58,9 +47,6 @@ const isSymlink = (path: string) => {
     return false
   }
 }
-
-const gracefulFs = require('graceful-fs')
-gracefulFs.gracefulify(fs)
 
 export const addPackages = async (
   packages: string[],
@@ -75,145 +61,143 @@ export const addPackages = async (
   }
   const doPure =
     options.pure === false ? false : options.pure || !!localPkg.workspaces
-  const addedInstalls = packages
-    .map(packageName => {
-      const { name, version = '' } = parsePackageName(packageName)
+  const addedInstallsP = packages.map(async packageName => {
+    const { name, version = '' } = parsePackageName(packageName)
 
-      if (!name) {
-        console.log('Could not parse package name', packageName)
+    if (!name) {
+      console.log('Could not parse package name', packageName)
+    }
+
+    const storedPackagePath = getPackageStoreDir(name)
+    if (!fs.existsSync(storedPackagePath)) {
+      console.log(
+        `Could not find package \`${name}\` in store (${storedPackagePath}), skipping.`
+      )
+      return null
+    }
+    const versionToInstall = version || getLatestPackageVersion(name)
+
+    const storedPackageDir = getPackageStoreDir(name, versionToInstall)
+
+    if (!fs.existsSync(storedPackageDir)) {
+      console.log(
+        `Could not find package \`${packageName}\` ` + storedPackageDir,
+        ', skipping.'
+      )
+      return null
+    }
+
+    const pkg = readPackageManifest(storedPackageDir)
+    if (!pkg) {
+      return
+    }
+    const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
+
+    await copyDirSafe(storedPackageDir, destYalcCopyDir)
+
+    let replacedVersion = ''
+    if (doPure) {
+      if (localPkg.workspaces) {
+        if (!options.pure) {
+          console.log(
+            'Because of `workspaces` enabled in this package,' +
+              ' --pure option will be used by default, to override use --no-pure.'
+          )
+        }
+      }
+      console.log(
+        `${pkg.name}@${pkg.version} added to ${join(
+          values.yalcPackagesFolder,
+          name
+        )} purely`
+      )
+    }
+    if (!doPure) {
+      const destModulesDir = join(workingDir, 'node_modules', name)
+      if (options.link || options.linkDep || isSymlink(destModulesDir)) {
+        fs.removeSync(destModulesDir)
       }
 
-      const storedPackagePath = getPackageStoreDir(name)
-      if (!fs.existsSync(storedPackagePath)) {
-        console.log(
-          `Could not find package \`${name}\` in store (${storedPackagePath}), skipping.`
-        )
-        return null
-      }
-      const versionToInstall = version || getLatestPackageVersion(name)
-
-      const storedPackageDir = getPackageStoreDir(name, versionToInstall)
-
-      if (!fs.existsSync(storedPackageDir)) {
-        console.log(
-          `Could not find package \`${packageName}\` ` + storedPackageDir,
-          ', skipping.'
-        )
-        return null
+      if (options.link || options.linkDep) {
+        ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
+      } else {
+        await copyDirSafe(storedPackageDir, destModulesDir)
       }
 
-      const pkg = readPackageManifest(storedPackageDir)
-      if (!pkg) {
-        return
-      }
-      const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
+      if (!options.link) {
+        const protocol = options.linkDep ? 'link:' : 'file:'
+        const localAddress =
+          protocol + values.yalcPackagesFolder + '/' + pkg.name
 
-      emptyDirExcludeNodeModules(destYalcCopyDir)
-      fs.copySync(storedPackageDir, destYalcCopyDir)
+        const dependencies = localPkg.dependencies || {}
+        const devDependencies = localPkg.devDependencies || {}
+        let whereToAdd = options.dev ? devDependencies : dependencies
 
-      let replacedVersion = ''
-      if (doPure) {
-        if (localPkg.workspaces) {
-          if (!options.pure) {
-            console.log(
-              'Because of `workspaces` enabled in this package,' +
-                ' --pure option will be used by default, to override use --no-pure.'
-            )
+        if (options.dev) {
+          if (dependencies[pkg.name]) {
+            replacedVersion = dependencies[pkg.name]
+            delete dependencies[pkg.name]
           }
-        }
-        console.log(
-          `${pkg.name}@${pkg.version} added to ${join(
-            values.yalcPackagesFolder,
-            name
-          )} purely`
-        )
-      }
-      if (!doPure) {
-        const destModulesDir = join(workingDir, 'node_modules', name)
-        if (options.link || options.linkDep || isSymlink(destModulesDir)) {
-          fs.removeSync(destModulesDir)
-        }
-
-        if (options.link || options.linkDep) {
-          ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
         } else {
-          emptyDirExcludeNodeModules(destModulesDir)
-          fs.copySync(destYalcCopyDir, destModulesDir)
-        }
-
-        if (!options.link) {
-          const protocol = options.linkDep ? 'link:' : 'file:'
-          const localAddress =
-            protocol + values.yalcPackagesFolder + '/' + pkg.name
-
-          const dependencies = localPkg.dependencies || {}
-          const devDependencies = localPkg.devDependencies || {}
-          let whereToAdd = options.dev ? devDependencies : dependencies
-
-          if (options.dev) {
-            if (dependencies[pkg.name]) {
-              replacedVersion = dependencies[pkg.name]
-              delete dependencies[pkg.name]
-            }
-          } else {
-            if (!dependencies[pkg.name]) {
-              if (devDependencies[pkg.name]) {
-                whereToAdd = devDependencies
-              }
-            }
-          }
-
-          if (whereToAdd[pkg.name] !== localAddress) {
-            replacedVersion = replacedVersion || whereToAdd[pkg.name]
-            whereToAdd[pkg.name] = localAddress
-            localPkg.dependencies =
-              whereToAdd === dependencies ? dependencies : localPkg.dependencies
-            localPkg.devDependencies =
-              whereToAdd === devDependencies
-                ? devDependencies
-                : localPkg.devDependencies
-            localPkgUpdated = true
-          }
-          replacedVersion =
-            replacedVersion == localAddress ? '' : replacedVersion
-        }
-
-        if (pkg.bin) {
-          const binDir = join(workingDir, 'node_modules', '.bin')
-          const addBinScript = (src: string, dest: string) => {
-            const srcPath = join(destYalcCopyDir, src)
-            const destPath = join(binDir, dest)
-            ensureSymlinkSync(srcPath, destPath)
-            fs.chmodSync(srcPath, 0o755)
-          }
-          if (typeof pkg.bin === 'string') {
-            fs.ensureDirSync(binDir)
-            addBinScript(pkg.bin, pkg.name)
-          } else if (typeof pkg.bin === 'object') {
-            fs.ensureDirSync(binDir)
-            for (const name in pkg.bin) {
-              addBinScript(pkg.bin[name], name)
+          if (!dependencies[pkg.name]) {
+            if (devDependencies[pkg.name]) {
+              whereToAdd = devDependencies
             }
           }
         }
 
-        const addedAction = options.link ? 'linked' : 'added'
-        console.log(
-          `Package ${pkg.name}@${
-            pkg.version
-          } ${addedAction} ==> ${destModulesDir}.`
-        )
+        if (whereToAdd[pkg.name] !== localAddress) {
+          replacedVersion = replacedVersion || whereToAdd[pkg.name]
+          whereToAdd[pkg.name] = localAddress
+          localPkg.dependencies =
+            whereToAdd === dependencies ? dependencies : localPkg.dependencies
+          localPkg.devDependencies =
+            whereToAdd === devDependencies
+              ? devDependencies
+              : localPkg.devDependencies
+          localPkgUpdated = true
+        }
+        replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
       }
 
-      const signature = readSignatureFile(storedPackageDir)
-      return {
-        signature,
-        name,
-        version,
-        replaced: replacedVersion,
-        path: options.workingDir
+      if (pkg.bin) {
+        const binDir = join(workingDir, 'node_modules', '.bin')
+        const addBinScript = (src: string, dest: string) => {
+          const srcPath = join(destYalcCopyDir, src)
+          const destPath = join(binDir, dest)
+          ensureSymlinkSync(srcPath, destPath)
+          fs.chmodSync(srcPath, 0o755)
+        }
+        if (typeof pkg.bin === 'string') {
+          fs.ensureDirSync(binDir)
+          addBinScript(pkg.bin, pkg.name)
+        } else if (typeof pkg.bin === 'object') {
+          fs.ensureDirSync(binDir)
+          for (const name in pkg.bin) {
+            addBinScript(pkg.bin[name], name)
+          }
+        }
       }
-    })
+
+      const addedAction = options.link ? 'linked' : 'added'
+      console.log(
+        `Package ${pkg.name}@${
+          pkg.version
+        } ${addedAction} ==> ${destModulesDir}.`
+      )
+    }
+
+    const signature = readSignatureFile(storedPackageDir)
+    return {
+      signature,
+      name,
+      version,
+      replaced: replacedVersion,
+      path: options.workingDir
+    }
+  })
+
+  const addedInstalls = (await Promise.all(addedInstallsP))
     .filter(_ => !!_)
     .map(_ => _!)
 

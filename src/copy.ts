@@ -1,7 +1,6 @@
 import * as fs from 'fs-extra'
 import * as crypto from 'crypto'
-//import * as npmPacklist from 'npm-packlist'
-const npmPacklist = require('npm-packlist-fixed')
+import * as npmPacklist from 'npm-packlist'
 import ignore from 'ignore'
 
 import { join, dirname } from 'path'
@@ -16,13 +15,8 @@ import {
 
 const shortSignatureLength = 8
 
-const ensureDir = (dirPath: string) =>
-  new Promise((resolve, reject) =>
-    fs.ensureDir(dirPath, err => (err ? reject(err) : resolve()))
-  )
-
-const getFileHash = (srcPath: string, relPath: string) => {
-  return new Promise(async (resolve, reject) => {
+export const getFileHash = (srcPath: string, relPath: string = '') => {
+  return new Promise<string>(async (resolve, reject) => {
     const stream = fs.createReadStream(srcPath)
     const md5sum = crypto.createHash('md5')
     md5sum.update(relPath.replace(/\\/g, '/'))
@@ -33,20 +27,13 @@ const getFileHash = (srcPath: string, relPath: string) => {
   })
 }
 
-const copyFile = (srcPath: string, destPath: string, relPath: string) => {
-  return new Promise(async (resolve, reject) => {
-    await ensureDir(dirname(destPath))
-    const stream = fs.createReadStream(srcPath)
-    const md5sum = crypto.createHash('md5')
-    md5sum.update(relPath.replace(/\\/g, '/'))
-    stream.on('data', (data: string) => md5sum.update(data))
-    stream
-      .pipe(fs.createWriteStream(destPath))
-      .on('error', reject)
-      .on('close', () => {
-        resolve(md5sum.digest('hex'))
-      })
-  })
+const copyFile = async (
+  srcPath: string,
+  destPath: string,
+  relPath: string = ''
+) => {
+  await fs.copy(srcPath, destPath, { preserveTimestamps: true })
+  return getFileHash(srcPath, relPath)
 }
 
 export const copyPackageToStore = async (

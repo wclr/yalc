@@ -7,7 +7,7 @@ import {
   addPackages,
   updatePackages,
   removePackages,
-  getStoreMainDir,  
+  getStoreMainDir
 } from '.'
 
 import { showInstallations, cleanInstallations } from './installations'
@@ -118,7 +118,9 @@ yargs
     describe: 'Add package from yalc repo to the project',
     builder: () => {
       return yargs
-        .boolean(['file', 'dev', 'save-dev', 'link', 'yarn', 'pure'])
+        .boolean(['file', 'dev', 'link', 'yarn', 'pure'])
+        .alias('D', 'dev')
+        .alias('save-dev', 'dev')
         .help(true)
     },
     handler: argv => {
@@ -127,7 +129,7 @@ yargs
         false
       )
       return addPackages(argv._.slice(1), {
-        dev: argv.dev || argv.saveDev,
+        dev: argv.dev,
         yarn: argv.yarn || argv.npm,
         linkDep: argv.link,
         pure: hasPureArg ? argv.pure : undefined,
