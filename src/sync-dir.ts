@@ -68,8 +68,7 @@ export const copyDirSafe = async (srcDir: string, destDir: string) => {
       const destHash = await getFileHash(destFilePath, '')
       return srcHash === destHash
     }
-
-    if (!theSameStats(srcFileStat, destFileStat) && !(await compareByHash())) {
+    if (!theSameStats(srcFileStat, destFileStat) || !(await compareByHash())) {
       filesToReplace.push(file)
     }
   }
@@ -79,11 +78,9 @@ export const copyDirSafe = async (srcDir: string, destDir: string) => {
   // console.log('filesToReplace', filesToReplace)
 
   await Promise.all(
-    newFiles.concat(filesToReplace).map(file =>
-      fs.copy(resolve(srcDir, file), resolve(destDir, file), {
-        preserveTimestamps: true
-      })
-    )
+    newFiles
+      .concat(filesToReplace)
+      .map(file => fs.copy(resolve(srcDir, file), resolve(destDir, file)))
   )
 
   await Promise.all(

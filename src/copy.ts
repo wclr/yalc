@@ -32,7 +32,7 @@ const copyFile = async (
   destPath: string,
   relPath: string = ''
 ) => {
-  await fs.copy(srcPath, destPath, { preserveTimestamps: true })
+  await fs.copy(srcPath, destPath)
   return getFileHash(srcPath, relPath)
 }
 
@@ -88,6 +88,7 @@ export const copyPackageToStore = async (
           .map(relPath => getFileHash(join(copyFromDir, relPath), relPath))
       )
     : await copyFilesToStore()
+
   const signature = crypto
     .createHash('md5')
     .update(hashes.join(''))

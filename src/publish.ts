@@ -48,6 +48,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   if (!pkg) {
     return
   }
+
   if (pkg.private && !options.private) {
     console.log(
       'Will not publish package with `private: true`' +
@@ -76,7 +77,9 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       execSync(scriptRunCmd + scriptName, execLoudOptions)
     }
   }
+
   const copyRes = await copyPackageToStore(pkg, options)
+
   if (options.changed && !copyRes) {
     console.log('Package content has not changed, skipping publishing.')
     return

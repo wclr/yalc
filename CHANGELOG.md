@@ -1,6 +1,10 @@
 # Yalc changelog
 
-## 1.0.0.pre.29 (2019-06-23)
+## 1.0.0.pre.30 (2019-06-05)
+
+- fix copy method
+
+## 1.0.0.pre.29 (2019-06-03)
 
 - new safe copy method
 
