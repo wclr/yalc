@@ -14,6 +14,10 @@ import { showInstallations, cleanInstallations } from './installations'
 
 import { checkManifest } from './check'
 
+// Symbol.asyncIterator polyfill for Node 8 + 9
+;(Symbol as any).asyncIterator =
+  Symbol.asyncIterator || Symbol('Symbol.asyncIterator')
+
 const publishFlags = ['knit', 'force', 'sig', 'changed', 'yarn', 'files']
 
 const cliCommand = values.myNameIs
