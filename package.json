@@ -1,6 +1,6 @@
 {
   "name": "yalc",
-  "version": "1.0.0-pre.30",
+  "version": "1.0.0-pre.31",
   "description": "Work with npm/yarn packages locally like a boss.",
   "homepage": "https://github.com/whitecolor/yalc",
   "repository": {
@@ -41,6 +41,7 @@
     "@types/fs-extra": "^7.0.0",
     "@types/glob": "^5.0.30",
     "@types/mocha": "^2.2.40",
+    "@types/node": "^12.0.7",
     "@types/npm-packlist": "^1.1.0",
     "@types/yargs": "^6.6.0",
     "clean-ts-built": "^1.0.0",

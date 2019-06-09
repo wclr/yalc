@@ -14,13 +14,6 @@
   dependencies:
     execa "^0.2.2"
 
-"@types/del@^2.2.32":
-  version "2.2.33"
-  resolved "https://registry.yarnpkg.com/@types/del/-/del-2.2.33.tgz#3fbe8a1c3d00e85e9674e490a347eb419b1003a1"
-  integrity sha512-bXwiHz4Ljz7FXGybdEtCHrsgJE+zIvxmGWgBLMwReMJi6yMenQs1ls3Q/s9rieuja9S/clDKVoXDS7BhEU2lYQ==
-  dependencies:
-    "@types/glob" "*"
-
 "@types/events@*":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@types/events/-/events-1.2.0.tgz#81a6731ce4df43619e5c8c945383b3e62a89ea86"
@@ -33,15 +26,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/glob@*":
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/@types/glob/-/glob-7.1.1.tgz#aa59a1c6e3fbc421e07ccd31a944c30eba521575"
-  integrity sha512-1Bh06cbWJUHMC97acuD6UMG29nMt0Aqz1vF3guLfG+kHHJhy3AyohZFFxYk2f7Q1SQIrNwvncxAE0N/9s70F2w==
-  dependencies:
-    "@types/events" "*"
-    "@types/minimatch" "*"
-    "@types/node" "*"
-
 "@types/glob@^5.0.30":
   version "5.0.36"
   resolved "https://registry.yarnpkg.com/@types/glob/-/glob-5.0.36.tgz#0c80a9c8664fc7d19781de229f287077fd622cb2"
@@ -50,11 +34,6 @@
     "@types/events" "*"
     "@types/minimatch" "*"
     "@types/node" "*"
-
-"@types/klaw@^1.3.2":
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/@types/klaw/-/klaw-1.3.5.tgz#6f2aec1374397054d66962c72ad9e6f2471271ad"
-  integrity sha512-KZfv4ea6bEbdQhfwpxtDuTPO2mHAAXMQqPOZyS4MgNyCymKoLHp0FVzzYq3H2zCeIotN4h1453TahLCCm8rf2w==
 
 "@types/minimatch@*":
   version "3.0.3"
@@ -70,6 +49,11 @@
   version "10.12.18"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
   integrity sha512-fh+pAqt4xRzPfqA6eh3Z2y6fyZavRIumvjhaCL753+TVkGKGhpPeyrJG2JftD0T9q4GF00KjefsQ+PQNDdWQaQ==
+
+"@types/node@^12.0.7":
+  version "12.0.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.0.7.tgz#4f2563bad652b2acb1722d7e7aae2b0ff62d192c"
+  integrity sha512-1YKeT4JitGgE4SOzyB9eMwO0nGVNkNEsm9qlIt1Lqm/tG2QEiSMTD4kS3aO6L+w5SClLVxALmIBESK6Mk5wX0A==
 
 "@types/npm-packlist@^1.1.0":
   version "1.1.0"
