@@ -79,7 +79,7 @@ export const copyDirSafe = async (srcDir: string, destDir: string) => {
       const destHash = await getFileHash(destFilePath, '')
       return srcHash === destHash
     }
-    if (!theSameStats(srcFileStat, destFileStat) || !(await compareByHash())) {
+    if (!theSameStats(srcFileStat, destFileStat) && !(await compareByHash())) {
       filesToReplace.push(file)
     }
   }
