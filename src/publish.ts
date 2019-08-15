@@ -1,5 +1,5 @@
 import { exec, execSync } from 'child_process'
-import * as path from 'path'
+import { join } from 'path'
 import { copyPackageToStore } from './copy'
 import {
   PackageInstallation,
@@ -30,16 +30,6 @@ export interface PublishPackageOptions {
   npm?: boolean
   files?: boolean
   private?: boolean
-}
-
-const { join } = path
-
-const execute = (cmd: string) => {
-  return new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
-    exec(cmd, (err, stdout, stderr) => {
-      err ? reject(err) : resolve({ stdout, stderr })
-    })
-  })
 }
 
 export const publishPackage = async (options: PublishPackageOptions) => {
