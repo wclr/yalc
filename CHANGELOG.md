@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.33 (2019-08-15)
+
+- added lifecycle scripts, like `prepack`
+
 ## 1.0.0.pre.30 (2019-06-05)
 
 - fix copy method
