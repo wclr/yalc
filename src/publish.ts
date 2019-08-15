@@ -57,6 +57,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     const scriptNames: (keyof PackageScripts)[] = [
       'preyalc',
       'prepare',
+      'prepack',
       'prepublishOnly',
       'prepublish'
     ]
