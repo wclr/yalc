@@ -124,6 +124,10 @@ If you want to override default pure behavior use `--no-pure` flag.
 
 - While working with yalc for some time on the dev machine you may face the situation when you have locations where you added yalc'ed packages being removed from file system, and this will cause some warning messages when yalc will try to push package to removed location. To get rid of such messages, there is an explicit command for this: `yalc installations clean [package]`.
 
+### Override default package store folder
+
+- You may use `--store-folder` flag option to override default location for storing published packages.
+
 ## Related links
 
 - [yarn probably shouldn't cache packages resolved with a file path](https://github.com/yarnpkg/yarn/issues/2165)
