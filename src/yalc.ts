@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 import * as yargs from 'yargs'
-import { join } from 'path'
+import { join, resolve } from 'path'
 import {
   values,
   publishPackage,
   addPackages,
   updatePackages,
   removePackages,
-  getStoreMainDir
+  getStoreMainDir,
+  yalcGlobal
 } from '.'
 
 import { showInstallations, cleanInstallations } from './installations'
@@ -26,6 +27,12 @@ const getVersionMessage = () => {
 /* tslint:disable-next-line */
 yargs
   .usage(cliCommand + ' [command] [options] [package1 [package2...]]')
+  .coerce('store-folder', function(folder: string) {
+    if (!yalcGlobal.yalcStoreMainDir) {
+      yalcGlobal.yalcStoreMainDir = resolve(folder)
+      console.log('Package store folder used:', yalcGlobal.yalcStoreMainDir)
+    }
+  })
   .command({
     command: '*',
     builder: () => {
