@@ -93,7 +93,9 @@ export const addPackages = async (
     }
     const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
 
-    await copyDirSafe(storedPackageDir, destYalcCopyDir)
+    const storeCache = {}
+
+    await copyDirSafe(storedPackageDir, destYalcCopyDir, storeCache)
 
     let replacedVersion = ''
     if (doPure) {
@@ -121,7 +123,7 @@ export const addPackages = async (
       if (options.link || options.linkDep) {
         ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
       } else {
-        await copyDirSafe(storedPackageDir, destModulesDir)
+        await copyDirSafe(storedPackageDir, destModulesDir, storeCache)
       }
 
       if (!options.link) {
