@@ -56,9 +56,21 @@ export const updatePackages = async (
     pure: lockfile.packages[name].pure
   }))
 
-  const packagesFiles = lockPackages.filter(p => p.file).map(p => p.name)
-  await addPackages(packagesFiles, {
+  const purePackagesFiles = lockPackages
+    .filter(p => p.file && p.pure)
+    .map(p => p.name)
+  await addPackages(purePackagesFiles, {
     workingDir: options.workingDir,
+    pure: true,
+    yarn: false
+  })
+
+  const nonPurePackagesFiles = lockPackages
+    .filter(p => p.file && !p.pure)
+    .map(p => p.name)
+  await addPackages(nonPurePackagesFiles, {
+    workingDir: options.workingDir,
+    pure: false,
     yarn: false
   })
 
