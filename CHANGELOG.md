@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.35 (2020-01-16)
+
+- fix --pure flag usage
+
 ## 1.0.0.pre.34 (2019-08-27)
 
 - added `--store-folder` to override default global package store folder

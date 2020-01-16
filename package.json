@@ -1,8 +1,9 @@
 {
   "name": "yalc",
-  "version": "1.0.0-pre.34",
+  "version": "1.0.0-pre.35",
   "description": "Work with npm/yarn packages locally like a boss.",
   "homepage": "https://github.com/whitecolor/yalc",
+  "workspaces": [],
   "repository": {
     "type": "git",
     "url": "https://github.com/whitecolor/yalc.git"

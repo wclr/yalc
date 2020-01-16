@@ -10,7 +10,6 @@
       "when": "$(basename).ts"
     }
   },
-  "prettier.tslintIntegration": false,
   // "tslint.run": "onSave",
   // "tslint.autoFixOnSave": true,
   //"editor.formatOnType": true,

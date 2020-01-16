@@ -61,6 +61,7 @@ export const addPackages = async (
   }
   const doPure =
     options.pure === false ? false : options.pure || !!localPkg.workspaces
+
   const addedInstallsP = packages.map(async packageName => {
     const { name, version = '' } = parsePackageName(packageName)
 

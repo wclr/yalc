@@ -125,21 +125,17 @@ yargs
     describe: 'Add package from yalc repo to the project',
     builder: () => {
       return yargs
-        .boolean(['file', 'dev', 'link', 'yarn', 'pure'])
+        .boolean(['file', 'dev', 'link', 'yarn'])
         .alias('D', 'dev')
         .alias('save-dev', 'dev')
         .help(true)
     },
     handler: argv => {
-      const hasPureArg = process.argv.reduce(
-        (res, arg) => res || /-pure/.test(arg),
-        false
-      )
       return addPackages(argv._.slice(1), {
         dev: argv.dev,
         yarn: argv.yarn || argv.npm,
         linkDep: argv.link,
-        pure: hasPureArg ? argv.pure : undefined,
+        pure: argv.pure,
         workingDir: process.cwd()
       })
     }
@@ -154,6 +150,7 @@ yargs
       return addPackages(argv._.slice(1), {
         link: true,
         yarn: argv.yarn || argv.npm,
+        pure: argv.pure,
         workingDir: process.cwd()
       })
     }
