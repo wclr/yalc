@@ -1,9 +1,10 @@
 import { execSync, ExecSyncOptions } from 'child_process'
 import * as fs from 'fs-extra'
+import { homedir } from 'os'
 import { join } from 'path'
 import { PackageName } from './installations'
 
-const userHome = require('user-home')
+const userHome = homedir()
 
 export const values = {
   myNameIs: 'yalc',
