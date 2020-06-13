@@ -212,9 +212,9 @@ export const runOrWarnPackageManagerInstall = (
     console.log(`Running ${pkgMgrCmd} in ${workingDir}`)
     execSync(pkgMgrCmd, { cwd: workingDir, ...execLoudOptions })
   } else {
-    console.log(
-      `Don't forget you may need to run ${pkgMgrCmd}` +
-        ` after adding packages with yalc to install/update dependencies/bin scripts.`
-    )
+    // console.log(
+    //   `Don't forget you may need to run ${pkgMgrCmd}` +
+    //     ` after adding packages with yalc to install/update dependencies/bin scripts.`
+    // )
   }
 }

@@ -4,6 +4,8 @@
 
 - change version signature to semver metadata format (from - to +) - https://semver.org/#spec-item-10
 
+- removed `don't forget to update/install deps` message
+
 ## 1.0.0.pre.35 (2020-01-16)
 
 - fix --pure flag usage
