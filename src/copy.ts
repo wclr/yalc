@@ -118,7 +118,7 @@ export const copyPackageToStore = async (
   writeSignatureFile(storePackageStoreDir, signature)
   const versionPre =
     options.signature && !options.knit
-      ? '-' + signature.substr(0, shortSignatureLength)
+      ? '+' + signature.substr(0, shortSignatureLength)
       : ''
   const pkgToWrite: PackageManifest = {
     ...pkg,
