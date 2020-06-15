@@ -4,6 +4,15 @@ import { resolve } from 'path'
 import * as fs from 'fs-extra'
 import { getFileHash } from './copy'
 
+type Cache = {
+  [dir: string]: {
+    glob: string[]
+    files: {
+      [file: string]: { stat: fs.Stats; hash: string }
+    }
+  }
+}
+
 const NODE_MAJOR_VERSION = parseInt(
   (<any>process).versions.node.split('.').shift(),
   10
@@ -16,15 +25,6 @@ if (NODE_MAJOR_VERSION >= 8 && NODE_MAJOR_VERSION < 10) {
 }
 
 const globP = util.promisify(glob)
-
-const cache: {
-  [dir: string]: {
-    glob: string[]
-    files: {
-      [file: string]: { stat: fs.Stats; hash: string }
-    }
-  }
-} = {}
 
 const makeListMap = (list: string[]) => {
   return list.reduce(
@@ -43,7 +43,11 @@ const theSameStats = (srcStat: fs.Stats, destStat: fs.Stats) => {
   )
 }
 
-export const copyDirSafe = async (srcDir: string, destDir: string) => {
+export const copyDirSafe = async (
+  srcDir: string,
+  destDir: string,
+  cache: Cache = {}
+) => {
   const ignore = '**/node_modules/**'
   const dot = true
   const nodir = true
