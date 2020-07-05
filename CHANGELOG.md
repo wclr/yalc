@@ -1,8 +1,9 @@
 # Yalc changelog
 
-## 1.0.0.pre.37
+## 1.0.0.pre.37 (2020-07-05)
 
-- Allow --pure without `workspaces`
+- allow using `--pure` flag without `workspaces`
+- `--replace` flag to force replacement of content while adding/pushing package
 
 ## 1.0.0.pre.36 (2020-06-14)
 
