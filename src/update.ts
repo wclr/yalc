@@ -15,7 +15,7 @@ import {
 export interface UpdatePackagesOptions {
   workingDir: string
   noInstallationsRemove?: boolean
-  safe?: boolean
+  replace?: boolean
   yarn?: boolean
 }
 export const updatePackages = async (
@@ -57,8 +57,14 @@ export const updatePackages = async (
   }))
 
   const packagesFiles = lockPackages.filter(p => p.file).map(p => p.name)
-  await addPackages(packagesFiles, {
+
+  const addOpts = {
     workingDir: options.workingDir,
+    replace: options.replace
+  }
+
+  await addPackages(packagesFiles, {
+    ...addOpts,
     yarn: false
   })
 
@@ -66,7 +72,7 @@ export const updatePackages = async (
     .filter(p => !p.file && !p.link && !p.pure)
     .map(p => p.name)
   await addPackages(packagesLinks, {
-    workingDir: options.workingDir,
+    ...addOpts,
     link: true,
     pure: false,
     yarn: false
@@ -74,7 +80,7 @@ export const updatePackages = async (
 
   const packagesLinkDep = lockPackages.filter(p => p.link).map(p => p.name)
   await addPackages(packagesLinkDep, {
-    workingDir: options.workingDir,
+    ...addOpts,
     linkDep: true,
     pure: false,
     yarn: false
@@ -82,7 +88,7 @@ export const updatePackages = async (
 
   const packagesPure = lockPackages.filter(p => p.pure).map(p => p.name)
   await addPackages(packagesPure, {
-    workingDir: options.workingDir,
+    ...addOpts,
     pure: true,
     yarn: false
   })

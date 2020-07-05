@@ -21,6 +21,7 @@ export interface AddPackagesOptions {
   dev?: boolean
   link?: boolean
   linkDep?: boolean
+  replace?: boolean
   yarn?: boolean
   safe?: boolean
   pure?: boolean
@@ -94,7 +95,7 @@ export const addPackages = async (
     }
     const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
 
-    await copyDirSafe(storedPackageDir, destYalcCopyDir)
+    await copyDirSafe(storedPackageDir, destYalcCopyDir, !options.replace)
 
     let replacedVersion = ''
     if (doPure) {
@@ -122,7 +123,7 @@ export const addPackages = async (
       if (options.link || options.linkDep) {
         ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
       } else {
-        await copyDirSafe(storedPackageDir, destModulesDir)
+        await copyDirSafe(storedPackageDir, destModulesDir, !options.replace)
       }
 
       if (!options.link) {

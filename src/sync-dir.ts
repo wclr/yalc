@@ -43,7 +43,11 @@ const theSameStats = (srcStat: fs.Stats, destStat: fs.Stats) => {
   )
 }
 
-export const copyDirSafe = async (srcDir: string, destDir: string) => {
+export const copyDirSafe = async (
+  srcDir: string,
+  destDir: string,
+  compareContent = true
+) => {
   const ignore = '**/node_modules/**'
   const dot = true
   const nodir = true
@@ -79,7 +83,10 @@ export const copyDirSafe = async (srcDir: string, destDir: string) => {
       const destHash = await getFileHash(destFilePath, '')
       return srcHash === destHash
     }
-    if (!theSameStats(srcFileStat, destFileStat) && !(await compareByHash())) {
+    if (
+      !theSameStats(srcFileStat, destFileStat) &&
+      (!compareContent || !(await compareByHash()))
+    ) {
       filesToReplace.push(file)
     }
   }

@@ -95,6 +95,7 @@ Some documented features might not have been published yet, see the [change log]
   - `force` options is `true` by default, so it won't run `pre/post` scripts (may change this with `--no-force` flag).
 - `scripts.postupdate` will be executed in host package dir, like while `update` operation.
 - With `--changed` flag yalc will first check if package content has changed before publishing and pushing, it is a quick operation and may be useful for _file watching scenarios_ with pushing on changes.
+- Use `--replace` option to force replacement of package content.
 
 ### Keep it out of git
 

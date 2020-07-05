@@ -63,7 +63,7 @@ yargs
       return publishPackage({
         workingDir: join(process.cwd(), folder || ''),
         push: argv.push,
-        pushSafe: argv.pushSafe,
+        replace: argv.replace,
         force: argv.force,
         knit: argv.knit,
         signature: argv.sig,
@@ -104,6 +104,7 @@ yargs
         .default('force', undefined)
         .default('sig', true)
         .boolean(['safe'].concat(publishFlags))
+        .option('replace', { describe: 'Force package content replacement' })
     },
     handler: argv => {
       return publishPackage({
@@ -111,7 +112,7 @@ yargs
         force: argv.force !== undefined ? argv.force : true,
         knit: argv.knit,
         push: true,
-        pushSafe: argv.safe,
+        replace: argv.replace,
         signature: argv.sig,
         yarn: argv.yarn || argv.npm,
         changed: argv.changed,

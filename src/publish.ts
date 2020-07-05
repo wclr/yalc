@@ -25,7 +25,7 @@ export interface PublishPackageOptions {
   force?: boolean
   changed?: boolean
   push?: boolean
-  pushSafe?: boolean
+  replace?: boolean
   yarn?: boolean
   npm?: boolean
   files?: boolean
@@ -91,13 +91,14 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     `${publishedPkg.name}@${publishedPkg.version} published in store.`
   )
 
-  if (options.push || options.pushSafe) {
+  if (options.push) {
     const installationsConfig = readInstallationsFile()
     const installationPaths = installationsConfig[pkg.name] || []
     const installationsToRemove: PackageInstallation[] = []
     for (const workingDir of installationPaths) {
       console.log(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
       const installationsToRemoveForPkg = await updatePackages([pkg.name], {
+        replace: options.replace,
         workingDir,
         noInstallationsRemove: true,
         yarn: options.yarn
