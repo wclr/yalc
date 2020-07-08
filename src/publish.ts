@@ -47,7 +47,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     return
   }
   const scripts = pkg.scripts || ({} as PackageScripts)
-  const changeDirCmd = 'cd ' + options.workingDir + ' && '
+  const changeDirCmd = 'cd "' + options.workingDir + '" && '
   const scriptRunCmd =
     !options.force && pkg.scripts
       ? changeDirCmd + getPackageManager(workingDir) + ' run '
