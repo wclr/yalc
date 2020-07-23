@@ -1,5 +1,10 @@
 # Yalc changelog
 
+## 1.0.0.pre.38 (2020-07-23)
+
+- use `--pure` flag with workspaces by default
+- add check for PNPM workspace for `--pure` flag
+
 ## 1.0.0.pre.37 (2020-07-05)
 
 - allow using `--pure` flag without `workspaces`

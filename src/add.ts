@@ -49,6 +49,10 @@ const isSymlink = (path: string) => {
   }
 }
 
+const checkPnpmWorkspace = (workingDir: string) => {
+  return fs.existsSync(join(workingDir, 'pnpm-workspace.yaml'))
+}
+
 export const addPackages = async (
   packages: string[],
   options: AddPackagesOptions
@@ -60,7 +64,15 @@ export const addPackages = async (
   if (!localPkg) {
     return
   }
-  const doPure = options.pure === false ? false : options.pure
+
+  let pnpmWorkspace = false
+
+  const doPure =
+    options.pure === false
+      ? false
+      : options.pure ||
+        !!localPkg.workspaces ||
+        (pnpmWorkspace = checkPnpmWorkspace(workingDir))
 
   const addedInstallsP = packages.map(async packageName => {
     const { name, version = '' } = parsePackageName(packageName)
@@ -98,11 +110,17 @@ export const addPackages = async (
 
     let replacedVersion = ''
     if (doPure) {
-      if (localPkg.workspaces) {
-        if (!options.pure) {
+      if (!options.pure) {
+        const defaultPureMsg =
+          '--pure option will be used by default, to override use --no-pure.'
+        if (localPkg.workspaces) {
           console.log(
-            'Because of `workspaces` enabled in this package,' +
-              ' --pure option will be used by default, to override use --no-pure.'
+            'Because of `workspaces` enabled in this package ' + defaultPureMsg
+          )
+        } else if (pnpmWorkspace) {
+          console.log(
+            'Because of `pnpm-workspace.yaml` exists in this package ' +
+              defaultPureMsg
           )
         }
       }

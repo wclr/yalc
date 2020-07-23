@@ -1,13 +1,21 @@
 {
   // See https://go.microsoft.com/fwlink/?LinkId=733558
   // for the documentation about the tasks.json format
-  "version": "0.1.0",
-  "runner": "process",
+  "version": "2.0.0",
   "tasks": [
     {
-      "taskName": "tsc",
+      "label": "tsc",
       "command": "node",
       "args": ["./node_modules/typescript/lib/tsc.js", "-w", "-p", "."],
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false,
+        "revealProblems": "always"
+      },
       "isBackground": true,
       "problemMatcher": "$tsc-watch"
     }
