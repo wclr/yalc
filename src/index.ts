@@ -63,10 +63,12 @@ export type PackageScripts = Partial<{
   postupdate: string
   postpush: string
   prepack: string
+  postpack: string
   prepare: string
   install: string
   prepublish: string
   prepublishOnly: string
+  publish: string
   postpublish: string
   preyalc: string
   postyalc: string
