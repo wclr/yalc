@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.40 (2020-07-24)
+
+- remove empty directories why sync dir copy
+
 ## 1.0.0.pre.39 (2020-07-24)
 
 - `yalc publish` now runs all of the lifecycle scripts it finds

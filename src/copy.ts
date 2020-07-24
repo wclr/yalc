@@ -3,12 +3,11 @@ import * as crypto from 'crypto'
 import * as npmPacklist from 'npm-packlist'
 import ignore from 'ignore'
 
-import { join, dirname } from 'path'
+import { join } from 'path'
 import { readIgnoreFile, readSignatureFile } from '.'
 import {
   PackageManifest,
   getStorePackagesDir,
-  readPackageManifest,
   writePackageManifest,
   writeSignatureFile
 } from '.'

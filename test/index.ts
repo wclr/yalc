@@ -1,7 +1,6 @@
 import * as fs from 'fs-extra'
 import { doesNotThrow, throws, deepEqual, ok } from 'assert'
 import { join } from 'path'
-import * as os from 'os'
 import {
   addPackages,
   updatePackages,
@@ -239,14 +238,14 @@ describe('Yalc package manager', function() {
   })
 
   describe('Update package', () => {
-    const innterNodeModulesFile = join(
+    const innerNodeModulesFile = join(
       projectDir,
       'node_modules',
       values.depPackage,
       'node_modules/file.txt'
     )
     before(() => {
-      fs.ensureFileSync(innterNodeModulesFile)
+      fs.ensureFileSync(innerNodeModulesFile)
       return updatePackages([values.depPackage], {
         workingDir: projectDir
       })
@@ -264,7 +263,7 @@ describe('Yalc package manager', function() {
       })
     })
     it('does not remove inner node_modules', () => {
-      checkExists(innterNodeModulesFile)
+      checkExists(innerNodeModulesFile)
     })
   })
 
@@ -286,7 +285,7 @@ describe('Yalc package manager', function() {
     })
   })
 
-  describe('Reatreat package', () => {
+  describe('Retreat package', () => {
     before(() => {
       return removePackages([values.depPackage], {
         workingDir: projectDir,
