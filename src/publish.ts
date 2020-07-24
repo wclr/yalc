@@ -55,18 +55,19 @@ export const publishPackage = async (options: PublishPackageOptions) => {
 
   if (scriptRunCmd) {
     const scriptNames: (keyof PackageScripts)[] = [
-      'preyalc',
+      'prepublish',
       'prepare',
-      'prepack',
       'prepublishOnly',
-      'prepublish'
+      'prepack',
+      'preyalc'
     ]
-    const scriptName = scriptNames.filter(name => !!scripts[name])[0]
-    if (scriptName) {
-      const scriptCmd = scripts[scriptName]
-      console.log(`Running ${scriptName} script: ${scriptCmd}`)
-      execSync(scriptRunCmd + scriptName, execLoudOptions)
-    }
+    scriptNames
+      .filter(name => !!scripts[name])
+      .forEach(scriptName => {
+        const scriptCmd = scripts[scriptName]
+        console.log(`Running ${scriptName} script: ${scriptCmd}`)
+        execSync(scriptRunCmd + scriptName, execLoudOptions)
+      })
   }
 
   const copyRes = await copyPackageToStore(pkg, options)
@@ -76,13 +77,19 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     return
   }
   if (scriptRunCmd) {
-    const scriptNames: (keyof PackageScripts)[] = ['postyalc', 'postpublish']
-    const scriptName = scriptNames.filter(name => !!scripts[name])[0]
-    if (scriptName) {
-      const scriptCmd = scripts[scriptName]
-      console.log(`Running ${scriptName} script: ${scriptCmd}`)
-      execSync(scriptRunCmd + scriptName, execLoudOptions)
-    }
+    const scriptNames: (keyof PackageScripts)[] = [
+      'postyalc',
+      'postpack',
+      'publish',
+      'postpublish'
+    ]
+    scriptNames
+      .filter(name => !!scripts[name])
+      .forEach(scriptName => {
+        const scriptCmd = scripts[scriptName]
+        console.log(`Running ${scriptName} script: ${scriptCmd}`)
+        execSync(scriptRunCmd + scriptName, execLoudOptions)
+      })
   }
 
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
