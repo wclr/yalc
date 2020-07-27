@@ -185,7 +185,12 @@ export const addPackages = async (
           const srcPath = join(destYalcCopyDir, src)
           const destPath = join(binDir, dest)
           ensureSymlinkSync(srcPath, destPath)
-          fs.chmodSync(srcPath, 0o755)
+          try {
+            fs.chmodSync(srcPath, 0o755)
+          } catch (e) {
+            console.warn('Could not modify permissions of', srcPath)
+            console.error(e)
+          }
         }
         if (typeof pkg.bin === 'string') {
           fs.ensureDirSync(binDir)

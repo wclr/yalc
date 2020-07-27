@@ -17,7 +17,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "tsc",
-    "clean": "trash **/*.js **/*.js.map **/*.d.ts **/*.log !**/node_modules/**",
+    "clean": "ts-clean-built --old && trash  **/*.log",
     "prepublishOnly": "yarn clean && tsc && yarn test",
     "test": "tsc && mocha test && yarn lint",
     "test-dev": "ts-node-dev -T --respawn node_modules/mocha/bin/mocha test/index.ts",
@@ -49,6 +49,7 @@
     "prettier": "^1.14.2",
     "pretty-quick": "^1.8.0",
     "trash-cli": "^1.4.0",
+    "ts-clean-built": "^1.2.1",
     "ts-node-dev": "^1.0.0-pre.55",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
