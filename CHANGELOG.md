@@ -1,5 +1,10 @@
 # Yalc changelog
 
+## 1.0.0.pre.41 (2020-08-06)
+
+- add quotes around workingDir
+- try/catch when modifying bin permissions
+
 ## 1.0.0.pre.40 (2020-07-24)
 
 - remove empty directories why sync dir copy
