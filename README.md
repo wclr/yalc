@@ -39,7 +39,7 @@ Some documented features might not have been published yet, see the [change log]
 
 - Run `yalc publish` in your dependency package `my-package`.
 - It will copy [all the files that should be published in remote NPM registry](https://docs.npmjs.com/files/package.json#files).
-- If your package has any of these lifecycle scripts: `prepublish`, `prepare`, `prepublishOnly`, `prepack`, `preyalc`, they will run before in this order. If your package has any of these: `postyalc`, `postpack`, `publish`, `postpublish`, they will run after in this order. Use `--force` to publish without running scripts.
+- If your package has any of these lifecycle scripts: `prepublish`, `prepare`, `prepublishOnly`, `prepack`, `preyalcpublish`, they will run before in this order. If your package has any of these: `postyalcpublish`, `postpack`, `publish`, `postpublish`, they will run after in this order. Use `--force` to publish without running scripts.
 - While copying package content, `yalc` calculates the hash signature of all files and, by default, adds this signature to the package manifest `version`. You can disable this by using the `--no-sig` option.
 - You may also use `.yalcignore` to exclude files from publishing to yalc repo, for example, files like README.md, etc.
 - `--files` flag will show included files in the published package
@@ -96,6 +96,8 @@ Some documented features might not have been published yet, see the [change log]
 - `scripts.postupdate` will be executed in host package dir, like while `update` operation.
 - With `--changed` flag yalc will first check if package content has changed before publishing and pushing, it is a quick operation and may be useful for _file watching scenarios_ with pushing on changes.
 - Use `--replace` option to force replacement of package content.
+- `preyalc` and `postyalc` scripts will be executed in target package on add/update operations which are performed while `push`
+- if need to perform pre/post `scripts` on update of particular package use `pre/postyalc.package-name` name for script in your `package.json`.
 
 ### Keep it out of git
 
@@ -113,7 +115,7 @@ Some documented features might not have been published yet, see the [change log]
 
 - Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish some-project` will perform publish operation in the `./some-project` directory relative to `process.cwd()`
 
-### Use with [**Yarn workspaces**](https://yarnpkg.com/lang/en/docs/workspaces/)!
+### Use with **Yarn/Pnpm workspaces**
 
 Use if you will try to `add` repo in `workspaces` enabled package, `--pure` option will be used by default, so `package.json` and modules folder will not be touched.
 
@@ -128,6 +130,10 @@ If you want to override default pure behavior use `--no-pure` flag.
 ### Override default package store folder
 
 - You may use `--store-folder` flag option to override default location for storing published packages.
+
+### Control output
+
+- Use `--quite` to fully disable output (except of errors). Use `--no-colors` to disable colors.
 
 ## Related links
 

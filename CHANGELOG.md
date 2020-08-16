@@ -1,5 +1,14 @@
 # Yalc changelog
 
+## 1.0.0.pre.42
+
+- replace pre/postyalc scripts with pre/postyalcpublish
+- execute pre/postyalc scripts in target package/project on add/update
+- added `--quite` f to disabled output (except of errors)
+- added colored output can be disabled `--no-color`
+- fixed removing installations
+- fixed running pm scripts
+
 ## 1.0.0.pre.41 (2020-08-06)
 
 - add quotes around workingDir

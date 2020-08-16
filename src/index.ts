@@ -1,8 +1,7 @@
-import { execSync, ExecSyncOptions } from 'child_process'
+import { ExecSyncOptions } from 'child_process'
 import * as fs from 'fs-extra'
 import { homedir } from 'os'
 import { join } from 'path'
-import { PackageName } from './installations'
 
 const userHome = homedir()
 
@@ -14,7 +13,7 @@ export const values = {
   yalcPackagesFolder: '.yalc',
   prescript: 'preyalc',
   postscript: 'postyalc',
-  installationsFile: 'installations.json'
+  installationsFile: 'installations.json',
 }
 
 export interface AddPackagesOptions {
@@ -35,6 +34,8 @@ export { updatePackages } from './update'
 export { checkManifest } from './check'
 export { removePackages } from './remove'
 export { addPackages } from './add'
+export * from './pkg'
+export * from './pm'
 
 export interface YalcGlobal extends NodeJS.Global {
   yalcStoreMainDir: string
@@ -58,88 +59,7 @@ export function getStorePackagesDir(): string {
 export const getPackageStoreDir = (packageName: string, version = '') =>
   join(getStorePackagesDir(), packageName, version)
 
-export type PackageScripts = Partial<{
-  preinstall: string
-  postupdate: string
-  postpush: string
-  prepack: string
-  postpack: string
-  prepare: string
-  install: string
-  prepublish: string
-  prepublishOnly: string
-  publish: string
-  postpublish: string
-  preyalc: string
-  postyalc: string
-}>
-
-export interface PackageManifest {
-  name: string
-  version: string
-  private?: boolean
-  bin?: string | { [name: string]: string }
-  dependencies?: { [name: string]: string }
-  devDependencies?: { [name: string]: string }
-  yalc: Partial<{
-    sig: boolean
-    signature: boolean
-    noSig: boolean
-  }>
-  workspaces?: string[]
-  scripts?: PackageScripts
-  __JSONSpaces: number
-}
-
-export const getPackageManager = (cwd: string) =>
-  fs.existsSync(join(cwd, 'yarn.lock')) ? 'yarn' : 'npm'
-
-export const getPackageManagerInstallCmd = (cwd: string) =>
-  getPackageManager(cwd) === 'yarn' ? 'yarn' : 'npm install'
-
 export const execLoudOptions = { stdio: 'inherit' } as ExecSyncOptions
-
-export const parsePackageName = (packageName: string) => {
-  const match = packageName.match(/(^@[^/]+\/)?([^@]+)@?(.*)/) || []
-  if (!match) {
-    return { name: '' as PackageName, version: '' }
-  }
-  return {
-    name: ((match[1] || '') + match[2]) as PackageName,
-    version: match[3] || ''
-  }
-}
-
-const getJSONSpaces = (jsonStr: string) => {
-  let match = jsonStr.match(/^[^{]*{.*\n([ ]+?)\S/)
-  return match && match[1] ? match[1].length : null
-}
-
-export function readPackageManifest(workingDir: string) {
-  let pkg: PackageManifest
-  const packagePath = join(workingDir, 'package.json')
-  try {
-    const fileData = fs.readFileSync(packagePath, 'utf-8')
-    pkg = JSON.parse(fileData) as PackageManifest
-    if (!pkg.name && pkg.version) {
-      console.log(
-        'Package manifest',
-        packagePath,
-        'should contain name and version.'
-      )
-      return null
-    }
-    const formatSpaces = getJSONSpaces(fileData) || 2
-    if (!formatSpaces) {
-      console.log('Could not get JSON formatting for', packagePath, 'using 2')
-    }
-    pkg.__JSONSpaces = formatSpaces
-    return pkg
-  } catch (e) {
-    console.error('Could not read', packagePath)
-    return null
-  }
-}
 
 const signatureFileName = 'yalc.sig'
 
@@ -168,55 +88,7 @@ export const writeSignatureFile = (workingDir: string, signature: string) => {
   try {
     fs.writeFileSync(signatureFilePath, signature)
   } catch (e) {
-    console.log('Could not write signature file')
+    console.error('Could not write signature file')
     throw e
-  }
-}
-
-const sortDependencies = (dependencies: { [name: string]: string }) => {
-  return Object.keys(dependencies)
-    .sort()
-    .reduce(
-      (deps, key) => Object.assign(deps, { [key]: dependencies[key] }),
-      {}
-    )
-}
-
-export function writePackageManifest(workingDir: string, pkg: PackageManifest) {
-  pkg = Object.assign({}, pkg)
-  if (pkg.dependencies) {
-    pkg.dependencies = sortDependencies(pkg.dependencies)
-  }
-  if (pkg.devDependencies) {
-    pkg.devDependencies = sortDependencies(pkg.devDependencies)
-  }
-  const formatSpaces = pkg.__JSONSpaces
-  delete pkg.__JSONSpaces
-  const packagePath = join(workingDir, 'package.json')
-  try {
-    fs.writeFileSync(
-      packagePath,
-      JSON.stringify(pkg, null, formatSpaces) + '\n'
-    )
-  } catch (e) {
-    console.error('Could not write ', packagePath)
-  }
-}
-
-export const isYarn = (cwd: string) => getPackageManager(cwd) === 'yarn'
-
-export const runOrWarnPackageManagerInstall = (
-  workingDir: string,
-  doRun?: boolean
-) => {
-  const pkgMgrCmd = getPackageManagerInstallCmd(workingDir)
-  if (doRun) {
-    console.log(`Running ${pkgMgrCmd} in ${workingDir}`)
-    execSync(pkgMgrCmd, { cwd: workingDir, ...execLoudOptions })
-  } else {
-    // console.log(
-    //   `Don't forget you may need to run ${pkgMgrCmd}` +
-    //     ` after adding packages with yalc to install/update dependencies/bin scripts.`
-    // )
   }
 }

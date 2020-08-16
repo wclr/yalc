@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra'
 import { join } from 'path'
 import { copyDirSafe } from './sync-dir'
-import { addInstallations } from './installations'
+import { addInstallations, removeInstallations } from './installations'
 
 import { addPackageToLockfile } from './lockfile'
 
@@ -12,8 +12,12 @@ import {
   readPackageManifest,
   writePackageManifest,
   readSignatureFile,
-  runOrWarnPackageManagerInstall
+  runOrWarnPackageManagerInstall,
 } from '.'
+
+import { getPackageManager, pmRunScriptCmd } from './pm'
+import { execSync } from 'child_process'
+import { PackageScripts } from './pkg'
 
 const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
 
@@ -32,12 +36,12 @@ const getLatestPackageVersion = (packageName: string) => {
   const dir = getPackageStoreDir(packageName)
   const versions = fs.readdirSync(dir)
   const latest = versions
-    .map(version => ({
+    .map((version) => ({
       version,
-      created: fs.statSync(join(dir, version)).ctime.getTime()
+      created: fs.statSync(join(dir, version)).ctime.getTime(),
     }))
     .sort((a, b) => b.created - a.created)
-    .map(x => x.version)[0]
+    .map((x) => x.version)[0]
   return latest || ''
 }
 
@@ -64,6 +68,15 @@ export const addPackages = async (
   if (!localPkg) {
     return
   }
+  const pm = getPackageManager(workingDir)
+
+  const runPmScript = (script: string) => {
+    const scriptCmd = localPkg.scripts?.[script as keyof PackageScripts]
+    if (scriptCmd) {
+      console.log(`Running ${script} script: ${scriptCmd}`)
+      execSync(`${pmRunScriptCmd[pm]} ${script}`, { cwd: workingDir })
+    }
+  }
 
   let pnpmWorkspace = false
 
@@ -74,16 +87,19 @@ export const addPackages = async (
         !!localPkg.workspaces ||
         (pnpmWorkspace = checkPnpmWorkspace(workingDir))
 
-  const addedInstallsP = packages.map(async packageName => {
+  runPmScript('preyalc')
+
+  const addedInstallsP = packages.map(async (packageName) => {
+    runPmScript('preyalc.' + packageName)
     const { name, version = '' } = parsePackageName(packageName)
 
     if (!name) {
-      console.log('Could not parse package name', packageName)
+      console.warn('Could not parse package name', packageName)
     }
 
     const storedPackagePath = getPackageStoreDir(name)
     if (!fs.existsSync(storedPackagePath)) {
-      console.log(
+      console.warn(
         `Could not find package \`${name}\` in store (${storedPackagePath}), skipping.`
       )
       return null
@@ -93,7 +109,7 @@ export const addPackages = async (
     const storedPackageDir = getPackageStoreDir(name, versionToInstall)
 
     if (!fs.existsSync(storedPackageDir)) {
-      console.log(
+      console.warn(
         `Could not find package \`${packageName}\` ` + storedPackageDir,
         ', skipping.'
       )
@@ -104,6 +120,7 @@ export const addPackages = async (
     if (!pkg) {
       return
     }
+
     const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
 
     await copyDirSafe(storedPackageDir, destYalcCopyDir, !options.replace)
@@ -114,11 +131,11 @@ export const addPackages = async (
         const defaultPureMsg =
           '--pure option will be used by default, to override use --no-pure.'
         if (localPkg.workspaces) {
-          console.log(
+          console.warn(
             'Because of `workspaces` enabled in this package ' + defaultPureMsg
           )
         } else if (pnpmWorkspace) {
-          console.log(
+          console.warn(
             'Because of `pnpm-workspace.yaml` exists in this package ' +
               defaultPureMsg
           )
@@ -204,43 +221,44 @@ export const addPackages = async (
       }
 
       const addedAction = options.link ? 'linked' : 'added'
-      console.log(
-        `Package ${pkg.name}@${
-          pkg.version
-        } ${addedAction} ==> ${destModulesDir}.`
+      console.info(
+        `Package ${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}.`
       )
     }
 
     const signature = readSignatureFile(storedPackageDir)
+    runPmScript('postyalc.' + packageName)
     return {
       signature,
       name,
       version,
       replaced: replacedVersion,
-      path: options.workingDir
+      path: options.workingDir,
     }
   })
 
   const addedInstalls = (await Promise.all(addedInstallsP))
-    .filter(_ => !!_)
-    .map(_ => _!)
+    .filter((_) => !!_)
+    .map((_) => _!)
 
   if (localPkgUpdated) {
     writePackageManifest(workingDir, localPkg)
   }
 
   addPackageToLockfile(
-    addedInstalls.map(i => ({
+    addedInstalls.map((i) => ({
       name: i!.name,
       version: i!.version,
       replaced: i!.replaced,
       pure: doPure,
       file: !options.link && !options.linkDep && !doPure,
       link: options.linkDep && !doPure,
-      signature: i.signature
+      signature: i.signature,
     })),
     { workingDir: options.workingDir }
   )
+
+  runPmScript('postyalc')
 
   await addInstallations(addedInstalls)
 

@@ -4,7 +4,7 @@ import { copyPackageToStore } from './copy'
 import {
   PackageInstallation,
   readInstallationsFile,
-  removeInstallations
+  removeInstallations,
 } from './installations'
 
 import {
@@ -15,8 +15,10 @@ import {
   updatePackages,
   readPackageManifest,
   getStorePackagesDir,
-  PackageScripts
+  PackageScripts,
 } from '.'
+
+import { pmRunScriptCmd } from './pm'
 
 export interface PublishPackageOptions {
   workingDir: string
@@ -39,6 +41,16 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     return
   }
 
+  const pm = getPackageManager(workingDir)
+
+  const runPmScript = (script: keyof PackageScripts) => {
+    const scriptCmd = pkg.scripts?.[script]
+    if (scriptCmd) {
+      console.log(`Running ${script} script: ${scriptCmd}`)
+      execSync(`${pmRunScriptCmd[pm]} ${script}`, { cwd: workingDir })
+    }
+  }
+
   if (pkg.private && !options.private) {
     console.log(
       'Will not publish package with `private: true`' +
@@ -46,51 +58,30 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     )
     return
   }
-  const scripts = pkg.scripts || ({} as PackageScripts)
-  const changeDirCmd = 'cd "' + options.workingDir + '" && '
-  const scriptRunCmd =
-    !options.force && pkg.scripts
-      ? changeDirCmd + getPackageManager(workingDir) + ' run '
-      : ''
 
-  if (scriptRunCmd) {
-    const scriptNames: (keyof PackageScripts)[] = [
-      'prepublish',
-      'prepare',
-      'prepublishOnly',
-      'prepack',
-      'preyalc'
-    ]
-    scriptNames
-      .filter(name => !!scripts[name])
-      .forEach(scriptName => {
-        const scriptCmd = scripts[scriptName]
-        console.log(`Running ${scriptName} script: ${scriptCmd}`)
-        execSync(scriptRunCmd + scriptName, execLoudOptions)
-      })
-  }
+  const preScripts: (keyof PackageScripts)[] = [
+    'prepublish',
+    'prepare',
+    'prepublishOnly',
+    'prepack',
+    'preyalcpublish',
+  ]
+  preScripts.forEach(runPmScript)
 
   const copyRes = await copyPackageToStore(pkg, options)
 
   if (options.changed && !copyRes) {
-    console.log('Package content has not changed, skipping publishing.')
+    console.warn('Package content has not changed, skipping publishing.')
     return
   }
-  if (scriptRunCmd) {
-    const scriptNames: (keyof PackageScripts)[] = [
-      'postyalc',
-      'postpack',
-      'publish',
-      'postpublish'
-    ]
-    scriptNames
-      .filter(name => !!scripts[name])
-      .forEach(scriptName => {
-        const scriptCmd = scripts[scriptName]
-        console.log(`Running ${scriptName} script: ${scriptCmd}`)
-        execSync(scriptRunCmd + scriptName, execLoudOptions)
-      })
-  }
+
+  const postScripts: (keyof PackageScripts)[] = [
+    'postyalcpublish',
+    'postpack',
+    'publish',
+    'postpublish',
+  ]
+  postScripts.forEach(runPmScript)
 
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const publishedPkg = readPackageManifest(publishedPackageDir)!
@@ -103,14 +94,14 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     const installationPaths = installationsConfig[pkg.name] || []
     const installationsToRemove: PackageInstallation[] = []
     for (const workingDir of installationPaths) {
-      console.log(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
+      console.info(`Pushing ${pkg.name}@${pkg.version} in ${workingDir}`)
       const installationsToRemoveForPkg = await updatePackages([pkg.name], {
         replace: options.replace,
         workingDir,
         noInstallationsRemove: true,
-        yarn: options.yarn
+        yarn: options.yarn,
       })
-      installationsToRemove.concat(installationsToRemoveForPkg)
+      installationsToRemove.push(...installationsToRemoveForPkg)
     }
     await removeInstallations(installationsToRemove)
   }

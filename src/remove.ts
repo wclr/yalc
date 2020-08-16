@@ -3,7 +3,7 @@ import { join } from 'path'
 import {
   PackageInstallation,
   removeInstallations,
-  PackageName
+  PackageName,
 } from './installations'
 
 import { readLockfile, writeLockfile, removeLockfile } from './lockfile'
@@ -12,7 +12,7 @@ import {
   values,
   parsePackageName,
   readPackageManifest,
-  writePackageManifest
+  writePackageManifest,
 } from '.'
 
 export interface RemovePackagesOptions {
@@ -39,14 +39,14 @@ export const removePackages = async (
   let packagesToRemove: PackageName[] = []
 
   if (packages.length) {
-    packages.forEach(packageName => {
+    packages.forEach((packageName) => {
       const { name, version } = parsePackageName(packageName)
       if (lockFileConfig.packages[name]) {
         if (!version || version === lockFileConfig.packages[name].version) {
           packagesToRemove.push(name)
         }
       } else {
-        console.log(
+        console.warn(
           `Package ${packageName} not found in ${values.lockfileName}` +
             `, still will try to remove.`
         )
@@ -57,13 +57,13 @@ export const removePackages = async (
     if (options.all) {
       packagesToRemove = Object.keys(lockFileConfig.packages) as PackageName[]
     } else {
-      console.log(`Use --all option to remove all packages.`)
+      console.info(`Use --all option to remove all packages.`)
     }
   }
 
   let lockfileUpdated = false
   const removedPackagedFromManifest: string[] = []
-  packagesToRemove.forEach(name => {
+  packagesToRemove.forEach((name) => {
     const lockedPackage = lockFileConfig.packages[name]
 
     let depsWithPackage
@@ -101,17 +101,17 @@ export const removePackages = async (
   }
 
   const installationsToRemove: PackageInstallation[] = packagesToRemove.map(
-    name => ({
+    (name) => ({
       name,
       version: '',
-      path: workingDir
+      path: workingDir,
     })
   )
 
-  removedPackagedFromManifest.forEach(name => {
+  removedPackagedFromManifest.forEach((name) => {
     fs.removeSync(join(workingDir, 'node_modules', name))
   })
-  packagesToRemove.forEach(name => {
+  packagesToRemove.forEach((name) => {
     if (!options.retreat) {
       fs.removeSync(join(workingDir, values.yalcPackagesFolder, name))
     }

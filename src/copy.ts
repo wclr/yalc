@@ -1,6 +1,6 @@
-import * as fs from 'fs-extra'
-import * as crypto from 'crypto'
-import * as npmPacklist from 'npm-packlist'
+import fs from 'fs-extra'
+import crypto from 'crypto'
+import npmPacklist from 'npm-packlist'
 import ignore from 'ignore'
 
 import { join } from 'path'
@@ -9,7 +9,7 @@ import {
   PackageManifest,
   getStorePackagesDir,
   writePackageManifest,
-  writeSignatureFile
+  writeSignatureFile,
 } from '.'
 
 const shortSignatureLength = 8
@@ -58,20 +58,20 @@ export const copyPackageToStore = async (
 
   const ignoreRule = ignore().add(ignoreFileContent)
   const npmList: string[] = await npmPacklist({ path: workingDir })
-  const filesToCopy = npmList.filter(f => !ignoreRule.ignores(f))
+  const filesToCopy = npmList.filter((f) => !ignoreRule.ignores(f))
   if (options.files) {
-    console.log('Files included in published content:')
-    filesToCopy.forEach(f => {
+    console.info('Files included in published content:')
+    filesToCopy.forEach((f) => {
       console.log(`- ${f}`)
     })
-    console.log(`Total ${filesToCopy.length} files.`)
+    console.info(`Total ${filesToCopy.length} files.`)
   }
   const copyFilesToStore = async () => {
     await fs.remove(storePackageStoreDir)
     return Promise.all(
       filesToCopy
         .sort()
-        .map(relPath =>
+        .map((relPath) =>
           copyFile(
             join(copyFromDir, relPath),
             join(storePackageStoreDir, relPath),
@@ -84,7 +84,7 @@ export const copyPackageToStore = async (
     ? await Promise.all(
         filesToCopy
           .sort()
-          .map(relPath => getFileHash(join(copyFromDir, relPath), relPath))
+          .map((relPath) => getFileHash(join(copyFromDir, relPath), relPath))
       )
     : await copyFilesToStore()
 
@@ -105,7 +105,7 @@ export const copyPackageToStore = async (
   if (options.knit) {
     fs.removeSync(storePackageStoreDir)
     const ensureSymlinkSync = fs.ensureSymlinkSync as any
-    filesToCopy.forEach(f => {
+    filesToCopy.forEach((f) => {
       const source = join(copyFromDir, f)
       if (fs.statSync(source).isDirectory()) {
         return
@@ -122,7 +122,7 @@ export const copyPackageToStore = async (
   const pkgToWrite: PackageManifest = {
     ...pkg,
     version: pkg.version + versionPre,
-    devDependencies: undefined
+    devDependencies: undefined,
   }
   writePackageManifest(storePackageStoreDir, pkgToWrite)
   return signature

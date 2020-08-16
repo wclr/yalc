@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import * as yargs from 'yargs'
+import yargs from 'yargs'
 import { join, resolve } from 'path'
 import {
   values,
@@ -8,12 +8,13 @@ import {
   updatePackages,
   removePackages,
   getStoreMainDir,
-  yalcGlobal
+  yalcGlobal,
 } from '.'
 
 import { showInstallations, cleanInstallations } from './installations'
 
 import { checkManifest } from './check'
+import { makeConsoleColored, disabledConsoleOutput } from './console'
 
 const publishFlags = ['knit', 'force', 'sig', 'changed', 'yarn', 'files']
 
@@ -24,10 +25,16 @@ const getVersionMessage = () => {
   return pkg.version
 }
 
+makeConsoleColored()
+
+if (process.argv.includes('--quite')) {
+  disabledConsoleOutput()
+}
+
 /* tslint:disable-next-line */
 yargs
   .usage(cliCommand + ' [command] [options] [package1 [package2...]]')
-  .coerce('store-folder', function(folder: string) {
+  .coerce('store-folder', function (folder: string) {
     if (!yalcGlobal.yalcStoreMainDir) {
       yalcGlobal.yalcStoreMainDir = resolve(folder)
       console.log('Package store folder used:', yalcGlobal.yalcStoreMainDir)
@@ -38,7 +45,7 @@ yargs
     builder: () => {
       return yargs.boolean(['version'])
     },
-    handler: argv => {
+    handler: (argv) => {
       let msg = 'Use `yalc help` to see available commands.'
       if (argv._[0]) {
         msg = 'Unknown command `' + argv._[0] + '`. ' + msg
@@ -48,7 +55,7 @@ yargs
         }
       }
       console.log(msg)
-    }
+    },
   })
   .command({
     command: 'publish',
@@ -58,7 +65,7 @@ yargs
         .default('sig', true)
         .boolean(['push', 'push-safe'].concat(publishFlags))
     },
-    handler: argv => {
+    handler: (argv) => {
       const folder = argv._[1]
       return publishPackage({
         workingDir: join(process.cwd(), folder || ''),
@@ -70,9 +77,9 @@ yargs
         yarn: argv.yarn || argv.npm,
         changed: argv.changed,
         files: argv.files,
-        private: argv.private
+        private: argv.private,
       })
-    }
+    },
   })
   .command({
     command: 'installations',
@@ -80,7 +87,7 @@ yargs
     builder: () => {
       return yargs.boolean(['dry'])
     },
-    handler: async argv => {
+    handler: async (argv) => {
       const action = argv._[1]
       const packages = argv._.slice(2)
       switch (action) {
@@ -91,9 +98,9 @@ yargs
           await cleanInstallations({ packages, dry: argv.dry })
           break
         default:
-          console.log('Need installation action: show | clean')
+          console.info('Need installation action: show | clean')
       }
-    }
+    },
   })
   .command({
     command: 'push',
@@ -106,7 +113,7 @@ yargs
         .boolean(['safe'].concat(publishFlags))
         .option('replace', { describe: 'Force package content replacement' })
     },
-    handler: argv => {
+    handler: (argv) => {
       return publishPackage({
         workingDir: join(process.cwd(), argv._[1] || ''),
         force: argv.force !== undefined ? argv.force : true,
@@ -117,9 +124,9 @@ yargs
         yarn: argv.yarn || argv.npm,
         changed: argv.changed,
         files: argv.files,
-        private: argv.private
+        private: argv.private,
       })
-    }
+    },
   })
   .command({
     command: 'add',
@@ -131,15 +138,15 @@ yargs
         .alias('save-dev', 'dev')
         .help(true)
     },
-    handler: argv => {
+    handler: (argv) => {
       return addPackages(argv._.slice(1), {
         dev: argv.dev,
         yarn: argv.yarn || argv.npm,
         linkDep: argv.link,
         pure: argv.pure,
-        workingDir: process.cwd()
+        workingDir: process.cwd(),
       })
-    }
+    },
   })
   .command({
     command: 'link',
@@ -147,14 +154,14 @@ yargs
     builder: () => {
       return yargs.help(true)
     },
-    handler: argv => {
+    handler: (argv) => {
       return addPackages(argv._.slice(1), {
         link: true,
         yarn: argv.yarn || argv.npm,
         pure: argv.pure,
-        workingDir: process.cwd()
+        workingDir: process.cwd(),
       })
-    }
+    },
   })
   .command({
     command: 'update',
@@ -162,11 +169,11 @@ yargs
     builder: () => {
       return yargs.help(true)
     },
-    handler: argv => {
+    handler: (argv) => {
       return updatePackages(argv._.slice(1), {
-        workingDir: process.cwd()
+        workingDir: process.cwd(),
       })
-    }
+    },
   })
   .command({
     command: 'remove',
@@ -174,13 +181,13 @@ yargs
     builder: () => {
       return yargs.boolean(['retreat', 'all']).help(true)
     },
-    handler: argv => {
+    handler: (argv) => {
       return removePackages(argv._.slice(1), {
         retreat: argv.retreat,
         workingDir: process.cwd(),
-        all: argv.all
+        all: argv.all,
       })
-    }
+    },
   })
   .command({
     command: 'retreat',
@@ -189,24 +196,21 @@ yargs
     builder: () => {
       return yargs.boolean(['all']).help(true)
     },
-    handler: argv => {
+    handler: (argv) => {
       return removePackages(argv._.slice(1), {
         all: argv.all,
         retreat: true,
-        workingDir: process.cwd()
+        workingDir: process.cwd(),
       })
-    }
+    },
   })
   .command({
     command: 'check',
     describe: 'Check package.json for yalc packages',
     builder: () => {
-      return yargs
-        .boolean(['commit'])
-        .usage('check usage here')
-        .help(true)
+      return yargs.boolean(['commit']).usage('check usage here').help(true)
     },
-    handler: argv => {
+    handler: (argv) => {
       const gitParams = process.env.GIT_PARAMS
       if (argv.commit) {
         console.log('gitParams', gitParams)
@@ -214,15 +218,15 @@ yargs
       checkManifest({
         commit: argv.commit,
         all: argv.all,
-        workingDir: process.cwd()
+        workingDir: process.cwd(),
       })
-    }
+    },
   })
   .command({
     command: 'dir',
     describe: 'Show yalc system directory',
     handler: () => {
       console.log(getStoreMainDir())
-    }
+    },
   })
   .help('help').argv

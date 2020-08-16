@@ -23,7 +23,7 @@ export function checkManifest(options: CheckOptions) {
     )
 
     const findDeps = (depsMap: { [name: string]: string }) =>
-      Object.keys(depsMap).filter(name => depsMap[name].match(addresMatch))
+      Object.keys(depsMap).filter((name) => depsMap[name].match(addresMatch))
     const localDeps = findDeps(pkg.dependencies || {}).concat(
       findDeps(pkg.devDependencies || {})
     )
@@ -32,12 +32,12 @@ export function checkManifest(options: CheckOptions) {
 
   if (options.commit) {
     execSync(stagedChangesCmd, {
-      cwd: options.workingDir
+      cwd: options.workingDir,
     })
       .toString()
       .trim()
     execSync(stagedChangesCmd, {
-      cwd: options.workingDir
+      cwd: options.workingDir,
     })
       .toString()
       .trim()
@@ -48,7 +48,7 @@ export function checkManifest(options: CheckOptions) {
   const manifestPath = join(options.workingDir, 'package.json')
   const localDeps = findLocalDepsInManifest(manifestPath)
   if (localDeps.length) {
-    console.log('Yalc dependencies found:', localDeps)
+    console.info('Yalc dependencies found:', localDeps)
     process.exit(1)
   }
 }

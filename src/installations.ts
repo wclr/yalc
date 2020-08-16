@@ -1,5 +1,5 @@
-import * as fs from 'fs-extra'
-import * as path from 'path'
+import fs from 'fs-extra'
+import path from 'path'
 import { getStoreMainDir, values } from '.'
 import { readLockfile } from './lockfile'
 
@@ -25,7 +25,7 @@ export const readInstallationsFile = (): InstallationsFile => {
     try {
       installationsConfig = fs.readJsonSync(installationFilePath)
     } catch (e) {
-      console.log('Error reading installations file', installationFilePath, e)
+      console.error('Error reading installations file', installationFilePath, e)
       installationsConfig = {}
     }
   } catch (e) {
@@ -37,14 +37,14 @@ export const readInstallationsFile = (): InstallationsFile => {
 
 export const showInstallations = ({ packages }: { packages: string[] }) => {
   const config = readInstallationsFile()
-  Object.keys(config)
-    .filter(packageName =>
+  ;(Object.keys(config) as PackageName[])
+    .filter((packageName) =>
       packages.length ? packages.indexOf(packageName) >= 0 : true
     )
     .map((name: PackageName) => ({ name, locations: config[name] }))
     .forEach(({ name, locations }) => {
       console.log(`Installations of package ${name}:`)
-      locations.forEach(loc => {
+      locations.forEach((loc) => {
         console.log(`  ${loc}`)
       })
     })
@@ -52,45 +52,42 @@ export const showInstallations = ({ packages }: { packages: string[] }) => {
 
 export const cleanInstallations = async ({
   packages,
-  dry
+  dry,
 }: {
   packages: string[]
   dry: boolean
 }) => {
   const config = readInstallationsFile()
-  const installsToRemove = Object.keys(config)
-    .filter(packageName =>
+  const installsToRemove = (Object.keys(config) as PackageName[])
+    .filter((packageName) =>
       packages.length ? packages.indexOf(packageName) >= 0 : true
     )
-    .map((name: PackageName) => ({ name, locations: config[name] }))
-    .reduce(
-      (list, { name, locations }) => {
-        return locations.reduce((list, loc) => {
-          const lockfile = readLockfile({ workingDir: loc })
-          const lockPackages = Object.keys(lockfile.packages)
-          if (lockPackages.indexOf(name) < 0) {
-            return list.concat([
-              {
-                name,
-                //version: '',
-                path: loc
-              }
-            ])
-          }
-          return list
-        }, list)
-      },
-      [] as PackageInstallation[]
-    )
+    .map((name) => ({ name, locations: config[name] }))
+    .reduce((list, { name, locations }) => {
+      return locations.reduce((list, loc) => {
+        const lockfile = readLockfile({ workingDir: loc })
+        const lockPackages = Object.keys(lockfile.packages)
+        if (lockPackages.indexOf(name) < 0) {
+          return list.concat([
+            {
+              name,
+              //version: '',
+              path: loc,
+            },
+          ])
+        }
+        return list
+      }, list)
+    }, [] as PackageInstallation[])
   if (installsToRemove.length) {
-    console.log(`Installations clean up:`)
-    installsToRemove.forEach(inst => {
+    console.info(`Installations clean up:`)
+    installsToRemove.forEach((inst) => {
       console.log(`Package ${inst.name}: ${inst.path}`)
     })
     if (!dry) {
       await removeInstallations(installsToRemove)
     } else {
-      console.log(`Dry run.`)
+      console.warn(`Dry run.`)
     }
   }
 }
@@ -105,15 +102,15 @@ export const saveInstallationsFile = async (
 }
 
 export const addInstallations = async (
-  installations: (PackageInstallation)[]
+  installations: PackageInstallation[]
 ) => {
   const installationsConfig = readInstallationsFile()
   let updated = false
-  installations.forEach(newInstall => {
+  installations.forEach((newInstall) => {
     const packageInstallPaths = installationsConfig[newInstall.name] || []
     installationsConfig[newInstall.name] = packageInstallPaths
     const hasInstallation = !!packageInstallPaths.filter(
-      p => p === newInstall.path
+      (p) => p === newInstall.path
     )[0]
     if (!hasInstallation) {
       updated = true
@@ -131,8 +128,9 @@ export const removeInstallations = async (
 ) => {
   const installationsConfig = readInstallationsFile()
   let updated = false
-  installations.forEach(install => {
+  installations.forEach((install) => {
     const packageInstallPaths = installationsConfig[install.name] || []
+    console.info(`Removing installation of ${install.name} in ${install.path}`)
     const index = packageInstallPaths.indexOf(install.path)
     if (index >= 0) {
       packageInstallPaths.splice(index, 1)
