@@ -1,6 +1,6 @@
 # Yalc changelog
 
-## 1.0.0.pre.42
+## 1.0.0.pre.42 (2020-08-17)
 
 - replace pre/postyalc scripts with pre/postyalcpublish
 - execute pre/postyalc scripts in target package/project on add/update
