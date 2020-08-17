@@ -221,7 +221,7 @@ export const addPackages = async (
       }
 
       const addedAction = options.link ? 'linked' : 'added'
-      console.info(
+      console.log(
         `Package ${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}.`
       )
     }

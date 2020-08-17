@@ -81,12 +81,12 @@ export const cleanInstallations = async ({
     }, [] as PackageInstallation[])
   if (installsToRemove.length) {
     console.info(`Installations clean up:`)
-    installsToRemove.forEach((inst) => {
-      console.log(`Package ${inst.name}: ${inst.path}`)
-    })
     if (!dry) {
       await removeInstallations(installsToRemove)
     } else {
+      installsToRemove.forEach((inst) => {
+        console.log(`Installation to remove: ${inst.name} in ${inst.path}`)
+      })
       console.warn(`Dry run.`)
     }
   }
@@ -130,7 +130,7 @@ export const removeInstallations = async (
   let updated = false
   installations.forEach((install) => {
     const packageInstallPaths = installationsConfig[install.name] || []
-    console.info(`Removing installation of ${install.name} in ${install.path}`)
+    console.log(`Removing installation of ${install.name} in ${install.path}`)
     const index = packageInstallPaths.indexOf(install.path)
     if (index >= 0) {
       packageInstallPaths.splice(index, 1)
