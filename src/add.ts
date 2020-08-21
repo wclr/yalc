@@ -201,8 +201,8 @@ export const addPackages = async (
         const addBinScript = (src: string, dest: string) => {
           const srcPath = join(destYalcCopyDir, src)
           const destPath = join(binDir, dest)
-          ensureSymlinkSync(srcPath, destPath)
           try {
+            ensureSymlinkSync(srcPath, destPath)
             fs.chmodSync(srcPath, 0o755)
           } catch (e) {
             console.warn('Could not modify permissions of', srcPath)
