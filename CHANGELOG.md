@@ -1,5 +1,10 @@
 # Yalc changelog
 
+## 1.0.0.pre.43
+
+- try/catch for ensuring symlink when modifying bin permissions
+- add signature (`yalcSig` key) to published package.json
+
 ## 1.0.0.pre.42 (2020-08-17)
 
 - replace pre/postyalc scripts with pre/postyalcpublish

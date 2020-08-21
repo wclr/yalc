@@ -121,6 +121,7 @@ export const copyPackageToStore = async (
       : ''
   const pkgToWrite: PackageManifest = {
     ...pkg,
+    yalcSig: signature,
     version: pkg.version + versionPre,
     devDependencies: undefined,
   }

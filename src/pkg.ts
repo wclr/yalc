@@ -23,6 +23,7 @@ export type PackageScripts = Partial<{
 export interface PackageManifest {
   name: string
   version: string
+  yalcSig?: string
   private?: boolean
   bin?: string | { [name: string]: string }
   dependencies?: { [name: string]: string }
