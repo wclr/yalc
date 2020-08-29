@@ -32,6 +32,7 @@ export interface PublishPackageOptions {
   npm?: boolean
   files?: boolean
   private?: boolean
+  scripts?: boolean
 }
 
 export const publishPackage = async (options: PublishPackageOptions) => {
@@ -44,6 +45,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   const pm = getPackageManager(workingDir)
 
   const runPmScript = (script: keyof PackageScripts) => {
+    if (!options.scripts) return
     const scriptCmd = pkg.scripts?.[script]
     if (scriptCmd) {
       console.log(`Running ${script} script: ${scriptCmd}`)

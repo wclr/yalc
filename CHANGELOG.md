@@ -4,6 +4,8 @@
 
 - try/catch for ensuring symlink when modifying bin permissions
 - add signature (`yalcSig` key) to published package.json
+- add `--no-scripts` to publish/push without running scripts
+- add `-W` (workspaces) as alias for `--no-pure`
 
 ## 1.0.0.pre.42 (2020-08-17)
 

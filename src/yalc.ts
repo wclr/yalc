@@ -63,6 +63,8 @@ yargs
     builder: () => {
       return yargs
         .default('sig', true)
+        .default('scripts', true)
+        .alias('script', 'scripts')
         .boolean(['push', 'push-safe'].concat(publishFlags))
     },
     handler: (argv) => {
@@ -78,6 +80,37 @@ yargs
         changed: argv.changed,
         files: argv.files,
         private: argv.private,
+        scripts: argv.scripts,
+      })
+    },
+  })
+  .command({
+    command: 'push',
+    describe:
+      'Publish package in yalc local repo and push to all installations',
+    builder: () => {
+      return yargs
+        .default('force', undefined)
+        .default('sig', true)
+        .default('scripts', true)
+        .alias('script', 'scripts')
+        .boolean(['safe'].concat(publishFlags))
+        .option('replace', { describe: 'Force package content replacement' })
+    },
+    handler: (argv) => {
+      console.log('argv.scripts', argv.scripts)
+      return publishPackage({
+        workingDir: join(process.cwd(), argv._[1] || ''),
+        force: argv.force !== undefined ? argv.force : true,
+        knit: argv.knit,
+        push: true,
+        replace: argv.replace,
+        signature: argv.sig,
+        yarn: argv.yarn || argv.npm,
+        changed: argv.changed,
+        files: argv.files,
+        private: argv.private,
+        scripts: argv.scripts,
       })
     },
   })
@@ -103,47 +136,23 @@ yargs
     },
   })
   .command({
-    command: 'push',
-    describe:
-      'Publish package in yalc local repo and push to all installations',
-    builder: () => {
-      return yargs
-        .default('force', undefined)
-        .default('sig', true)
-        .boolean(['safe'].concat(publishFlags))
-        .option('replace', { describe: 'Force package content replacement' })
-    },
-    handler: (argv) => {
-      return publishPackage({
-        workingDir: join(process.cwd(), argv._[1] || ''),
-        force: argv.force !== undefined ? argv.force : true,
-        knit: argv.knit,
-        push: true,
-        replace: argv.replace,
-        signature: argv.sig,
-        yarn: argv.yarn || argv.npm,
-        changed: argv.changed,
-        files: argv.files,
-        private: argv.private,
-      })
-    },
-  })
-  .command({
     command: 'add',
     describe: 'Add package from yalc repo to the project',
     builder: () => {
       return yargs
         .boolean(['file', 'dev', 'link', 'yarn'])
         .alias('D', 'dev')
+        .boolean('-W')
         .alias('save-dev', 'dev')
         .help(true)
     },
     handler: (argv) => {
+      const pure = argv.W ? false : argv.pure
       return addPackages(argv._.slice(1), {
         dev: argv.dev,
         yarn: argv.yarn || argv.npm,
         linkDep: argv.link,
-        pure: argv.pure,
+        pure,
         workingDir: process.cwd(),
       })
     },
