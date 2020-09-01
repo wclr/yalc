@@ -98,7 +98,6 @@ yargs
         .option('replace', { describe: 'Force package content replacement' })
     },
     handler: (argv) => {
-      console.log('argv.scripts', argv.scripts)
       return publishPackage({
         workingDir: join(process.cwd(), argv._[1] || ''),
         force: argv.force !== undefined ? argv.force : true,
