@@ -35,7 +35,7 @@ export interface PackageManifest {
   }>
   workspaces?: string[]
   scripts?: PackageScripts
-  __JSONSpaces: number
+  __JSONSpaces?: number
 }
 
 export const parsePackageName = (packageName: string) => {
