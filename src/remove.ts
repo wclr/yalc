@@ -91,11 +91,6 @@ export const removePackages = async (
     writeLockfile(lockFileConfig, { workingDir })
   }
 
-  if (!Object.keys(lockFileConfig.packages).length && !options.retreat) {
-    fs.removeSync(join(workingDir, values.yalcPackagesFolder))
-    removeLockfile({ workingDir })
-  }
-
   if (removedPackagedFromManifest.length) {
     writePackageManifest(workingDir, pkg)
   }
@@ -108,14 +103,24 @@ export const removePackages = async (
     })
   )
 
+  const yalcFolder = join(workingDir, values.yalcPackagesFolder)
   removedPackagedFromManifest.forEach((name) => {
     fs.removeSync(join(workingDir, 'node_modules', name))
   })
   packagesToRemove.forEach((name) => {
     if (!options.retreat) {
-      fs.removeSync(join(workingDir, values.yalcPackagesFolder, name))
+      fs.removeSync(join(yalcFolder, name))
     }
   })
+  const isEmptyLockFile = !Object.keys(lockFileConfig.packages).length
+  if (isEmptyLockFile && !options.retreat) {
+    removeLockfile({ workingDir })
+    if (fs.readdirSync(yalcFolder).length) {
+      console.warn(yalcFolder, 'is not empty, not removing it.')
+    } else {
+      fs.removeSync(yalcFolder)
+    }
+  }
 
   if (!options.retreat) {
     await removeInstallations(installationsToRemove)
