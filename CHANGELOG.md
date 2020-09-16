@@ -6,6 +6,7 @@
 - add signature (`yalcSig` key) to published package.json
 - add `--no-scripts` to publish/push without running scripts
 - add `-W` (workspaces) as alias for `--no-pure`
+- prevent removing .yalc folder if something else exists there
 
 ## 1.0.0.pre.42 (2020-08-17)
 
