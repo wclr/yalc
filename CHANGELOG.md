@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.44 (2020-09-18)
+
+- fix removing scoped package folder
+
 ## 1.0.0.pre.43 (2020-09-17)
 
 - try/catch for ensuring symlink when modifying bin permissions
