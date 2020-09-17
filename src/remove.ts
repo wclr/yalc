@@ -28,6 +28,14 @@ const isYalcFileAddress = (address: string, name: string) => {
   return regExp.test(address)
 }
 
+const removeIfEmpty = (folder: string) => {
+  const isEmpty = !fs.readdirSync(folder).length
+  if (isEmpty) {
+    fs.removeSync(folder)
+  }
+  return isEmpty
+}
+
 export const removePackages = async (
   packages: string[],
   options: RemovePackagesOptions
@@ -112,13 +120,20 @@ export const removePackages = async (
       fs.removeSync(join(yalcFolder, name))
     }
   })
+
+  const isScopedPackage = (name: string) => name.startsWith('@')
+
+  packagesToRemove
+    .filter(isScopedPackage)
+    .map((name) => name.split('/')[0])
+    .map((name) => join(yalcFolder, name))
+    .map(removeIfEmpty)
+
   const isEmptyLockFile = !Object.keys(lockFileConfig.packages).length
   if (isEmptyLockFile && !options.retreat) {
     removeLockfile({ workingDir })
-    if (fs.readdirSync(yalcFolder).length) {
+    if (!removeIfEmpty(yalcFolder)) {
       console.warn(yalcFolder, 'is not empty, not removing it.')
-    } else {
-      fs.removeSync(yalcFolder)
     }
   }
 
