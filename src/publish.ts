@@ -24,7 +24,6 @@ export interface PublishPackageOptions {
   workingDir: string
   signature?: boolean
   knit?: boolean
-  force?: boolean
   changed?: boolean
   push?: boolean
   replace?: boolean

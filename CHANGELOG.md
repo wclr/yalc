@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.45
+
+- remove `--force` flag
+
 ## 1.0.0.pre.44 (2020-09-18)
 
 - fix removing scoped package folder
