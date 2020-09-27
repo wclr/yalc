@@ -61,14 +61,16 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     return
   }
 
-  const preScripts: (keyof PackageScripts)[] = [
-    'prepublish',
-    'prepare',
-    'prepublishOnly',
-    'prepack',
-    'preyalcpublish',
-  ]
-  preScripts.forEach(runPmScript)
+  if (!options.force) {
+    const preScripts: (keyof PackageScripts)[] = [
+      'prepublish',
+      'prepare',
+      'prepublishOnly',
+      'prepack',
+      'preyalcpublish',
+    ]
+    preScripts.forEach(runPmScript)
+  }
 
   const copyRes = await copyPackageToStore(pkg, options)
 
@@ -77,13 +79,15 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     return
   }
 
-  const postScripts: (keyof PackageScripts)[] = [
-    'postyalcpublish',
-    'postpack',
-    'publish',
-    'postpublish',
-  ]
-  postScripts.forEach(runPmScript)
+  if (!options.force) {
+    const postScripts: (keyof PackageScripts)[] = [
+      'postyalcpublish',
+      'postpack',
+      'publish',
+      'postpublish',
+    ]
+    postScripts.forEach(runPmScript)
+  }
 
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const publishedPkg = readPackageManifest(publishedPackageDir)!
