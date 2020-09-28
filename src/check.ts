@@ -2,7 +2,7 @@ import * as fs from 'fs-extra'
 import { execSync } from 'child_process'
 import * as path from 'path'
 import { join } from 'path'
-import { PackageManifest, values } from '.'
+import { execLoudOptions, PackageManifest, values } from '.'
 
 export type CheckOptions = {
   workingDir: string
@@ -33,11 +33,13 @@ export function checkManifest(options: CheckOptions) {
   if (options.commit) {
     execSync(stagedChangesCmd, {
       cwd: options.workingDir,
+      ...execLoudOptions,
     })
       .toString()
       .trim()
     execSync(stagedChangesCmd, {
       cwd: options.workingDir,
+      ...execLoudOptions,
     })
       .toString()
       .trim()
