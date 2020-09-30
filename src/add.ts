@@ -13,6 +13,7 @@ import {
   writePackageManifest,
   readSignatureFile,
   runOrWarnPackageManagerInstall,
+  execLoudOptions,
 } from '.'
 
 import { getPackageManager, pmRunScriptCmd } from './pm'
@@ -74,7 +75,10 @@ export const addPackages = async (
     const scriptCmd = localPkg.scripts?.[script as keyof PackageScripts]
     if (scriptCmd) {
       console.log(`Running ${script} script: ${scriptCmd}`)
-      execSync(`${pmRunScriptCmd[pm]} ${script}`, { cwd: workingDir })
+      execSync(`${pmRunScriptCmd[pm]} ${script}`, {
+        cwd: workingDir,
+        ...execLoudOptions,
+      })
     }
   }
 

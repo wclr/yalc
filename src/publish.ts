@@ -48,7 +48,10 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     const scriptCmd = pkg.scripts?.[script]
     if (scriptCmd) {
       console.log(`Running ${script} script: ${scriptCmd}`)
-      execSync(`${pmRunScriptCmd[pm]} ${script}`, { cwd: workingDir })
+      execSync(`${pmRunScriptCmd[pm]} ${script}`, {
+        cwd: workingDir,
+        ...execLoudOptions,
+      })
     }
   }
 

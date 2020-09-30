@@ -1,6 +1,7 @@
 import { execSync, ExecSyncOptions } from 'child_process'
 import * as fs from 'fs-extra'
 import { join } from 'path'
+import { execLoudOptions } from '.'
 
 type PackageMangerName = 'yarn' | 'npm' | 'pnpm'
 
@@ -47,8 +48,6 @@ export const getPackageManagerInstallCmd = (cwd: string) =>
   pmInstallCmd[getPackageManager(cwd)]
 
 export const isYarn = (cwd: string) => getPackageManager(cwd) === 'yarn'
-
-const execLoudOptions = { stdio: 'inherit' } as ExecSyncOptions
 
 export const runOrWarnPackageManagerInstall = (
   workingDir: string,
