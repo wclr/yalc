@@ -1,8 +1,9 @@
 # Yalc changelog
 
-## 1.0.0.pre.45
+## 1.0.0.pre.45 (2020-09-30)
 
 - remove `--force` flag
+- surface STDOUT/STDERR of execSync
 
 ## 1.0.0.pre.44 (2020-09-18)
 
