@@ -16,7 +16,7 @@ import { showInstallations, cleanInstallations } from './installations'
 import { checkManifest } from './check'
 import { makeConsoleColored, disabledConsoleOutput } from './console'
 
-const publishFlags = ['knit', 'sig', 'changed', 'yarn', 'files']
+const publishFlags = ['sig', 'changed', 'yarn', 'files']
 
 const cliCommand = values.myNameIs
 
@@ -73,7 +73,6 @@ yargs
         workingDir: join(process.cwd(), folder || ''),
         push: argv.push,
         replace: argv.replace,
-        knit: argv.knit,
         signature: argv.sig,
         yarn: argv.yarn || argv.npm,
         changed: argv.changed,
@@ -99,7 +98,6 @@ yargs
     handler: (argv) => {
       return publishPackage({
         workingDir: join(process.cwd(), argv._[1] || ''),
-        knit: argv.knit,
         push: true,
         replace: argv.replace,
         signature: argv.sig,

@@ -23,7 +23,6 @@ import { pmRunScriptCmd } from './pm'
 export interface PublishPackageOptions {
   workingDir: string
   signature?: boolean
-  knit?: boolean
   changed?: boolean
   push?: boolean
   replace?: boolean

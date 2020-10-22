@@ -41,7 +41,6 @@ export const copyPackageToStore = async (
     workingDir: string
     signature?: boolean
     changed?: boolean
-    knit?: boolean
     files?: boolean
   }
 ) => {
@@ -102,23 +101,10 @@ export const copyPackageToStore = async (
     }
   }
 
-  if (options.knit) {
-    fs.removeSync(storePackageStoreDir)
-    const ensureSymlinkSync = fs.ensureSymlinkSync as any
-    filesToCopy.forEach((f) => {
-      const source = join(copyFromDir, f)
-      if (fs.statSync(source).isDirectory()) {
-        return
-      }
-      ensureSymlinkSync(source, join(storePackageStoreDir, f))
-    })
-  }
-
   writeSignatureFile(storePackageStoreDir, signature)
-  const versionPre =
-    options.signature && !options.knit
-      ? '+' + signature.substr(0, shortSignatureLength)
-      : ''
+  const versionPre = options.signature
+    ? '+' + signature.substr(0, shortSignatureLength)
+    : ''
   const pkgToWrite: PackageManifest = {
     ...pkg,
     yalcSig: signature,
