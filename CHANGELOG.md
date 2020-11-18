@@ -1,5 +1,10 @@
 # Yalc changelog
 
+## 1.0.0.pre.46 (2020-11-18)
+
+- dev-mod flag (use --no-dev-mod not to remove devDependencies)
+- use `detect-indent` whn modifying `package.json`
+
 ## 1.0.0.pre.45 (2020-09-30)
 
 - remove `--force` flag
