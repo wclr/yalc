@@ -1,5 +1,5 @@
 import * as fs from 'fs-extra'
-import { doesNotThrow, throws, deepEqual, ok } from 'assert'
+import { doesNotThrow, throws, deepEqual, ok, strictEqual } from 'assert'
 import { join } from 'path'
 import {
   addPackages,
@@ -229,6 +229,10 @@ describe('Yalc package manager', function () {
       deepEqual(installations, {
         [values.depPackage]: [projectDir],
       })
+    })
+    it('preserves indent after installation', () => {
+      const pkg = readPackageManifest(projectDir)!
+      strictEqual(pkg.__Indent, '  ')
     })
   })
 

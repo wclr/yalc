@@ -1,6 +1,7 @@
 import * as fs from 'fs-extra'
 import { join } from 'path'
 import { PackageName } from './installations'
+import detectIndent from 'detect-indent'
 
 export type PackageScripts = Partial<{
   preinstall: string
@@ -35,7 +36,7 @@ export interface PackageManifest {
   }>
   workspaces?: string[]
   scripts?: PackageScripts
-  __JSONSpaces?: number
+  __Indent?: string
 }
 
 export const parsePackageName = (packageName: string) => {
@@ -49,9 +50,8 @@ export const parsePackageName = (packageName: string) => {
   }
 }
 
-const getJSONSpaces = (jsonStr: string) => {
-  let match = jsonStr.match(/^[^{]*{.*\n([ ]+?)\S/)
-  return match && match[1] ? match[1].length : null
+const getIndent = (jsonStr: string) => {
+  return detectIndent(jsonStr).indent
 }
 
 export function readPackageManifest(workingDir: string) {
@@ -68,11 +68,8 @@ export function readPackageManifest(workingDir: string) {
       )
       return null
     }
-    const formatSpaces = getJSONSpaces(fileData) || 2
-    if (!formatSpaces) {
-      console.warn('Could not get JSON formatting for', packagePath, 'using 2')
-    }
-    pkg.__JSONSpaces = formatSpaces
+    const indent = getIndent(fileData) || '  '
+    pkg.__Indent = indent
     return pkg
   } catch (e) {
     console.error('Could not read', packagePath)
@@ -97,14 +94,11 @@ export function writePackageManifest(workingDir: string, pkg: PackageManifest) {
   if (pkg.devDependencies) {
     pkg.devDependencies = sortDependencies(pkg.devDependencies)
   }
-  const formatSpaces = pkg.__JSONSpaces
-  delete pkg.__JSONSpaces
+  const indent = pkg.__Indent
+  delete pkg.__Indent
   const packagePath = join(workingDir, 'package.json')
   try {
-    fs.writeFileSync(
-      packagePath,
-      JSON.stringify(pkg, null, formatSpaces) + '\n'
-    )
+    fs.writeFileSync(packagePath, JSON.stringify(pkg, null, indent) + '\n')
   } catch (e) {
     console.error('Could not write ', packagePath)
   }
