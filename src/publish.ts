@@ -31,6 +31,7 @@ export interface PublishPackageOptions {
   files?: boolean
   private?: boolean
   scripts?: boolean
+  devMod?: boolean
 }
 
 export const publishPackage = async (options: PublishPackageOptions) => {

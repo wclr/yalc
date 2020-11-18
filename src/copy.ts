@@ -35,6 +35,20 @@ const copyFile = async (
   return getFileHash(srcPath, relPath)
 }
 
+const modPackageDev = (pkg: PackageManifest) => {
+  return {
+    ...pkg,
+    scripts: pkg.scripts
+      ? {
+          ...pkg.scripts,
+          prepare: undefined,
+          prepublish: undefined,
+        }
+      : undefined,
+    devDependencies: undefined,
+  }
+}
+
 export const copyPackageToStore = async (
   pkg: PackageManifest,
   options: {
@@ -42,9 +56,10 @@ export const copyPackageToStore = async (
     signature?: boolean
     changed?: boolean
     files?: boolean
+    devMod?: boolean
   }
 ) => {
-  const { workingDir } = options
+  const { workingDir, devMod = true } = options
 
   const copyFromDir = options.workingDir
   const storePackageStoreDir = join(
@@ -106,10 +121,9 @@ export const copyPackageToStore = async (
     ? '+' + signature.substr(0, shortSignatureLength)
     : ''
   const pkgToWrite: PackageManifest = {
-    ...pkg,
+    ...(devMod ? modPackageDev(pkg) : pkg),
     yalcSig: signature,
     version: pkg.version + versionPre,
-    devDependencies: undefined,
   }
   writePackageManifest(storePackageStoreDir, pkgToWrite)
   return signature

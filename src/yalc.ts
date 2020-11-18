@@ -15,8 +15,9 @@ import { showInstallations, cleanInstallations } from './installations'
 
 import { checkManifest } from './check'
 import { makeConsoleColored, disabledConsoleOutput } from './console'
+import { PublishPackageOptions } from './publish'
 
-const publishFlags = ['sig', 'changed', 'yarn', 'files']
+const publishFlags = ['sig', 'dev-mod', 'changed', 'yarn', 'files']
 
 const cliCommand = values.myNameIs
 
@@ -29,6 +30,23 @@ makeConsoleColored()
 
 if (process.argv.includes('--quite')) {
   disabledConsoleOutput()
+}
+
+const getPublishOptions = (
+  argv: any,
+  folder: string
+): PublishPackageOptions => {
+  return {
+    workingDir: join(process.cwd(), folder || ''),
+    push: argv.push,
+    replace: argv.replace,
+    signature: argv.sig,
+    yarn: argv.yarn || argv.npm,
+    changed: argv.changed,
+    files: argv.files,
+    private: argv.private,
+    scripts: argv.scripts,
+  }
 }
 
 /* tslint:disable-next-line */
@@ -64,6 +82,7 @@ yargs
       return yargs
         .default('sig', true)
         .default('scripts', true)
+        .default('dev-mod', true)
         .alias('script', 'scripts')
         .boolean(['push', 'push-safe'].concat(publishFlags))
     },
