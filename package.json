@@ -36,7 +36,7 @@
     "glob": "^7.1.4",
     "ignore": "^5.0.4",
     "npm-packlist": "^1.4.1",
-    "yargs": "^7.1.0"
+    "yargs": "^16.1.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^7.0.0",

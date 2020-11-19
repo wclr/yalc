@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.47 (2020-11-20)
+
+- update `yargs` package version
+
 ## 1.0.0.pre.46 (2020-11-18)
 
 - dev-mod flag (use --no-dev-mod not to remove devDependencies)
