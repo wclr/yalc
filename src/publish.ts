@@ -25,8 +25,8 @@ export interface PublishPackageOptions {
   signature?: boolean
   changed?: boolean
   push?: boolean
+  update?: boolean
   replace?: boolean
-  yarn?: boolean
   npm?: boolean
   files?: boolean
   private?: boolean
@@ -102,8 +102,8 @@ export const publishPackage = async (options: PublishPackageOptions) => {
       const installationsToRemoveForPkg = await updatePackages([pkg.name], {
         replace: options.replace,
         workingDir,
+        update: options.update,
         noInstallationsRemove: true,
-        yarn: options.yarn,
       })
       installationsToRemove.push(...installationsToRemoveForPkg)
     }

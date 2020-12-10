@@ -68,6 +68,9 @@ Some documented features might not have been published yet, see the [change log]
 - Run `yalc update my-package` to update the latest version from store.
 - Run `yalc update` to update all the packages found in `yalc.lock`.
 - While update if yalc'ed package has `scripts.postupdate` this command will run in host package dir.
+- `preyalc` and `postyalc` scripts will be executed in target package on add/update operations which are performed while `push`
+- if need to perform pre/post `scripts` on update of particular package use `(pre|post)yalc.package-name` name for script in your `package.json`.
+- update `--update` (`--upgrade`, `--up`) to run package managers's update command for packages.
 
 ### Remove
 
@@ -81,7 +84,7 @@ Some documented features might not have been published yet, see the [change log]
 
 ---
 
-**NB!** Currently, `yalc` copies (or links) added/updated package content to the `node_modules` folder, but it doesn't execute `yarn/npm` install/update (unless you use --yarn/npm flag) commands after this, so to update dependencies you should execute them.
+**NB!** `yalc` copies (or links) added/updated package content to the `node_modules` folder, but it doesn't execute `yarn/npm` install/update (unless you use --update flag) commands after this, so to update dependencies you should execute them.
 
 ---
 
@@ -96,8 +99,8 @@ Some documented features might not have been published yet, see the [change log]
 - `scripts.postupdate` will be executed in host package dir, like while `update` operation.
 - With `--changed` flag yalc will first check if package content has changed before publishing and pushing, it is a quick operation and may be useful for _file watching scenarios_ with pushing on changes.
 - Use `--replace` option to force replacement of package content.
-- `preyalc` and `postyalc` scripts will be executed in target package on add/update operations which are performed while `push`
-- if need to perform pre/post `scripts` on update of particular package use `pre/postyalc.package-name` name for script in your `package.json`.
+- Use `preyalc` and `postyalc` (read in `update` docs) to execute needed script on every push.
+- Use `--update` to run `yarn/npm/pnpm update` command for pushed packages.
 
 ### Keep it out of git
 

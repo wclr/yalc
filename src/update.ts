@@ -3,12 +3,13 @@ import { PackageInstallation, removeInstallations } from './installations'
 import { readLockfile } from './lockfile'
 
 import { parsePackageName, addPackages } from '.'
+import { AddPackagesOptions } from './add'
 
 export interface UpdatePackagesOptions {
   workingDir: string
   noInstallationsRemove?: boolean
   replace?: boolean
-  yarn?: boolean
+  update?: boolean
 }
 export const updatePackages = async (
   packages: string[],
@@ -50,14 +51,17 @@ export const updatePackages = async (
 
   const packagesFiles = lockPackages.filter((p) => p.file).map((p) => p.name)
 
-  const addOpts = {
+  const addOpts: Pick<
+    AddPackagesOptions,
+    'workingDir' | 'replace' | 'update'
+  > = {
     workingDir: options.workingDir,
     replace: options.replace,
+    update: options.update,
   }
 
   await addPackages(packagesFiles, {
     ...addOpts,
-    yarn: false,
   })
 
   const packagesLinks = lockPackages
@@ -67,7 +71,6 @@ export const updatePackages = async (
     ...addOpts,
     link: true,
     pure: false,
-    yarn: false,
   })
 
   const packagesLinkDep = lockPackages.filter((p) => p.link).map((p) => p.name)
@@ -75,14 +78,12 @@ export const updatePackages = async (
     ...addOpts,
     linkDep: true,
     pure: false,
-    yarn: false,
   })
 
   const packagesPure = lockPackages.filter((p) => p.pure).map((p) => p.name)
   await addPackages(packagesPure, {
     ...addOpts,
     pure: true,
-    yarn: false,
   })
   if (!options.noInstallationsRemove) {
     await removeInstallations(installationsToRemove)

@@ -17,6 +17,12 @@ export const pmInstallCmd: { [P in PackageMangerName]: string } = {
   npm: 'npm install',
 }
 
+export const pmUpdateCmd: { [P in PackageMangerName]: string } = {
+  pnpm: 'pnpm update',
+  yarn: 'yarn upgrade',
+  npm: 'npm update',
+}
+
 export const pmRunScriptCmd: { [P in PackageMangerName]: string } = {
   pnpm: 'pnpm',
   yarn: 'yarn',
@@ -47,20 +53,16 @@ export const getRunScriptCmd = (cwd: string) =>
 export const getPackageManagerInstallCmd = (cwd: string) =>
   pmInstallCmd[getPackageManager(cwd)]
 
+export const getPackageManagerUpdateCmd = (cwd: string) =>
+  pmUpdateCmd[getPackageManager(cwd)]
+
 export const isYarn = (cwd: string) => getPackageManager(cwd) === 'yarn'
 
-export const runOrWarnPackageManagerInstall = (
-  workingDir: string,
-  doRun?: boolean
-) => {
-  const pkgMgrCmd = getPackageManagerInstallCmd(workingDir)
-  if (doRun) {
-    console.log(`Running ${pkgMgrCmd} in ${workingDir}`)
-    execSync(pkgMgrCmd, { cwd: workingDir, ...execLoudOptions })
-  } else {
-    // console.log(
-    //   `Don't forget you may need to run ${pkgMgrCmd}` +
-    //     ` after adding packages with yalc to install/update dependencies/bin scripts.`
-    // )
-  }
+export const runPmUpdate = (workingDir: string, packages: string[]) => {
+  const pkgMgrCmd = [getPackageManagerUpdateCmd(workingDir), ...packages].join(
+    ' '
+  )
+
+  console.log(`Running ${pkgMgrCmd} in ${workingDir}`)
+  execSync(pkgMgrCmd, { cwd: workingDir, ...execLoudOptions })
 }

@@ -16,14 +16,6 @@ export const values = {
   installationsFile: 'installations.json',
 }
 
-export interface AddPackagesOptions {
-  dev?: boolean
-  link?: boolean
-  yarn?: boolean
-  safe?: boolean
-  workingDir: string
-}
-
 export interface UpdatePackagesOptions {
   safe?: boolean
   workingDir: string

@@ -5,8 +5,6 @@ import detectIndent from 'detect-indent'
 
 export type PackageScripts = Partial<{
   preinstall: string
-  postupdate: string
-  postpush: string
   prepack: string
   postpack: string
   prepare: string

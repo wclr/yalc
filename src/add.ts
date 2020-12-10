@@ -12,7 +12,7 @@ import {
   readPackageManifest,
   writePackageManifest,
   readSignatureFile,
-  runOrWarnPackageManagerInstall,
+  runPmUpdate,
   execLoudOptions,
 } from '.'
 
@@ -27,7 +27,7 @@ export interface AddPackagesOptions {
   link?: boolean
   linkDep?: boolean
   replace?: boolean
-  yarn?: boolean
+  update?: boolean
   safe?: boolean
   pure?: boolean
   workingDir: string
@@ -265,6 +265,7 @@ export const addPackages = async (
   runPmScript('postyalc')
 
   await addInstallations(addedInstalls)
-
-  runOrWarnPackageManagerInstall(options.workingDir, options.yarn)
+  if (options.update) {
+    runPmUpdate(options.workingDir, packages)
+  }
 }

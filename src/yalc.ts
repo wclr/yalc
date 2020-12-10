@@ -17,7 +17,9 @@ import { checkManifest } from './check'
 import { makeConsoleColored, disabledConsoleOutput } from './console'
 import { PublishPackageOptions } from './publish'
 
-const publishFlags = ['sig', 'dev-mod', 'changed', 'yarn', 'files']
+const updateFlags = ['update', 'upgrade', 'up']
+
+const publishFlags = ['sig', 'dev-mod', 'changed', 'files', ...updateFlags]
 
 const cliCommand = values.myNameIs
 
@@ -34,18 +36,20 @@ if (process.argv.includes('--quite')) {
 
 const getPublishOptions = (
   argv: any,
-  folder: string
+  override: Partial<PublishPackageOptions> = {}
 ): PublishPackageOptions => {
+  const folder = argv._[1]
   return {
     workingDir: join(process.cwd(), folder || ''),
     push: argv.push,
     replace: argv.replace,
     signature: argv.sig,
-    yarn: argv.yarn || argv.npm,
     changed: argv.changed,
     files: argv.files,
     private: argv.private,
     scripts: argv.scripts,
+    update: argv.update || argv.upgrade,
+    ...override,
   }
 }
 
@@ -87,18 +91,7 @@ yargs
         .boolean(['push', 'push-safe'].concat(publishFlags))
     },
     handler: (argv) => {
-      const folder = argv._[1]
-      return publishPackage({
-        workingDir: join(process.cwd(), folder || ''),
-        push: argv.push,
-        replace: argv.replace,
-        signature: argv.sig,
-        yarn: argv.yarn || argv.npm,
-        changed: argv.changed,
-        files: argv.files,
-        private: argv.private,
-        scripts: argv.scripts,
-      })
+      return publishPackage(getPublishOptions(argv))
     },
   })
   .command({
@@ -115,17 +108,7 @@ yargs
         .option('replace', { describe: 'Force package content replacement' })
     },
     handler: (argv) => {
-      return publishPackage({
-        workingDir: join(process.cwd(), argv._[1] || ''),
-        push: true,
-        replace: argv.replace,
-        signature: argv.sig,
-        yarn: argv.yarn || argv.npm,
-        changed: argv.changed,
-        files: argv.files,
-        private: argv.private,
-        scripts: argv.scripts,
-      })
+      return publishPackage(getPublishOptions(argv, { push: true }))
     },
   })
   .command({
@@ -154,7 +137,7 @@ yargs
     describe: 'Add package from yalc repo to the project',
     builder: () => {
       return yargs
-        .boolean(['file', 'dev', 'link', 'yarn'])
+        .boolean(['file', 'dev', 'link', ...updateFlags])
         .alias('D', 'dev')
         .boolean('-W')
         .alias('save-dev', 'dev')
@@ -164,9 +147,9 @@ yargs
       const pure = argv.W ? false : argv.pure
       return addPackages(argv._.slice(1), {
         dev: argv.dev,
-        yarn: argv.yarn || argv.npm,
         linkDep: argv.link,
         pure,
+        update: argv.update || argv.upgrade,
         workingDir: process.cwd(),
       })
     },
@@ -180,7 +163,6 @@ yargs
     handler: (argv) => {
       return addPackages(argv._.slice(1), {
         link: true,
-        yarn: argv.yarn || argv.npm,
         pure: argv.pure,
         workingDir: process.cwd(),
       })
@@ -190,10 +172,11 @@ yargs
     command: 'update',
     describe: 'Update packages from yalc repo',
     builder: () => {
-      return yargs.help(true)
+      return yargs.boolean([...updateFlags]).help(true)
     },
     handler: (argv) => {
       return updatePackages(argv._.slice(1), {
+        update: argv.update || argv.upgrade,
         workingDir: process.cwd(),
       })
     },

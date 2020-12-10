@@ -1,5 +1,10 @@
 # Yalc changelog
 
+## 1.0.0.pre.48 (2020-12-10)
+
+- add `update` (`upgrade`, `up`) flag to run PM's package update command on add/update/publish/push
+- remove `yarn`, `npm` flags
+
 ## 1.0.0.pre.47 (2020-11-20)
 
 - update `yargs` package version
