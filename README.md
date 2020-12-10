@@ -82,12 +82,6 @@ Some documented features might not have been published yet, see the [change log]
 - Run `yalc installations clean my-package` to unpublish a package published with `yalc publish`
 - Run `yalc installations show my-package` to show all packages to which `my-package` has been installed.
 
----
-
-**NB!** `yalc` copies (or links) added/updated package content to the `node_modules` folder, but it doesn't execute `yarn/npm` install/update (unless you use --update flag) commands after this, so to update dependencies you should execute them.
-
----
-
 ## Advanced usage
 
 ### Pushing updates automatically to all installations
