@@ -29,7 +29,7 @@ const isYalcFileAddress = (address: string, name: string) => {
 }
 
 const removeIfEmpty = (folder: string) => {
-  const isEmpty = !fs.readdirSync(folder).length
+  const isEmpty = fs.existsSync(folder) && !fs.readdirSync(folder).length
   if (isEmpty) {
     fs.removeSync(folder)
   }
