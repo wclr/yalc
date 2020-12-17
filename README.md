@@ -130,7 +130,7 @@ If you want to override default pure behavior use `--no-pure` flag.
 
 ### Control output
 
-- Use `--quite` to fully disable output (except of errors). Use `--no-colors` to disable colors.
+- Use `--quiet` to fully disable output (except of errors). Use `--no-colors` to disable colors.
 
 ## Related links
 
