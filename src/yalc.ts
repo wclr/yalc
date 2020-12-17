@@ -30,7 +30,7 @@ const getVersionMessage = () => {
 
 makeConsoleColored()
 
-if (process.argv.includes('--quiet') || process.argv.includes('--quite')) {
+if (process.argv.includes('--quiet')) {
   disabledConsoleOutput()
 }
 
