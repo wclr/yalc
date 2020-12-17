@@ -1,5 +1,10 @@
 # Yalc changelog
 
+## 1.0.0.pre.49 (2020-12-17)
+
+- fix `--quiet` option name typing
+- fix removing multiple packages
+
 ## 1.0.0.pre.48 (2020-12-10)
 
 - add `update` (`upgrade`, `up`) flag to run PM's package update command on add/update/publish/push
