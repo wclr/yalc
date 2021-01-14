@@ -17,6 +17,13 @@ import { readLockfile, LockFileConfigV1 } from '../src/lockfile'
 const values = {
   depPackage: 'dep-package',
   depPackageVersion: '1.0.0',
+  depPackageNestedWorkspaceDepPackage: 'workspace-package-as-seen-by-parent',
+  depPackageNestedWorkspaceDepPackageVersion: '1.0.0',
+  depPackageNestedWorkspaceDepPackageLiteral: 'literal-workspace-package',
+  depPackageNestedWorkspaceDepPackageLiteralVersion: '^1.0.0',
+  depPackageNestedWorkspaceDepPackageUnresolvable:
+    'unresolvable-workspace-package',
+  depPackageNestedWorkspaceDepPackageUnresolvableVersion: '*',
   depPackage2: 'dep-package2',
   depPackage2Version: '1.0.0',
   storeDir: 'yalc-store',
@@ -171,6 +178,45 @@ describe('Yalc package manager', function () {
           deepEqual(signature, expectedSignature)
         })
       }
+    })
+
+    it('resolves "workspace:*" for dependencies', () => {
+      const pkg = readPackageManifest(publishedPackagePath)
+      ok(pkg)
+      ok(pkg.dependencies)
+
+      const publishedVersion =
+        pkg.dependencies[values.depPackageNestedWorkspaceDepPackage]
+      strictEqual(
+        publishedVersion,
+        values.depPackageNestedWorkspaceDepPackageVersion
+      )
+    })
+
+    it('substitutes "workspace:*" with "*" if unresolvable', () => {
+      const pkg = readPackageManifest(publishedPackagePath)
+      ok(pkg)
+      ok(pkg.dependencies)
+
+      const publishedVersion =
+        pkg.dependencies[values.depPackageNestedWorkspaceDepPackageUnresolvable]
+      strictEqual(
+        publishedVersion,
+        values.depPackageNestedWorkspaceDepPackageUnresolvableVersion
+      )
+    })
+
+    it('extracts version of workspace dependencies if specified', () => {
+      const pkg = readPackageManifest(publishedPackagePath)
+      ok(pkg)
+      ok(pkg.dependencies)
+
+      const publishedVersion =
+        pkg.dependencies[values.depPackageNestedWorkspaceDepPackageLiteral]
+      strictEqual(
+        publishedVersion,
+        values.depPackageNestedWorkspaceDepPackageLiteralVersion
+      )
     })
   })
 

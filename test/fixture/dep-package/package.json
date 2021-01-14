@@ -12,5 +12,9 @@
     "folder2/nested/file.txt",
     "root-file.txt"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "workspace-package-as-seen-by-parent": "workspace:*",
+    "unresolvable-workspace-package": "workspace:*",
+    "literal-workspace-package": "workspace:^1.0.0"
+  }
 }
