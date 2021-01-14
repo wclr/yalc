@@ -16,12 +16,12 @@
   },
   "main": "src/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --project tsconfig.build.json",
     "clean": "ts-clean-built --old && trash  **/*.log",
-    "prepublishOnly": "yarn clean && tsc && yarn test",
-    "test": "tsc && mocha test && yarn lint",
+    "prepublishOnly": "yarn clean && yarn build && yarn test",
+    "test": "yarn build && ts-mocha test/* && yarn lint",
     "test-dev": "ts-node-dev -T --respawn node_modules/mocha/bin/mocha test/index.ts",
-    "ci": "tsc && yarn test",
+    "ci": "yarn test",
     "lint": "tslint -p ."
   },
   "husky": {
@@ -52,6 +52,7 @@
     "pretty-quick": "^1.8.0",
     "trash-cli": "^1.4.0",
     "ts-clean-built": "^1.2.1",
+    "ts-mocha": "^8.0.0",
     "ts-node-dev": "^1.0.0-pre.55",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
