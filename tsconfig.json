@@ -12,17 +12,10 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "allowJs": false,
-    "newLine": "LF",
-    "plugins": [
-      {
-        "name": "typescript-tslint-plugin",
-        "alwaysShowRuleFailuresAsWarnings": true
-      }
-    ]
+    "newLine": "LF"
   },
   "formatCodeOptions": {
     "indentSize": 2,
     "tabSize": 2
-  },
-  "exclude": ["**/node_modules/*"]
+  }
 }

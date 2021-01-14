@@ -16,6 +16,9 @@
         "clear": false,
         "revealProblems": "always"
       },
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
       "isBackground": true,
       "problemMatcher": "$tsc-watch"
     }

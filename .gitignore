@@ -1,4 +1,5 @@
 node_modules
+!test/fixture/dep-package/node_modules
 tmp
 *.js
 *.d.ts
