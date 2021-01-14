@@ -29,10 +29,14 @@ export { addPackages } from './add'
 export * from './pkg'
 export * from './pm'
 
-export interface YalcGlobal extends NodeJS.Global {
+export interface YalcGlobal {
   yalcStoreMainDir: string
 }
-export const yalcGlobal = global as YalcGlobal
+/* 
+  Not using Node.Global because in this case 
+  <reference types="mocha" /> is aded in built d.ts file  
+*/
+export const yalcGlobal: YalcGlobal = global as any
 
 export function getStoreMainDir(): string {
   if (yalcGlobal.yalcStoreMainDir) {
