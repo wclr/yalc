@@ -3,8 +3,8 @@ import crypto from 'crypto'
 import npmPacklist from 'npm-packlist'
 import ignore from 'ignore'
 
-import { join } from 'path'
-import { readIgnoreFile, readSignatureFile } from '.'
+import { join, dirname } from 'path'
+import { readIgnoreFile, readSignatureFile, readPackageManifest } from '.'
 import {
   PackageManifest,
   getStorePackagesDir,
@@ -35,7 +35,50 @@ const copyFile = async (
   return getFileHash(srcPath, relPath)
 }
 
-const modPackageDev = (pkg: PackageManifest) => {
+const modPackageDev = (
+  pkg: PackageManifest,
+  options: {
+    workingDir: string
+  }
+) => {
+  let newDependencies: undefined | Record<string, string>
+
+  if (pkg.dependencies && Object.keys(pkg.dependencies).length > 0) {
+    newDependencies = {}
+    const workspaceRegex = /^workspace:/
+
+    for (const [name, version] of Object.entries(pkg.dependencies)) {
+      if (!workspaceRegex.test(version)) {
+        newDependencies[name] = version
+        continue
+      }
+
+      const versionWithoutProtocol = version.replace(workspaceRegex, '')
+      let newVersion: string = versionWithoutProtocol
+
+      if (versionWithoutProtocol === '*') {
+        try {
+          // Find dependency root directory. `require.resolve(<dependency>)`
+          // finds the entry point of the package, which may be nested
+          // `<root>/dist/index.js`. Resolve dependency/package.json instead.
+          const dependencyPkgPath = require.resolve(
+            join(name, 'package.json'),
+            { paths: [options.workingDir] }
+          )
+          const dependencyVersion = readPackageManifest(
+            dirname(dependencyPkgPath)
+          )?.version
+
+          newVersion = dependencyVersion ?? versionWithoutProtocol
+        } catch (_err) {
+          // Let '*' if version could not be resolved, it's also valid semver
+        }
+      }
+
+      newDependencies[name] = newVersion
+    }
+  }
+
   return {
     ...pkg,
     scripts: pkg.scripts
@@ -46,6 +89,7 @@ const modPackageDev = (pkg: PackageManifest) => {
         }
       : undefined,
     devDependencies: undefined,
+    dependencies: newDependencies,
   }
 }
 
@@ -121,7 +165,7 @@ export const copyPackageToStore = async (
     ? '+' + signature.substr(0, shortSignatureLength)
     : ''
   const pkgToWrite: PackageManifest = {
-    ...(devMod ? modPackageDev(pkg) : pkg),
+    ...(devMod ? modPackageDev(pkg, options) : pkg),
     yalcSig: signature,
     version: pkg.version + versionPre,
   }
