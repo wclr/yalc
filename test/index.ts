@@ -17,17 +17,19 @@ import { readLockfile, LockFileConfigV1 } from '../src/lockfile'
 const values = {
   depPackage: 'dep-package',
   depPackageVersion: '1.0.0',
-  depPackageNestedWorkspaceDepPackage: 'workspace-package-as-seen-by-parent',
-  depPackageNestedWorkspaceDepPackageVersion: '1.0.0',
-  depPackageNestedWorkspaceDepPackageLiteral: 'literal-workspace-package',
-  depPackageNestedWorkspaceDepPackageLiteralVersion: '^1.0.0',
-  depPackageNestedWorkspaceDepPackageUnresolvable:
-    'unresolvable-workspace-package',
-  depPackageNestedWorkspaceDepPackageUnresolvableVersion: '*',
+
   depPackage2: 'dep-package2',
   depPackage2Version: '1.0.0',
   storeDir: 'yalc-store',
   project: 'project',
+
+  wksDepPkg: 'ws-package',
+  wksResolvedVersion: '1.1.1',
+
+  wksDepQualified: 'ws-package-qualified',
+  wksPkgQualifiedVersion: '^1.0.0',
+
+  wksUnresolvedPackage: 'ws-package-unresolvable',
 }
 
 const fixtureDir = join(__dirname, 'fixture')
@@ -101,6 +103,7 @@ describe('Yalc package manager', function () {
       return publishPackage({
         workingDir: depPackageDir,
         signature: true,
+        workspaceResolve: true,
       }).then(() => {
         console.timeEnd('Package publish')
       })
@@ -167,6 +170,7 @@ describe('Yalc package manager', function () {
         return publishPackage({
           workingDir: depPackageDir,
           signature: true,
+          workspaceResolve: true,
         })
       })
 
@@ -182,41 +186,29 @@ describe('Yalc package manager', function () {
 
     it('resolves "workspace:*" for dependencies', () => {
       const pkg = readPackageManifest(publishedPackagePath)
-      ok(pkg)
-      ok(pkg.dependencies)
+      ok(pkg?.dependencies)
 
-      const publishedVersion =
-        pkg.dependencies[values.depPackageNestedWorkspaceDepPackage]
-      strictEqual(
-        publishedVersion,
-        values.depPackageNestedWorkspaceDepPackageVersion
-      )
+      const publishedVersion = pkg?.dependencies?.[values.wksDepPkg]
+
+      strictEqual(publishedVersion, values.wksResolvedVersion)
     })
 
     it('substitutes "workspace:*" with "*" if unresolvable', () => {
       const pkg = readPackageManifest(publishedPackagePath)
       ok(pkg)
-      ok(pkg.dependencies)
+      ok(pkg?.dependencies)
 
-      const publishedVersion =
-        pkg.dependencies[values.depPackageNestedWorkspaceDepPackageUnresolvable]
-      strictEqual(
-        publishedVersion,
-        values.depPackageNestedWorkspaceDepPackageUnresolvableVersion
-      )
+      const publishedVersion = pkg?.dependencies?.[values.wksUnresolvedPackage]
+      strictEqual(publishedVersion, '*')
     })
 
     it('extracts version of workspace dependencies if specified', () => {
       const pkg = readPackageManifest(publishedPackagePath)
       ok(pkg)
-      ok(pkg.dependencies)
+      ok(pkg?.dependencies)
 
-      const publishedVersion =
-        pkg.dependencies[values.depPackageNestedWorkspaceDepPackageLiteral]
-      strictEqual(
-        publishedVersion,
-        values.depPackageNestedWorkspaceDepPackageLiteralVersion
-      )
+      const publishedVersion = pkg?.dependencies?.[values.wksDepQualified]
+      strictEqual(publishedVersion, values.wksPkgQualifiedVersion)
     })
   })
 

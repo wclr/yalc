@@ -35,50 +35,61 @@ const copyFile = async (
   return getFileHash(srcPath, relPath)
 }
 
-const modPackageDev = (
-  pkg: PackageManifest,
-  options: {
-    workingDir: string
-  }
-) => {
-  let newDependencies: undefined | Record<string, string>
+const mapObj = <T, R, K extends string>(
+  obj: Record<K, T>,
+  mapValue: (value: T, key: K) => R
+): Record<string, R> => {
+  if (Object.keys(obj).length === 0) return {}
 
-  if (pkg.dependencies && Object.keys(pkg.dependencies).length > 0) {
-    newDependencies = {}
-    const workspaceRegex = /^workspace:/
-
-    for (const [name, version] of Object.entries(pkg.dependencies)) {
-      if (!workspaceRegex.test(version)) {
-        newDependencies[name] = version
-        continue
-      }
-
-      const versionWithoutProtocol = version.replace(workspaceRegex, '')
-      let newVersion: string = versionWithoutProtocol
-
-      if (versionWithoutProtocol === '*') {
-        try {
-          // Find dependency root directory. `require.resolve(<dependency>)`
-          // finds the entry point of the package, which may be nested
-          // `<root>/dist/index.js`. Resolve dependency/package.json instead.
-          const dependencyPkgPath = require.resolve(
-            join(name, 'package.json'),
-            { paths: [options.workingDir] }
-          )
-          const dependencyVersion = readPackageManifest(
-            dirname(dependencyPkgPath)
-          )?.version
-
-          newVersion = dependencyVersion ?? versionWithoutProtocol
-        } catch (_err) {
-          // Let '*' if version could not be resolved, it's also valid semver
-        }
-      }
-
-      newDependencies[name] = newVersion
+  return Object.keys(obj).reduce<Record<string, R>>((resObj, key) => {
+    if (obj[key as K]) {
+      resObj[key] = mapValue(obj[key as K], key as K)
     }
-  }
+    return resObj
+  }, {})
+}
 
+const resolveDepVersion = (pkgName: string, workingDir: string): string => {
+  try {
+    const pkgPath = require.resolve(join(pkgName, 'package.json'), {
+      paths: [workingDir],
+    })
+    if (!pkgPath) {
+    }
+    const resolved = readPackageManifest(dirname(pkgPath))?.version
+
+    return resolved || '*'
+  } catch (e) {
+    console.warn('Could not resolve workspace package location for', pkgName)
+    return '*'
+  }
+}
+
+const resolveWorkspaces = (pkg: PackageManifest, workingDir: string) => {
+  const dependencies = pkg.dependencies
+    ? mapObj(pkg.dependencies, (val, depPkgName) => {
+        if (val.startsWith('workspace:')) {
+          const version = val.split(':')[1]
+          const resolved =
+            version === '*'
+              ? resolveDepVersion(depPkgName, workingDir)
+              : version
+          console.log(
+            `Resolving workspace package ${depPkgName} version ==> ${resolved}`
+          )
+          return resolved
+        }
+        return val
+      })
+    : pkg.dependencies
+
+  return {
+    ...pkg,
+    dependencies,
+  }
+}
+
+const modPackageDev = (pkg: PackageManifest) => {
   return {
     ...pkg,
     scripts: pkg.scripts
@@ -89,7 +100,6 @@ const modPackageDev = (
         }
       : undefined,
     devDependencies: undefined,
-    dependencies: newDependencies,
   }
 }
 
@@ -101,6 +111,7 @@ export const copyPackageToStore = async (
     changed?: boolean
     files?: boolean
     devMod?: boolean
+    workspaceResolve?: boolean
   }
 ) => {
   const { workingDir, devMod = true } = options
@@ -164,8 +175,12 @@ export const copyPackageToStore = async (
   const versionPre = options.signature
     ? '+' + signature.substr(0, shortSignatureLength)
     : ''
+  const resolvedPkg = options.workspaceResolve
+    ? resolveWorkspaces(pkg, workingDir)
+    : pkg
+
   const pkgToWrite: PackageManifest = {
-    ...(devMod ? modPackageDev(pkg, options) : pkg),
+    ...(devMod ? modPackageDev(resolvedPkg) : resolvedPkg),
     yalcSig: signature,
     version: pkg.version + versionPre,
   }
