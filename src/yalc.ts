@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import yargs from 'yargs'
 import { join, resolve } from 'path'
+import { rcFile } from 'rc-config-loader'
+
 import {
   values,
   publishPackage,
@@ -16,6 +18,7 @@ import { showInstallations, cleanInstallations } from './installations'
 import { checkManifest } from './check'
 import { makeConsoleColored, disabledConsoleOutput } from './console'
 import { PublishPackageOptions } from './publish'
+import { readRcConfig } from './rc'
 
 const updateFlags = ['update', 'upgrade', 'up']
 
@@ -30,7 +33,9 @@ const getVersionMessage = () => {
 
 makeConsoleColored()
 
-if (process.argv.includes('--quiet')) {
+const rcArgs = readRcConfig()
+
+if (process.argv.includes('--quiet') || rcArgs.quiet) {
   disabledConsoleOutput()
 }
 
@@ -49,6 +54,8 @@ const getPublishOptions = (
     private: argv.private,
     scripts: argv.scripts,
     update: argv.update || argv.upgrade,
+    workspaceResolve: argv.workspaceResolve,
+    devMod: argv.devMod,
     ...override,
   }
 }
@@ -87,8 +94,10 @@ yargs
         .default('sig', true)
         .default('scripts', true)
         .default('dev-mod', true)
+        .default('workspace-resolve', true)
+        .default(rcArgs)
         .alias('script', 'scripts')
-        .boolean(['push', 'push-safe'].concat(publishFlags))
+        .boolean(['push'].concat(publishFlags))
     },
     handler: (argv) => {
       return publishPackage(getPublishOptions(argv))
@@ -103,6 +112,9 @@ yargs
         .default('force', undefined)
         .default('sig', true)
         .default('scripts', true)
+        .default('dev-mod', true)
+        .default('workspace-resolve', true)
+        .default(rcArgs)
         .alias('script', 'scripts')
         .boolean(['safe'].concat(publishFlags))
         .option('replace', { describe: 'Force package content replacement' })
@@ -141,6 +153,7 @@ yargs
         .alias('D', 'dev')
         .boolean('-W')
         .alias('save-dev', 'dev')
+        .default(rcArgs)
         .help(true)
     },
     handler: (argv) => {
@@ -158,7 +171,7 @@ yargs
     command: 'link',
     describe: 'Link package from yalc repo to the project',
     builder: () => {
-      return yargs.help(true)
+      return yargs.default(rcArgs).help(true)
     },
     handler: (argv) => {
       return addPackages(argv._.slice(1), {
@@ -172,7 +185,10 @@ yargs
     command: 'update',
     describe: 'Update packages from yalc repo',
     builder: () => {
-      return yargs.boolean([...updateFlags]).help(true)
+      return yargs
+        .boolean([...updateFlags])
+        .default(rcArgs)
+        .help(true)
     },
     handler: (argv) => {
       return updatePackages(argv._.slice(1), {
@@ -185,7 +201,7 @@ yargs
     command: 'remove',
     describe: 'Remove packages from the project',
     builder: () => {
-      return yargs.boolean(['retreat', 'all']).help(true)
+      return yargs.boolean(['retreat', 'all']).default(rcArgs).help(true)
     },
     handler: (argv) => {
       return removePackages(argv._.slice(1), {
