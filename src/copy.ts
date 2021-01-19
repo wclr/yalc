@@ -65,27 +65,34 @@ const resolveDepVersion = (pkgName: string, workingDir: string): string => {
   }
 }
 
-const resolveWorkspaces = (pkg: PackageManifest, workingDir: string) => {
-  const dependencies = pkg.dependencies
-    ? mapObj(pkg.dependencies, (val, depPkgName) => {
-        if (val.startsWith('workspace:')) {
-          const version = val.split(':')[1]
-          const resolved =
-            version === '*'
-              ? resolveDepVersion(depPkgName, workingDir)
-              : version
-          console.log(
-            `Resolving workspace package ${depPkgName} version ==> ${resolved}`
-          )
-          return resolved
-        }
-        return val
-      })
-    : pkg.dependencies
+const resolveWorkspaces = (
+  pkg: PackageManifest,
+  workingDir: string
+): PackageManifest => {
+  const resolveDeps = (deps: PackageManifest['dependencies']) => {
+    return deps
+      ? mapObj(deps, (val, depPkgName) => {
+          if (val.startsWith('workspace:')) {
+            const version = val.split(':')[1]
+            const resolved =
+              version === '*'
+                ? resolveDepVersion(depPkgName, workingDir)
+                : version
+            console.log(
+              `Resolving workspace package ${depPkgName} version ==> ${resolved}`
+            )
+            return resolved
+          }
+          return val
+        })
+      : deps
+  }
 
   return {
     ...pkg,
-    dependencies,
+    dependencies: resolveDeps(pkg.dependencies),
+    devDependencies: resolveDeps(pkg.devDependencies),
+    peerDependencies: resolveDeps(pkg.peerDependencies),
   }
 }
 
@@ -175,12 +182,12 @@ export const copyPackageToStore = async (
   const versionPre = options.signature
     ? '+' + signature.substr(0, shortSignatureLength)
     : ''
-  const resolvedPkg = options.workspaceResolve
-    ? resolveWorkspaces(pkg, workingDir)
-    : pkg
+
+  const resolveDeps = (pkg: PackageManifest): PackageManifest =>
+    options.workspaceResolve ? resolveWorkspaces(pkg, workingDir) : pkg
 
   const pkgToWrite: PackageManifest = {
-    ...(devMod ? modPackageDev(resolvedPkg) : resolvedPkg),
+    ...resolveDeps(devMod ? modPackageDev(pkg) : pkg),
     yalcSig: signature,
     version: pkg.version + versionPre,
   }

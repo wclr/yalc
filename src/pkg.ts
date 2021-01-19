@@ -27,6 +27,7 @@ export interface PackageManifest {
   bin?: string | { [name: string]: string }
   dependencies?: { [name: string]: string }
   devDependencies?: { [name: string]: string }
+  peerDependencies?: { [name: string]: string }
   yalc: Partial<{
     sig: boolean
     signature: boolean
