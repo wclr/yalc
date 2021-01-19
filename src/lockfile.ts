@@ -16,13 +16,6 @@ export type LockFilePackageEntry = {
   replaced?: string
   signature?: string
   pure?: boolean
-  // to?: {
-  //   location: string,
-  //   link?: boolean,
-  //   file?: boolean,
-  //   replaced?: string
-  // }[]
-  // from?: string[]
 }
 
 export type LockFileConfigV1 = {
@@ -35,25 +28,25 @@ type LockFileVersions = 'v1' | 'v0'
 
 type LockFileConfig = LockFileConfigV1
 
-const determineLockFileVersion = (locfile: any) => {
-  if (locfile.version == 'v1' && locfile.packages) {
+const determineLockFileVersion = (lockfile: any) => {
+  if (lockfile.version == 'v1' && lockfile.packages) {
     return 'v1'
   }
   return 'v0'
 }
 
 type ConfigTransformers = {
-  [key in LockFileVersions]: (locfile: any) => LockFileConfig
+  [key in LockFileVersions]: (lockfile: any) => LockFileConfig
 }
 
 const configTransformers: ConfigTransformers = {
   v0: (lockFile: LockFileConfigV0) => {
     return {
       version: 'v1',
-      packages: lockFile
+      packages: lockFile,
     }
   },
-  v1: (lockFile: LockFileConfigV1) => lockFile
+  v1: (lockFile: LockFileConfigV1) => lockFile,
 }
 
 const getLockFileCurrentConfig = (lockFileConfig: any) => {
@@ -70,7 +63,7 @@ export const readLockfile = (options: { workingDir: string }) => {
   const lockfilePath = join(options.workingDir, values.lockfileName)
   let lockfile: LockFileConfig = {
     version: 'v1',
-    packages: {}
+    packages: {},
   }
   try {
     lockfile = getLockFileCurrentConfig(fs.readJSONSync(lockfilePath))

@@ -30,6 +30,7 @@ export interface AddPackagesOptions {
   update?: boolean
   safe?: boolean
   pure?: boolean
+  restore?: boolean
   workingDir: string
 }
 
@@ -100,34 +101,44 @@ export const addPackages = async (
     if (!name) {
       console.warn('Could not parse package name', packageName)
     }
-
-    const storedPackagePath = getPackageStoreDir(name)
-    if (!fs.existsSync(storedPackagePath)) {
-      console.warn(
-        `Could not find package \`${name}\` in store (${storedPackagePath}), skipping.`
-      )
-      return null
-    }
-    const versionToInstall = version || getLatestPackageVersion(name)
-
-    const storedPackageDir = getPackageStoreDir(name, versionToInstall)
-
-    if (!fs.existsSync(storedPackageDir)) {
-      console.warn(
-        `Could not find package \`${packageName}\` ` + storedPackageDir,
-        ', skipping.'
-      )
-      return null
-    }
-
-    const pkg = readPackageManifest(storedPackageDir)
-    if (!pkg) {
-      return
-    }
-
     const destYalcCopyDir = join(workingDir, values.yalcPackagesFolder, name)
 
-    await copyDirSafe(storedPackageDir, destYalcCopyDir, !options.replace)
+    if (!options.restore) {
+      const storedPackagePath = getPackageStoreDir(name)
+      if (!fs.existsSync(storedPackagePath)) {
+        console.warn(
+          `Could not find package \`${name}\` in store (${storedPackagePath}), skipping.`
+        )
+        return null
+      }
+      const versionToInstall = version || getLatestPackageVersion(name)
+
+      const storedPackageDir = getPackageStoreDir(name, versionToInstall)
+
+      if (!fs.existsSync(storedPackageDir)) {
+        console.warn(
+          `Could not find package \`${packageName}\` ` + storedPackageDir,
+          ', skipping.'
+        )
+        return null
+      }
+
+      await copyDirSafe(storedPackageDir, destYalcCopyDir, !options.replace)
+    } else {
+      console.log(`Restoring package \`${packageName}\` from .yalc directory`)
+      if (!fs.existsSync(destYalcCopyDir)) {
+        console.warn(
+          `Could not find package \`${packageName}\` ` + destYalcCopyDir,
+          ', skipping.'
+        )
+        return null
+      }
+    }
+
+    const pkg = readPackageManifest(destYalcCopyDir)
+    if (!pkg) {
+      return null
+    }
 
     let replacedVersion = ''
     if (doPure) {
@@ -161,7 +172,7 @@ export const addPackages = async (
       if (options.link || options.linkDep) {
         ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
       } else {
-        await copyDirSafe(storedPackageDir, destModulesDir, !options.replace)
+        await copyDirSafe(destYalcCopyDir, destModulesDir, !options.replace)
       }
 
       if (!options.link) {
@@ -226,11 +237,11 @@ export const addPackages = async (
 
       const addedAction = options.link ? 'linked' : 'added'
       console.log(
-        `Package ${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}.`
+        `Package ${pkg.name}@${pkg.version} ${addedAction} ==> ${destModulesDir}`
       )
     }
 
-    const signature = readSignatureFile(storedPackageDir)
+    const signature = readSignatureFile(destYalcCopyDir)
     runPmScript('postyalc.' + packageName)
     return {
       signature,

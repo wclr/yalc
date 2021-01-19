@@ -92,6 +92,11 @@ export const removePackages = async (
     if (!options.retreat) {
       lockfileUpdated = true
       delete lockFileConfig.packages[name]
+    } else {
+      console.log(
+        `Retreating package ${name} version ==>`,
+        lockedPackage.replaced
+      )
     }
   })
 

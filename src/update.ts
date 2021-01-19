@@ -9,7 +9,10 @@ export interface UpdatePackagesOptions {
   workingDir: string
   noInstallationsRemove?: boolean
   replace?: boolean
+  // if need run package manager update procedure
   update?: boolean
+  // if need just to restore retreated packages
+  restore?: boolean
 }
 export const updatePackages = async (
   packages: string[],
@@ -53,11 +56,12 @@ export const updatePackages = async (
 
   const addOpts: Pick<
     AddPackagesOptions,
-    'workingDir' | 'replace' | 'update'
+    'workingDir' | 'replace' | 'update' | 'restore'
   > = {
     workingDir: options.workingDir,
     replace: options.replace,
     update: options.update,
+    restore: options.restore,
   }
 
   await addPackages(packagesFiles, {

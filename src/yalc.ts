@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import yargs from 'yargs'
 import { join, resolve } from 'path'
-import { rcFile } from 'rc-config-loader'
 
 import {
   values,
@@ -161,6 +160,7 @@ yargs
       return addPackages(argv._.slice(1), {
         dev: argv.dev,
         linkDep: argv.link,
+        restore: argv.restore,
         pure,
         update: argv.update || argv.upgrade,
         workingDir: process.cwd(),
@@ -193,6 +193,24 @@ yargs
     handler: (argv) => {
       return updatePackages(argv._.slice(1), {
         update: argv.update || argv.upgrade,
+        restore: argv.restore,
+        workingDir: process.cwd(),
+      })
+    },
+  })
+  .command({
+    command: 'restore',
+    describe: 'Restore retreated packages',
+    builder: () => {
+      return yargs
+        .boolean([...updateFlags])
+        .default(rcArgs)
+        .help(true)
+    },
+    handler: (argv) => {
+      return updatePackages(argv._.slice(1), {
+        update: argv.update || argv.upgrade,
+        restore: true,
         workingDir: process.cwd(),
       })
     },
