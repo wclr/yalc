@@ -1,5 +1,11 @@
 # Yalc changelog
 
+## 1.0.0.pre.50 (2021-01-19)
+
+- add `restore` package operation after `retreat`
+- add resolution of `workspace:` protocol by default (`--no-workspace-resolve` to avoid)
+- add support for .yalcrc file (ini format)
+
 ## 1.0.0.pre.49 (2020-12-17)
 
 - fix `--quiet` option name typing

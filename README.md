@@ -47,6 +47,7 @@ Some documented features might not have been published yet, see the [change log]
 - **NB!** Windows users should make sure the `LF` new line symbol is used in published sources; it may be needed for some packages to work correctly (for example, `bin` scripts). `yalc` won't convert line endings for you (because `npm` and `yarn` won't either).
 - **NB!** Note that, if you want to include `.yalc` folder in published package content, you should add `!.yalc` line to `.npmignore`.
 - [Easily propagate package updates everywhere.](#pushing-updates-automatically-to-all-installations)
+- Yalc by default resolve `workspace:` protocol in dependencies, to omit this use `-no-workspace-resolve` flag
 
 ### Add
 
@@ -112,6 +113,11 @@ Some documented features might not have been published yet, see the [change log]
 
 - Useful for monorepos (projects with multiple sub-projects/packages): `yalc publish some-project` will perform publish operation in the `./some-project` directory relative to `process.cwd()`
 
+### Retreat and Restore
+
+- Instead of completely removing package you may temporary set it back it with `yalc retreat [--all]` for example before package publication to remote registry.
+- After or later restore it with `yalc restore`.
+
 ### Use with **Yarn/Pnpm workspaces**
 
 Use if you will try to `add` repo in `workspaces` enabled package, `--pure` option will be used by default, so `package.json` and modules folder will not be touched.
@@ -131,6 +137,10 @@ If you want to override default pure behavior use `--no-pure` flag.
 ### Control output
 
 - Use `--quiet` to fully disable output (except of errors). Use `--no-colors` to disable colors.
+
+### Set default options via .yalcrc
+
+- For example add `workspace-resolve=false` line to the `.yalcrc` file to turn off `workspace:` protocol resolution or `sig=false` to disable package version hash signature.
 
 ## Related links
 
