@@ -68,7 +68,6 @@ Some documented features might not have been published yet, see the [change log]
 
 - Run `yalc update my-package` to update the latest version from store.
 - Run `yalc update` to update all the packages found in `yalc.lock`.
-- While update if yalc'ed package has `scripts.postupdate` this command will run in host package dir.
 - `preyalc` and `postyalc` scripts will be executed in target package on add/update operations which are performed while `push`
 - if need to perform pre/post `scripts` on update of particular package use `(pre|post)yalc.package-name` name for script in your `package.json`.
 - update `--update` (`--upgrade`, `--up`) to run package managers's update command for packages.
@@ -91,7 +90,6 @@ Some documented features might not have been published yet, see the [change log]
 - `yalc publish --push` will publish your package to the store and propagate all changes to existing `yalc` package installations (this will actually do `update` operation on the location).
 - `yalc push` - is a use shortcut command for push operation (which will likely become your primarily used command for publication):
   - `force` options is `true` by default, so it won't run `pre/post` scripts (may change this with `--no-force` flag).
-- `scripts.postupdate` will be executed in host package dir, like while `update` operation.
 - With `--changed` flag yalc will first check if package content has changed before publishing and pushing, it is a quick operation and may be useful for _file watching scenarios_ with pushing on changes.
 - Use `--replace` option to force replacement of package content.
 - Use `preyalc` and `postyalc` (read in `update` docs) to execute needed script on every push.
