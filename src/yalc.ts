@@ -90,7 +90,7 @@ yargs
     describe: 'Publish package in yalc local repo',
     builder: () => {
       return yargs
-        .default('sig', true)
+        .default('sig', false)
         .default('scripts', true)
         .default('dev-mod', true)
         .default('workspace-resolve', true)
@@ -109,7 +109,7 @@ yargs
     builder: () => {
       return yargs
         .default('force', undefined)
-        .default('sig', true)
+        .default('sig', false)
         .default('scripts', true)
         .default('dev-mod', true)
         .default('workspace-resolve', true)

@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.51
+
+- BREAKING (shock!): version signature (adding build meta to pkg version) is turned off by default (use explicit `--sig`)
+
 ## 1.0.0.pre.50 (2021-01-19)
 
 - add `restore` package operation after `retreat`

@@ -10,7 +10,7 @@ When developing and authoring multiple packages (private or public), you often f
 
 - `yalc` acts as very simple local repository for your locally developed packages that you want to share across your local environment.
 - When you run `yalc publish` in the package directory, it grabs only files that should be published to NPM and _puts_ them in a special global store (located, for example, in `~/.yalc`).
-- When you run `yalc add my-package` in your `project` it _pulls_ package content into `.yalc` in the current folder and injects a `file:`/`link:` dependency into `package.json`. Alternatively, you may use `yalc link my-package` which will create a symlink to the package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does), or you even may use it with **Yarn workspaces**.
+- When you run `yalc add my-package` in your `project` it _pulls_ package content into `.yalc` in the current folder and injects a `file:`/`link:` dependency into `package.json`. Alternatively, you may use `yalc link my-package` which will create a symlink to the package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does), or you even may use it with **Pnmp/Yarn/Npm workspaces**.
 - `yalc` creates a special `yalc.lock` file in your project (similar to `yarn.lock` and `package-lock.json`) that is used to ensure consistency while performing `yalc`'s routines.
 - `yalc` can be used with projects where `yarn` or `npm` package managers are used
   for managing `package.json` dependencies.
@@ -115,7 +115,7 @@ Some documented features might not have been published yet, see the [change log]
 
 ### Retreat and Restore
 
-- Instead of completely removing package you may temporary set it back it with `yalc retreat [--all]` for example before package publication to remote registry.
+- Instead of completely removing package you may temporary set it back with `yalc retreat [--all]` for example before package publication to remote registry.
 - After or later restore it with `yalc restore`.
 
 ### Use with **Yarn/Pnpm workspaces**
