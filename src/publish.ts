@@ -1,23 +1,22 @@
 import { exec, execSync } from 'child_process'
 import { join } from 'path'
+
+import {
+  execLoudOptions,
+  getPackageManager,
+  getStorePackagesDir,
+  PackageManifest,
+  PackageScripts,
+  readPackageManifest,
+  updatePackages,
+  values,
+} from '.'
 import { copyPackageToStore } from './copy'
 import {
   PackageInstallation,
   readInstallationsFile,
   removeInstallations,
 } from './installations'
-
-import {
-  values,
-  PackageManifest,
-  execLoudOptions,
-  getPackageManager,
-  updatePackages,
-  readPackageManifest,
-  getStorePackagesDir,
-  PackageScripts,
-} from '.'
-
 import { pmRunScriptCmd } from './pm'
 
 export interface PublishPackageOptions {
@@ -73,7 +72,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   ]
   preScripts.forEach(runPmScript)
 
-  const copyRes = await copyPackageToStore(pkg, options)
+  const copyRes = await copyPackageToStore(options)
 
   if (options.changed && !copyRes) {
     console.warn('Package content has not changed, skipping publishing.')

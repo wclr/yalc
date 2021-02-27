@@ -1,13 +1,13 @@
-import fs from 'fs-extra'
 import crypto from 'crypto'
-import npmPacklist from 'npm-packlist'
+import fs from 'fs-extra'
 import ignore from 'ignore'
+import npmPacklist from 'npm-packlist'
+import { dirname, join } from 'path'
 
-import { join, dirname } from 'path'
-import { readIgnoreFile, readSignatureFile, readPackageManifest } from '.'
+import { readIgnoreFile, readPackageManifest, readSignatureFile } from '.'
 import {
-  PackageManifest,
   getStorePackagesDir,
+  PackageManifest,
   writePackageManifest,
   writeSignatureFile,
 } from '.'
@@ -110,19 +110,20 @@ const modPackageDev = (pkg: PackageManifest) => {
   }
 }
 
-export const copyPackageToStore = async (
-  pkg: PackageManifest,
-  options: {
-    workingDir: string
-    signature?: boolean
-    changed?: boolean
-    files?: boolean
-    devMod?: boolean
-    workspaceResolve?: boolean
-  }
-) => {
+export const copyPackageToStore = async (options: {
+  workingDir: string
+  signature?: boolean
+  changed?: boolean
+  files?: boolean
+  devMod?: boolean
+  workspaceResolve?: boolean
+}): Promise<string | false> => {
   const { workingDir, devMod = true } = options
+  const pkg = readPackageManifest(workingDir)
 
+  if (!pkg) {
+    throw 'Error copying package to store.'
+  }
   const copyFromDir = options.workingDir
   const storePackageStoreDir = join(
     getStorePackagesDir(),
