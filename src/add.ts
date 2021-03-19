@@ -1,24 +1,22 @@
+import { execSync } from 'child_process'
 import * as fs from 'fs-extra'
-import { join } from 'path'
-import { copyDirSafe } from './sync-dir'
-import { addInstallations, removeInstallations } from './installations'
-
-import { addPackageToLockfile } from './lockfile'
+import { join, relative } from 'path'
 
 import {
+  execLoudOptions,
   getPackageStoreDir,
-  values,
   parsePackageName,
   readPackageManifest,
-  writePackageManifest,
   readSignatureFile,
   runPmUpdate,
-  execLoudOptions,
+  values,
+  writePackageManifest,
 } from '.'
-
-import { getPackageManager, pmRunScriptCmd } from './pm'
-import { execSync } from 'child_process'
+import { addInstallations, removeInstallations } from './installations'
+import { addPackageToLockfile } from './lockfile'
 import { PackageScripts } from './pkg'
+import { getPackageManager, pmRunScriptCmd } from './pm'
+import { copyDirSafe } from './sync-dir'
 
 const ensureSymlinkSync = fs.ensureSymlinkSync as typeof fs.symlinkSync
 
@@ -211,16 +209,22 @@ export const addPackages = async (
         replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
       }
 
-      if (pkg.bin) {
+      if (pkg.bin && (options.link || options.linkDep)) {
         const binDir = join(workingDir, 'node_modules', '.bin')
         const addBinScript = (src: string, dest: string) => {
           const srcPath = join(destYalcCopyDir, src)
           const destPath = join(binDir, dest)
+          console.log(
+            'Linking bin script:',
+            relative(workingDir, destYalcCopyDir),
+            '->',
+            relative(workingDir, destPath)
+          )
           try {
             ensureSymlinkSync(srcPath, destPath)
             fs.chmodSync(srcPath, 0o755)
           } catch (e) {
-            console.warn('Could not modify permissions of', srcPath)
+            console.warn('Could not create bin symlink.')
             console.error(e)
           }
         }
