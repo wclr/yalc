@@ -1,8 +1,10 @@
 # Yalc changelog
 
-## 1.0.0.pre.51
+## 1.0.0.pre.51 (Unreleased)
 
 - BREAKING (shock!): version signature (adding build meta to pkg version) is turned off by default (use explicit `--sig`)
+- link `.bin` scripts only when `yalc link` or `yalc add --link`
+- read package manifest after running pre-script while publish
 
 ## 1.0.0.pre.50 (2021-01-19)
 
