@@ -21,7 +21,14 @@ import { readRcConfig } from './rc'
 
 const updateFlags = ['update', 'upgrade', 'up']
 
-const publishFlags = ['sig', 'dev-mod', 'changed', 'files', ...updateFlags]
+const publishFlags = [
+  'scripts',
+  'sig',
+  'dev-mod',
+  'changed',
+  'files',
+  ...updateFlags,
+]
 
 const cliCommand = values.myNameIs
 
@@ -108,9 +115,8 @@ yargs
       'Publish package in yalc local repo and push to all installations',
     builder: () => {
       return yargs
-        .default('force', undefined)
         .default('sig', false)
-        .default('scripts', true)
+        .default('scripts', false)
         .default('dev-mod', true)
         .default('workspace-resolve', true)
         .default(rcArgs)
@@ -156,12 +162,13 @@ yargs
         .help(true)
     },
     handler: (argv) => {
-      const pure = argv.W ? false : argv.pure
+      const pure = !!argv.pure
       return addPackages(argv._.slice(1), {
         dev: argv.dev,
         linkDep: argv.link,
         restore: argv.restore,
         pure,
+        workspace: !!argv.W,
         update: argv.update || argv.upgrade,
         workingDir: process.cwd(),
       })
