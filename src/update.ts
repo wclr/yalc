@@ -1,9 +1,7 @@
-import { PackageInstallation, removeInstallations } from './installations'
-
-import { readLockfile } from './lockfile'
-
-import { parsePackageName, addPackages } from '.'
+import { addPackages, parsePackageName } from '.'
 import { AddPackagesOptions } from './add'
+import { PackageInstallation, removeInstallations } from './installations'
+import { readLockfile } from './lockfile'
 
 export interface UpdatePackagesOptions {
   workingDir: string
@@ -50,6 +48,7 @@ export const updatePackages = async (
     file: lockfile.packages[name].file,
     link: lockfile.packages[name].link,
     pure: lockfile.packages[name].pure,
+    workspace: lockfile.packages[name].workspace,
   }))
 
   const packagesFiles = lockPackages.filter((p) => p.file).map((p) => p.name)
@@ -69,11 +68,18 @@ export const updatePackages = async (
   })
 
   const packagesLinks = lockPackages
-    .filter((p) => !p.file && !p.link && !p.pure)
+    .filter((p) => !p.file && !p.link && !p.pure && !p.workspace)
     .map((p) => p.name)
   await addPackages(packagesLinks, {
     ...addOpts,
     link: true,
+    pure: false,
+  })
+
+  const packagesWks = lockPackages.filter((p) => p.workspace).map((p) => p.name)
+  await addPackages(packagesWks, {
+    ...addOpts,
+    workspace: true,
     pure: false,
   })
 

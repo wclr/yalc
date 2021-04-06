@@ -1,6 +1,7 @@
-import { values } from '.'
-import { join } from 'path'
 import * as fs from 'fs-extra'
+import { join } from 'path'
+
+import { values } from '.'
 
 export type LockFileConfigV0 = {
   [packageName: string]: {
@@ -16,6 +17,7 @@ export type LockFilePackageEntry = {
   replaced?: string
   signature?: string
   pure?: boolean
+  workspace?: boolean
 }
 
 export type LockFileConfigV1 = {
@@ -88,7 +90,7 @@ export const addPackageToLockfile = (
 ) => {
   const lockfile = readLockfile(options)
   packages.forEach(
-    ({ name, version, file, link, replaced, signature, pure }) => {
+    ({ name, version, file, link, replaced, signature, pure, workspace }) => {
       let old = lockfile.packages[name] || {}
       lockfile.packages[name] = {}
       if (version) {
@@ -103,8 +105,11 @@ export const addPackageToLockfile = (
       if (pure) {
         lockfile.packages[name].pure = true
       }
-      if (link) {
-        lockfile.packages[name].link = true
+      if (pure) {
+        lockfile.packages[name].pure = true
+      }
+      if (workspace) {
+        lockfile.packages[name].workspace = true
       }
       if (replaced || old.replaced) {
         lockfile.packages[name].replaced = replaced || old.replaced

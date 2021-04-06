@@ -29,6 +29,7 @@ export interface AddPackagesOptions {
   safe?: boolean
   pure?: boolean
   restore?: boolean
+  workspace?: boolean
   workingDir: string
 }
 
@@ -175,12 +176,13 @@ export const addPackages = async (
 
       if (!options.link) {
         const protocol = options.linkDep ? 'link:' : 'file:'
-        const localAddress =
-          protocol + values.yalcPackagesFolder + '/' + pkg.name
+        const localAddress = options.workspace
+          ? 'workspace:*'
+          : protocol + values.yalcPackagesFolder + '/' + pkg.name
 
         const dependencies = localPkg.dependencies || {}
         const devDependencies = localPkg.devDependencies || {}
-        let whereToAdd = options.dev ? devDependencies : dependencies
+        let depsObj = options.dev ? devDependencies : dependencies
 
         if (options.dev) {
           if (dependencies[pkg.name]) {
@@ -190,18 +192,18 @@ export const addPackages = async (
         } else {
           if (!dependencies[pkg.name]) {
             if (devDependencies[pkg.name]) {
-              whereToAdd = devDependencies
+              depsObj = devDependencies
             }
           }
         }
 
-        if (whereToAdd[pkg.name] !== localAddress) {
-          replacedVersion = replacedVersion || whereToAdd[pkg.name]
-          whereToAdd[pkg.name] = localAddress
+        if (depsObj[pkg.name] !== localAddress) {
+          replacedVersion = replacedVersion || depsObj[pkg.name]
+          depsObj[pkg.name] = localAddress
           localPkg.dependencies =
-            whereToAdd === dependencies ? dependencies : localPkg.dependencies
+            depsObj === dependencies ? dependencies : localPkg.dependencies
           localPkg.devDependencies =
-            whereToAdd === devDependencies
+            depsObj === devDependencies
               ? devDependencies
               : localPkg.devDependencies
           localPkgUpdated = true
@@ -263,14 +265,16 @@ export const addPackages = async (
   if (localPkgUpdated) {
     writePackageManifest(workingDir, localPkg)
   }
-
   addPackageToLockfile(
     addedInstalls.map((i) => ({
-      name: i!.name,
-      version: i!.version,
-      replaced: i!.replaced,
+      name: i.name,
+      version: i.version,
+      replaced: i.replaced,
       pure: doPure,
-      file: !options.link && !options.linkDep && !doPure,
+      workspace: options.workspace,
+      file: options.workspace
+        ? undefined
+        : !options.link && !options.linkDep && !doPure,
       link: options.linkDep && !doPure,
       signature: i.signature,
     })),
