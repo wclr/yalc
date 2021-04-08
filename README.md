@@ -57,6 +57,7 @@ Some documented features might not have been published yet, see the [change log]
 - Use the `--link` option to add a `link:` dependency instead of `file:`.
 - Use the `--dev` option to add yalc package to dev dependencies.
 - With `--pure` flag it will not touch `package.json` file, nor it will touch modules folder, this is useful for example when working with [**Yarn workspaces**](https://yarnpkg.com/lang/en/docs/workspaces/) (read below in _Advanced usage_ section)
+- With `--workspace` (or `-W`) it will add dependency with "workspace:" protocol.
 
 ### Link
 
@@ -89,7 +90,7 @@ Some documented features might not have been published yet, see the [change log]
 - When you run `yalc add|link|update`, the project's package locations are tracked and saved, so `yalc` knows where each package in the store is being used in your local environment.
 - `yalc publish --push` will publish your package to the store and propagate all changes to existing `yalc` package installations (this will actually do `update` operation on the location).
 - `yalc push` - is a use shortcut command for push operation (which will likely become your primarily used command for publication):
-  - `force` options is `true` by default, so it won't run `pre/post` scripts (may change this with `--no-force` flag).
+- `scripts` options is `false` by default, so it won't run `pre/post` scripts (may change this with passing `--scripts` flag).
 - With `--changed` flag yalc will first check if package content has changed before publishing and pushing, it is a quick operation and may be useful for _file watching scenarios_ with pushing on changes.
 - Use `--replace` option to force replacement of package content.
 - Use `preyalc` and `postyalc` (read in `update` docs) to execute needed script on every push.

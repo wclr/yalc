@@ -156,8 +156,9 @@ yargs
       return yargs
         .boolean(['file', 'dev', 'link', ...updateFlags])
         .alias('D', 'dev')
-        .boolean('-W')
+        .boolean('workspace')
         .alias('save-dev', 'dev')
+        .alias('workspace', 'W')
         .default(rcArgs)
         .help(true)
     },
@@ -168,7 +169,7 @@ yargs
         linkDep: argv.link,
         restore: argv.restore,
         pure,
-        workspace: !!argv.W,
+        workspace: argv.workspace,
         update: argv.update || argv.upgrade,
         workingDir: process.cwd(),
       })
