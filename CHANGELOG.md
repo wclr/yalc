@@ -1,12 +1,13 @@
 # Yalc changelog
 
-## 1.0.0.pre.51 (Unreleased)
+## 1.0.0.pre.51 (2021-04-23)
 
 - BREAKING (shock!): version signature (adding build meta to pkg version) is turned off by default (use explicit `--sig`)
 - link `.bin` scripts only when `yalc link` or `yalc add --link`
 - read package manifest after running pre-script while publish
 - add `-W` flag to add with `workspace:` protocol
 - fix `--scripts` flag
+- upgrade npm-packlist to v2
 
 ## 1.0.0.pre.50 (2021-01-19)
 
