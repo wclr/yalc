@@ -102,8 +102,8 @@ export const addPackageToLockfile = (
       if (file) {
         lockfile.packages[name].file = true
       }
-      if (pure) {
-        lockfile.packages[name].pure = true
+      if (link) {
+        lockfile.packages[name].link = true
       }
       if (pure) {
         lockfile.packages[name].pure = true
