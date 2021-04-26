@@ -15,6 +15,10 @@
   "dependencies": {
     "ws-package": "workspace:*",
     "ws-package-unresolvable": "workspace:*",
-    "ws-package-qualified": "workspace:^1.0.0"
+    "ws-package-qualified": "workspace:^1.0.0",
+    "ws-package-minor-alias": "workspace:^",
+    "ws-package-patch-alias": "workspace:~",
+    "ws-package-unresolvable-minor-alias": "workspace:^",
+    "ws-package-unresolvable-patch-alias": "workspace:~"
   }
 }

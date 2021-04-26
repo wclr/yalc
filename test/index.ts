@@ -29,7 +29,15 @@ const values = {
   wksDepQualified: 'ws-package-qualified',
   wksPkgQualifiedVersion: '^1.0.0',
 
+  wksDepMinorAlias: 'ws-package-minor-alias',
+  wksMinorAliasVersion: '^1.0.1',
+
+  wksDepPatchAlias: 'ws-package-patch-alias',
+  wksPatchAliasVersion: '~1.2.3',
+
   wksUnresolvedPackage: 'ws-package-unresolvable',
+  wksUnresolvedMinorAlias: 'ws-package-unresolvable-minor-alias',
+  wksUnresolvedPatchAlias: 'ws-package-unresolvable-patch-alias',
 }
 
 const fixtureDir = join(__dirname, 'fixture')
@@ -193,13 +201,39 @@ describe('Yalc package manager', function () {
       strictEqual(publishedVersion, values.wksResolvedVersion)
     })
 
-    it('substitutes "workspace:*" with "*" if unresolvable', () => {
+    it('resolves "workspace:^" for dependencies', () => {
+      const pkg = readPackageManifest(publishedPackagePath)
+      ok(pkg?.dependencies)
+
+      const publishedVersion = pkg?.dependencies?.[values.wksDepMinorAlias]
+
+      strictEqual(publishedVersion, values.wksMinorAliasVersion)
+    })
+
+    it('resolves "workspace:~" for dependencies', () => {
+      const pkg = readPackageManifest(publishedPackagePath)
+      ok(pkg?.dependencies)
+
+      const publishedVersion = pkg?.dependencies?.[values.wksDepPatchAlias]
+
+      strictEqual(publishedVersion, values.wksPatchAliasVersion)
+    })
+
+    it('substitutes workspace version aliases ("*", "^", "~") with "*" if unresolvable', () => {
       const pkg = readPackageManifest(publishedPackagePath)
       ok(pkg)
       ok(pkg?.dependencies)
 
       const publishedVersion = pkg?.dependencies?.[values.wksUnresolvedPackage]
       strictEqual(publishedVersion, '*')
+
+      const publishedMinorAliasVersion =
+        pkg?.dependencies?.[values.wksUnresolvedMinorAlias]
+      strictEqual(publishedMinorAliasVersion, '*')
+
+      const publishedPatchAliasVersion =
+        pkg?.dependencies?.[values.wksUnresolvedPatchAlias]
+      strictEqual(publishedPatchAliasVersion, '*')
     })
 
     it('extracts version of workspace dependencies if specified', () => {
