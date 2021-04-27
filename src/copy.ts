@@ -110,6 +110,8 @@ const modPackageDev = (pkg: PackageManifest) => {
   }
 }
 
+const fixScopedRelativeName = (path: string) => path.replace(/^\.\//, '')
+
 export const copyPackageToStore = async (options: {
   workingDir: string
   signature?: boolean
@@ -134,7 +136,10 @@ export const copyPackageToStore = async (options: {
   const ignoreFileContent = readIgnoreFile(workingDir)
 
   const ignoreRule = ignore().add(ignoreFileContent)
-  const npmList: string[] = await npmPacklist({ path: workingDir })
+  const npmList: string[] = await (await npmPacklist({ path: workingDir })).map(
+    fixScopedRelativeName
+  )
+
   const filesToCopy = npmList.filter((f) => !ignoreRule.ignores(f))
   if (options.files) {
     console.info('Files included in published content:')
