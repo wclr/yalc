@@ -118,7 +118,7 @@ export const removePackages = async (
 
   const yalcFolder = join(workingDir, values.yalcPackagesFolder)
   removedPackagedFromManifest.forEach((name) => {
-    fs.removeSync(join(workingDir, 'node_modules', name))
+    fs.unlinkSync(join(workingDir, 'node_modules', name))
   })
   packagesToRemove.forEach((name) => {
     if (!options.retreat) {
