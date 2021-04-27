@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.52 (2021-04-28)
+
+- fix/workaround @scoped root dir names bug (in npm-packlist)
+
 ## 1.0.0.pre.51 (2021-04-23)
 
 - BREAKING (shock!): version signature (adding build meta to pkg version) is turned off by default (use explicit `--sig`)
