@@ -49,7 +49,18 @@ const mapObj = <T, R, K extends string>(
   }, {})
 }
 
-const resolveDepVersion = (pkgName: string, workingDir: string): string => {
+const resolveWorkspaceDepVersion = (
+  version: string,
+  pkgName: string,
+  workingDir: string
+): string => {
+  if (version !== '*' && version !== '^' && version !== '~') {
+    // Regular semver specification
+    return version
+  }
+  // Resolve workspace version aliases
+  const prefix = version === '^' || version === '~' ? version : ''
+
   try {
     const pkgPath = require.resolve(join(pkgName, 'package.json'), {
       paths: [workingDir],
@@ -58,7 +69,7 @@ const resolveDepVersion = (pkgName: string, workingDir: string): string => {
     }
     const resolved = readPackageManifest(dirname(pkgPath))?.version
 
-    return resolved || '*'
+    return `${prefix}${resolved}` || '*'
   } catch (e) {
     console.warn('Could not resolve workspace package location for', pkgName)
     return '*'
@@ -74,10 +85,11 @@ const resolveWorkspaces = (
       ? mapObj(deps, (val, depPkgName) => {
           if (val.startsWith('workspace:')) {
             const version = val.split(':')[1]
-            const resolved =
-              version === '*'
-                ? resolveDepVersion(depPkgName, workingDir)
-                : version
+            const resolved = resolveWorkspaceDepVersion(
+              version,
+              depPkgName,
+              workingDir
+            )
             console.log(
               `Resolving workspace package ${depPkgName} version ==> ${resolved}`
             )
