@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.53 (2021-04-28)
+
+- support ^/~/\* workspace package resolution while publish
+
 ## 1.0.0.pre.52 (2021-04-28)
 
 - fix/workaround @scoped root dir names bug (in npm-packlist)
