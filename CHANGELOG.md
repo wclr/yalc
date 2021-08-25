@@ -1,5 +1,9 @@
 # Yalc changelog
 
+## 1.0.0.pre.54 (Unreleased)
+
+- fix default pure add in workspaces (regression)
+
 ## 1.0.0.pre.53 (2021-04-28)
 
 - support ^/~/\* workspace package resolution while publish

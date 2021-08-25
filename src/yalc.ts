@@ -163,12 +163,11 @@ yargs
         .help(true)
     },
     handler: (argv) => {
-      const pure = !!argv.pure
       return addPackages(argv._.slice(1), {
         dev: argv.dev,
         linkDep: argv.link,
         restore: argv.restore,
-        pure,
+        pure: argv.pure,
         workspace: argv.workspace,
         update: argv.update || argv.upgrade,
         workingDir: process.cwd(),
