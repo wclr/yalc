@@ -27,7 +27,7 @@ export interface PublishPackageOptions {
   update?: boolean
   replace?: boolean
   npm?: boolean
-  files?: boolean
+  content?: boolean
   private?: boolean
   scripts?: boolean
   devMod?: boolean

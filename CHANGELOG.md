@@ -3,6 +3,8 @@
 ## 1.0.0.pre.54 (Unreleased)
 
 - fix default pure add in workspaces (regression)
+- BREAKING: remove `files` flag
+- add `content` flag (instead of `files`)
 
 ## 1.0.0.pre.53 (2021-04-28)
 

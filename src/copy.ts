@@ -128,7 +128,7 @@ export const copyPackageToStore = async (options: {
   workingDir: string
   signature?: boolean
   changed?: boolean
-  files?: boolean
+  content?: boolean
   devMod?: boolean
   workspaceResolve?: boolean
 }): Promise<string | false> => {
@@ -153,7 +153,7 @@ export const copyPackageToStore = async (options: {
   )
 
   const filesToCopy = npmList.filter((f) => !ignoreRule.ignores(f))
-  if (options.files) {
+  if (options.content) {
     console.info('Files included in published content:')
     filesToCopy.forEach((f) => {
       console.log(`- ${f}`)

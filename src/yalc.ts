@@ -56,7 +56,7 @@ const getPublishOptions = (
     replace: argv.replace,
     signature: argv.sig,
     changed: argv.changed,
-    files: argv.files,
+    content: argv.content,
     private: argv.private,
     scripts: argv.scripts,
     update: argv.update || argv.upgrade,
