@@ -80,7 +80,7 @@ Some documented features might not have been published yet, see the [change log]
 
 ### Installations
 - Run `yalc installations clean my-package` to unpublish a package published with `yalc publish`. This command assumes that you already removed all library installations from projects with `yalc remove my-package`, else it won't work.
-- Run `yalc installations show my-package` to show all packages to which `my-package` has been installed. Omitting the `my-package` shows all instllations.
+- Run `yalc installations show my-package` to show all packages to which `my-package` has been installed. Omitting the `my-package` shows all installations.
 
 
 ## Advanced usage
