@@ -142,7 +142,7 @@ If you want to override default pure behavior use `--no-pure` flag.
 - For example add `workspace-resolve=false` line to the `.yalcrc` file to turn off `workspace:` protocol resolution or `sig=false` to disable package version hash signature.
 
 ### Package dependencies
-- The packages regular `dependencies` are not added to the project. A workaround is to install the package with yalc, delete the `node_modules` directory, run `npm install` (which now installs our packages regular dependencies) and finally install the package with yalc again.
+- The packages regular `dependencies` are not added to the project. A workaround is to delete the `node_modules` directory, add the package with yalc (works only with `yalc add` since this modifies the `package.json`) and then run `npm install` (which now installs our packages regular dependencies).
 
 ## Related links
 
