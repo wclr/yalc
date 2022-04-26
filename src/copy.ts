@@ -155,7 +155,7 @@ export const copyPackageToStore = async (options: {
   const filesToCopy = npmList.filter((f) => !ignoreRule.ignores(f))
   if (options.content) {
     console.info('Files included in published content:')
-    filesToCopy.forEach((f) => {
+    filesToCopy.sort().forEach((f) => {
       console.log(`- ${f}`)
     })
     console.info(`Total ${filesToCopy.length} files.`)

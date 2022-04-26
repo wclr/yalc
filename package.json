@@ -36,7 +36,7 @@
     "glob": "^7.1.4",
     "ignore": "^5.0.4",
     "ini": "^2.0.0",
-    "npm-packlist": "^2.1.5",
+    "npm-packlist": "^5.0.2",
     "yargs": "^16.1.1"
   },
   "devDependencies": {
