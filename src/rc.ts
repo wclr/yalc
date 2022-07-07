@@ -8,6 +8,7 @@ const validFlags = [
   'scripts',
   'quiet',
   'files',
+  'store-folder'
 ]
 
 const fileName = '.yalcrc'
