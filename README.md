@@ -132,7 +132,7 @@ If you want to override default pure behavior use `--no-pure` flag.
 ### Override default package store folder
 
 - You may use `--store-folder` flag option to override default location for storing published packages.
-- You may use `YALC_STORE_PATH` in system environment to override default location for storing published packages.
+- You may use `YALC_STORE_PATH` in system environment to override default location for storing published packages, but it's rank below than `--store-folder`.
 
 ### Control output
 
