@@ -59,13 +59,19 @@ export function readPackageManifest(workingDir: string) {
   try {
     const fileData = fs.readFileSync(packagePath, 'utf-8')
     pkg = JSON.parse(fileData) as PackageManifest
-    if (!pkg.name && pkg.version) {
+    if (!pkg.name) {
       console.log(
         'Package manifest',
         packagePath,
-        'should contain name and version.'
+        'should contain name'
       )
       return null
+    }
+    if (!pkg.version) {
+      console.log(
+        'No version found in package manifest, using 0.0.1'
+      )
+      pkg.version = '0.0.1'
     }
     const indent = getIndent(fileData) || '  '
     pkg.__Indent = indent
