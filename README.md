@@ -40,7 +40,7 @@ Some documented features might not have been published yet, see the [change log]
 - Run `yalc publish` in your dependency package `my-package`.
 - It will copy [all the files that should be published in remote NPM registry](https://docs.npmjs.com/files/package.json#files).
 - If your package has any of these lifecycle scripts: `prepublish`, `prepare`, `prepublishOnly`, `prepack`, `preyalcpublish`, they will run before in this order. If your package has any of these: `postyalcpublish`, `postpack`, `publish`, `postpublish`, they will run after in this order. Use `--no-scripts` to publish without running scripts.
-- While copying package content, `yalc` calculates the hash signature of all files and, by default, adds this signature to the package manifest `version`. You can disable this by using the `--no-sig` option.
+- When publishing, `yalc` can optionally calculate a hash signature from the file contents and use the signature in the resulting package `version` (like `"1.2.3+ffffffff"`). To enable this, pass the `--sig` option to the `yalc publish` command.
 - You may also use `.yalcignore` to exclude files from publishing to yalc repo, for example, files like README.md, etc.
 - `--content` flag will show included files in the published package
 - **NB!** In terms of which files will be included in the package `yalc` fully supposed to emulate behavior of `npm` client (`npm pack`). [If you have nested `.yalc` folder in your package](https://github.com/whitecolor/yalc/issues/95) that you are going to publish with `yalc` and you use `package.json` `files` list, it should be included there explicitly.
