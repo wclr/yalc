@@ -1,7 +1,7 @@
 import { ExecSyncOptions } from 'child_process'
 import * as fs from 'fs-extra'
 import { homedir } from 'os'
-import { join } from 'path'
+import { join, resolve } from 'path'
 
 const userHome = homedir()
 
@@ -87,4 +87,9 @@ export const writeSignatureFile = (workingDir: string, signature: string) => {
     console.error('Could not write signature file')
     throw e
   }
+}
+
+if (process.env.YALC_STORE_PATH) {
+  yalcGlobal.yalcStoreMainDir = resolve(process.env.YALC_STORE_PATH)
+  console.log('Package store folder(in env) used:', yalcGlobal.yalcStoreMainDir)
 }
