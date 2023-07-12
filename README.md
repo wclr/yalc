@@ -89,7 +89,7 @@ Some documented features might not have been published yet, see the [change log]
 
 - When you run `yalc add|link|update`, the project's package locations are tracked and saved, so `yalc` knows where each package in the store is being used in your local environment.
 - `yalc publish --push` will publish your package to the store and propagate all changes to existing `yalc` package installations (this will actually do `update` operation on the location).
-- `yalc push` - is a use shortcut command for push operation (which will likely become your primarily used command for publication):
+- `yalc push` - is a useful shortcut command for `yalc publish --push` (which will likely become your primarily used command for publication):
 - `scripts` options is `false` by default, so it won't run `pre/post` scripts (may change this with passing `--scripts` flag).
 - With `--changed` flag yalc will first check if package content has changed before publishing and pushing, it is a quick operation and may be useful for _file watching scenarios_ with pushing on changes.
 - Use `--replace` option to force replacement of package content.
