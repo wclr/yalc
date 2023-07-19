@@ -79,9 +79,9 @@ Some documented features might not have been published yet, see the [change log]
 - Run `yalc remove --all` to remove all packages from project.
 
 ### Installations
+- Run `yalc installations clean my-package` to unpublish a package published with `yalc publish`. This command assumes that you already removed all library installations from projects with `yalc remove my-package`, else it won't work.
+- Run `yalc installations show my-package` to show all packages to which `my-package` has been installed. Omitting the `my-package` shows all installations.
 
-- Run `yalc installations clean my-package` to unpublish a package published with `yalc publish`
-- Run `yalc installations show my-package` to show all packages to which `my-package` has been installed.
 
 ## Advanced usage
 
@@ -140,6 +140,9 @@ If you want to override default pure behavior use `--no-pure` flag.
 ### Set default options via .yalcrc
 
 - For example add `workspace-resolve=false` line to the `.yalcrc` file to turn off `workspace:` protocol resolution or `sig=false` to disable package version hash signature.
+
+### Package dependencies
+- The packages regular `dependencies` are not added to the project. A workaround is to delete the `node_modules` directory, add the package with yalc (works only with `yalc add` since this modifies the `package.json`) and then run `npm install` (which now installs our packages regular dependencies).
 
 ## Related links
 
