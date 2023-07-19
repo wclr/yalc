@@ -14,6 +14,7 @@ export type LockFilePackageEntry = {
   version?: string
   file?: boolean
   link?: boolean
+  portal?: boolean
   replaced?: string
   signature?: string
   pure?: boolean
@@ -90,7 +91,7 @@ export const addPackageToLockfile = (
 ) => {
   const lockfile = readLockfile(options)
   packages.forEach(
-    ({ name, version, file, link, replaced, signature, pure, workspace }) => {
+    ({ name, version, file, link, portal, replaced, signature, pure, workspace }) => {
       let old = lockfile.packages[name] || {}
       lockfile.packages[name] = {}
       if (version) {
@@ -104,6 +105,9 @@ export const addPackageToLockfile = (
       }
       if (link) {
         lockfile.packages[name].link = true
+      }
+      if (portal) {
+        lockfile.packages[name].portal = true
       }
       if (pure) {
         lockfile.packages[name].pure = true

@@ -514,4 +514,74 @@ describe('Yalc package manager', function () {
       })
     })
   })
+
+  describe('Add package (--portal)', () => {
+    before(() => {
+      return addPackages([values.depPackage], {
+        workingDir: projectDir,
+        portalDep: true,
+      })
+    })
+    it('copies package to .yalc folder', () => {
+      checkExists(join(projectDir, '.yalc', values.depPackage))
+    })
+    it('copies remove package to node_modules', () => {
+      checkExists(join(projectDir, 'node_modules', values.depPackage))
+    })
+    it('creates to yalc.lock', () => {
+      checkExists(join(projectDir, 'yalc.lock'))
+    })
+    it('places yalc.lock correct info about file', () => {
+      const lockFile = readLockfile({ workingDir: projectDir })
+      deepEqual(lockFile.packages, {
+        [values.depPackage]: {
+          portal: true,
+          replaced: 'link:.yalc/' + values.depPackage,
+          signature: extractSignature(lockFile, values.depPackage),
+        },
+      })
+    })
+    it('updates package.json', () => {
+      const pkg = readPackageManifest(projectDir)!
+      deepEqual(pkg.dependencies, {
+        [values.depPackage]: 'portal:.yalc/' + values.depPackage,
+      })
+    })
+    it('create and updates installations file', () => {
+      const installtions = readInstallationsFile()
+      deepEqual(installtions, {
+        [values.depPackage]: [projectDir],
+      })
+    })
+  })
+
+  describe('Updated linked (--portal) package', () => {
+    before(() => {
+      return updatePackages([values.depPackage], {
+        workingDir: projectDir,
+      })
+    })
+    it('places yalc.lock correct info about file', () => {
+      const lockFile = readLockfile({ workingDir: projectDir })
+      deepEqual(lockFile.packages, {
+        [values.depPackage]: {
+          portal: true,
+          replaced: 'link:.yalc/' + values.depPackage,
+          signature: extractSignature(lockFile, values.depPackage),
+        },
+      })
+    })
+    it('updates package.json', () => {
+      const pkg = readPackageManifest(projectDir)!
+      deepEqual(pkg.dependencies, {
+        [values.depPackage]: 'portal:.yalc/' + values.depPackage,
+      })
+    })
+    it('create and updates installations file', () => {
+      const installtions = readInstallationsFile()
+      deepEqual(installtions, {
+        [values.depPackage]: [projectDir],
+      })
+    })
+  })
 })
