@@ -48,6 +48,7 @@ export const updatePackages = async (
     file: lockfile.packages[name].file,
     link: lockfile.packages[name].link,
     pure: lockfile.packages[name].pure,
+    portal: lockfile.packages[name].portal,
     workspace: lockfile.packages[name].workspace,
   }))
 
@@ -68,7 +69,7 @@ export const updatePackages = async (
   })
 
   const packagesLinks = lockPackages
-    .filter((p) => !p.file && !p.link && !p.pure && !p.workspace)
+    .filter((p) => !p.file && !p.link && !p.portal && !p.pure && !p.workspace)
     .map((p) => p.name)
   await addPackages(packagesLinks, {
     ...addOpts,
@@ -80,6 +81,13 @@ export const updatePackages = async (
   await addPackages(packagesWks, {
     ...addOpts,
     workspace: true,
+    pure: false,
+  })
+
+  const packagesPortalDep = lockPackages.filter((p) => p.portal).map((p) => p.name)
+  await addPackages(packagesPortalDep, {
+    ...addOpts,
+    portalDep: true,
     pure: false,
   })
 

@@ -154,7 +154,7 @@ yargs
     describe: 'Add package from yalc repo to the project',
     builder: () => {
       return yargs
-        .boolean(['file', 'dev', 'link', ...updateFlags])
+        .boolean(['file', 'dev', 'link', 'portal', ...updateFlags])
         .alias('D', 'dev')
         .boolean('workspace')
         .alias('save-dev', 'dev')
@@ -166,6 +166,7 @@ yargs
       return addPackages(argv._.slice(1), {
         dev: argv.dev,
         linkDep: argv.link,
+        portalDep: argv.portal,
         restore: argv.restore,
         pure: argv.pure,
         workspace: argv.workspace,

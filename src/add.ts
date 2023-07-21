@@ -24,6 +24,7 @@ export interface AddPackagesOptions {
   dev?: boolean
   link?: boolean
   linkDep?: boolean
+  portalDep?: boolean
   replace?: boolean
   update?: boolean
   safe?: boolean
@@ -58,6 +59,18 @@ const checkPnpmWorkspace = (workingDir: string) => {
   return fs.existsSync(join(workingDir, 'pnpm-workspace.yaml'))
 }
 
+const getProtocol = (options: { linkDep?: boolean, portalDep?: boolean }) => {
+  if (options.portalDep) {
+    return 'portal:';
+  }
+
+  if (options.linkDep) {
+    return 'link:';
+  }
+
+  return 'file:';
+}
+
 export const addPackages = async (
   packages: string[],
   options: AddPackagesOptions
@@ -84,6 +97,7 @@ export const addPackages = async (
 
   let pnpmWorkspace = false
 
+  const isLinkLike = options.link || options.linkDep || options.portalDep;
   const doPure =
     options.pure === false
       ? false
@@ -162,20 +176,21 @@ export const addPackages = async (
         )} purely`
       )
     }
+
     if (!doPure) {
       const destModulesDir = join(workingDir, 'node_modules', name)
-      if (options.link || options.linkDep || isSymlink(destModulesDir)) {
+      if (isLinkLike || isSymlink(destModulesDir)) {
         fs.removeSync(destModulesDir)
       }
 
-      if (options.link || options.linkDep) {
+      if (isLinkLike) {
         ensureSymlinkSync(destYalcCopyDir, destModulesDir, 'junction')
       } else {
         await copyDirSafe(destYalcCopyDir, destModulesDir, !options.replace)
       }
 
       if (!options.link) {
-        const protocol = options.linkDep ? 'link:' : 'file:'
+        const protocol = getProtocol(options);
         const localAddress = options.workspace
           ? 'workspace:*'
           : protocol + values.yalcPackagesFolder + '/' + pkg.name
@@ -211,7 +226,7 @@ export const addPackages = async (
         replacedVersion = replacedVersion == localAddress ? '' : replacedVersion
       }
 
-      if (pkg.bin && (options.link || options.linkDep)) {
+      if (pkg.bin && isLinkLike) {
         const binDir = join(workingDir, 'node_modules', '.bin')
         const addBinScript = (src: string, dest: string) => {
           const srcPath = join(destYalcCopyDir, src)
@@ -274,8 +289,9 @@ export const addPackages = async (
       workspace: options.workspace,
       file: options.workspace
         ? undefined
-        : !options.link && !options.linkDep && !doPure,
-      link: options.linkDep && !doPure,
+        : !isLinkLike && !doPure,
+      link: !options.portalDep && options.linkDep && !doPure,
+      portal: options.portalDep && !doPure,
       signature: i.signature,
     })),
     { workingDir: options.workingDir }
