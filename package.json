@@ -15,6 +15,7 @@
     "yalc": "src/yalc.js"
   },
   "main": "src/index.js",
+  "types": "src/index.d.ts",
   "scripts": {
     "build": "tsc",
     "clean": "ts-clean-built --old && trash  **/*.log",
