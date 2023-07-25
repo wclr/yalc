@@ -151,4 +151,4 @@ If you want to override default pure behavior use `--no-pure` flag.
 
 ## Licence
 
-WTF.
+MIT
