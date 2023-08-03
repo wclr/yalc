@@ -2,17 +2,18 @@ import { ExecSyncOptions } from 'child_process'
 import * as fs from 'fs-extra'
 import { homedir } from 'os'
 import { join } from 'path'
+import pkg from '../package.json'
 
 const userHome = homedir()
 
 export const values = {
-  myNameIs: 'yalc',
-  ignoreFileName: '.yalcignore',
-  myNameIsCapitalized: 'Yalc',
-  lockfileName: 'yalc.lock',
-  yalcPackagesFolder: '.yalc',
-  prescript: 'preyalc',
-  postscript: 'postyalc',
+  myNameIs: pkg.name,
+  ignoreFileName: '.knitignore',
+  myNameIsCapitalized: 'Knit',
+  lockfileName: 'knit.lock',
+  knitPackagesFolder: '.knit',
+  prescript: 'preknit',
+  postscript: 'postknit',
   installationsFile: 'installations.json',
 }
 
@@ -29,18 +30,18 @@ export { addPackages } from './add'
 export * from './pkg'
 export * from './pm'
 
-export interface YalcGlobal {
-  yalcStoreMainDir: string
+export interface KnitGlobal {
+  knitStoreMainDir: string
 }
-/* 
-  Not using Node.Global because in this case 
-  <reference types="mocha" /> is aded in built d.ts file  
+/*
+  Not using Node.Global because in this case
+  <reference types="mocha" /> is aded in built d.ts file
 */
-export const yalcGlobal: YalcGlobal = global as any
+export const knitGlobal: KnitGlobal = global as any
 
 export function getStoreMainDir(): string {
-  if (yalcGlobal.yalcStoreMainDir) {
-    return yalcGlobal.yalcStoreMainDir
+  if (knitGlobal.knitStoreMainDir) {
+    return knitGlobal.knitStoreMainDir
   }
   if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
     return join(process.env.LOCALAPPDATA, values.myNameIsCapitalized)
@@ -57,7 +58,7 @@ export const getPackageStoreDir = (packageName: string, version = '') =>
 
 export const execLoudOptions = { stdio: 'inherit' } as ExecSyncOptions
 
-const signatureFileName = 'yalc.sig'
+const signatureFileName = 'knit.sig'
 
 export const readSignatureFile = (workingDir: string) => {
   const signatureFilePath = join(workingDir, signatureFileName)

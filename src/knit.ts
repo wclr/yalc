@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import yargs from 'yargs'
 import { join, resolve } from 'path'
+import pkg from '../package.json'
 
 import {
   values,
@@ -9,7 +10,7 @@ import {
   updatePackages,
   removePackages,
   getStoreMainDir,
-  yalcGlobal,
+  knitGlobal,
 } from '.'
 
 import { showInstallations, cleanInstallations } from './installations'
@@ -33,6 +34,8 @@ const publishFlags = [
 const cliCommand = values.myNameIs
 
 const getVersionMessage = () => {
+  // TODO use import above
+  // TODO replace all dynamic knit -> pkg.name
   const pkg = require(__dirname + '/../package.json')
   return pkg.version
 }
@@ -47,7 +50,7 @@ if (process.argv.includes('--quiet') || rcArgs.quiet) {
 
 const getPublishOptions = (
   argv: any,
-  override: Partial<PublishPackageOptions> = {}
+  override: Partial<PublishPackageOptions> = {},
 ): PublishPackageOptions => {
   const folder = argv._[1]
   return {
@@ -68,11 +71,11 @@ const getPublishOptions = (
 
 /* tslint:disable-next-line */
 yargs
-  .usage(cliCommand + ' [command] [options] [package1 [package2...]]')
+  .usage(`🧶 ${cliCommand}` + ' [command] [options] [package1 [package2...]]')
   .coerce('store-folder', function (folder: string) {
-    if (!yalcGlobal.yalcStoreMainDir) {
-      yalcGlobal.yalcStoreMainDir = resolve(folder)
-      console.log('Package store folder used:', yalcGlobal.yalcStoreMainDir)
+    if (!knitGlobal.knitStoreMainDir) {
+      knitGlobal.knitStoreMainDir = resolve(folder)
+      console.log('Package store folder used:', knitGlobal.knitStoreMainDir)
     }
   })
   .command({
@@ -81,7 +84,7 @@ yargs
       return yargs.boolean(['version'])
     },
     handler: (argv) => {
-      let msg = 'Use `yalc help` to see available commands.'
+      let msg = `Use '${pkg.name} help' to see available commands.`
       if (argv._[0]) {
         msg = 'Unknown command `' + argv._[0] + '`. ' + msg
       } else {
@@ -94,7 +97,7 @@ yargs
   })
   .command({
     command: 'publish',
-    describe: 'Publish package in yalc local repo',
+    describe: `Publish package in ${pkg.name} local repo`,
     builder: () => {
       return yargs
         .default('sig', false)
@@ -111,8 +114,7 @@ yargs
   })
   .command({
     command: 'push',
-    describe:
-      'Publish package in yalc local repo and push to all installations',
+    describe: `Publish package in ${pkg.name} local repo and push to all installations`,
     builder: () => {
       return yargs
         .default('sig', false)
@@ -151,7 +153,7 @@ yargs
   })
   .command({
     command: 'add',
-    describe: 'Add package from yalc repo to the project',
+    describe: `Add package from ${pkg.name} repo to the project`,
     builder: () => {
       return yargs
         .boolean(['file', 'dev', 'link', ...updateFlags])
@@ -176,7 +178,7 @@ yargs
   })
   .command({
     command: 'link',
-    describe: 'Link package from yalc repo to the project',
+    describe: `Link package from ${pkg.name} repo to the project`,
     builder: () => {
       return yargs.default(rcArgs).help(true)
     },
@@ -190,7 +192,7 @@ yargs
   })
   .command({
     command: 'update',
-    describe: 'Update packages from yalc repo',
+    describe: `Update packages from ${pkg.name} repo`,
     builder: () => {
       return yargs
         .boolean([...updateFlags])
@@ -253,7 +255,7 @@ yargs
   })
   .command({
     command: 'check',
-    describe: 'Check package.json for yalc packages',
+    describe: `Check package.json for ${pkg.name} packages`,
     builder: () => {
       return yargs.boolean(['commit']).usage('check usage here').help(true)
     },
@@ -271,7 +273,7 @@ yargs
   })
   .command({
     command: 'dir',
-    describe: 'Show yalc system directory',
+    describe: `Show ${pkg.name} system directory`,
     handler: () => {
       console.log(getStoreMainDir())
     },

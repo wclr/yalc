@@ -29,7 +29,7 @@ export const getFileHash = (srcPath: string, relPath: string = '') => {
 const copyFile = async (
   srcPath: string,
   destPath: string,
-  relPath: string = ''
+  relPath: string = '',
 ) => {
   await fs.copy(srcPath, destPath)
   return getFileHash(srcPath, relPath)
@@ -37,7 +37,7 @@ const copyFile = async (
 
 const mapObj = <T, R, K extends string>(
   obj: Record<K, T>,
-  mapValue: (value: T, key: K) => R
+  mapValue: (value: T, key: K) => R,
 ): Record<string, R> => {
   if (Object.keys(obj).length === 0) return {}
 
@@ -52,7 +52,7 @@ const mapObj = <T, R, K extends string>(
 const resolveWorkspaceDepVersion = (
   version: string,
   pkgName: string,
-  workingDir: string
+  workingDir: string,
 ): string => {
   if (version !== '*' && version !== '^' && version !== '~') {
     // Regular semver specification
@@ -78,7 +78,7 @@ const resolveWorkspaceDepVersion = (
 
 const resolveWorkspaces = (
   pkg: PackageManifest,
-  workingDir: string
+  workingDir: string,
 ): PackageManifest => {
   const resolveDeps = (deps: PackageManifest['dependencies']) => {
     return deps
@@ -88,10 +88,10 @@ const resolveWorkspaces = (
             const resolved = resolveWorkspaceDepVersion(
               version,
               depPkgName,
-              workingDir
+              workingDir,
             )
             console.log(
-              `Resolving workspace package ${depPkgName} version ==> ${resolved}`
+              `Resolving workspace package ${depPkgName} version ==> ${resolved}`,
             )
             return resolved
           }
@@ -142,15 +142,15 @@ export const copyPackageToStore = async (options: {
   const storePackageStoreDir = join(
     getStorePackagesDir(),
     pkg.name,
-    pkg.version
+    pkg.version,
   )
 
   const ignoreFileContent = readIgnoreFile(workingDir)
 
   const ignoreRule = ignore().add(ignoreFileContent)
-  const npmList: string[] = await (await npmPacklist({ path: workingDir })).map(
-    fixScopedRelativeName
-  )
+  const npmList: string[] = await (
+    await npmPacklist({ path: workingDir })
+  ).map(fixScopedRelativeName)
 
   const filesToCopy = npmList.filter((f) => !ignoreRule.ignores(f))
   if (options.content) {
@@ -169,16 +169,16 @@ export const copyPackageToStore = async (options: {
           copyFile(
             join(copyFromDir, relPath),
             join(storePackageStoreDir, relPath),
-            relPath
-          )
-        )
+            relPath,
+          ),
+        ),
     )
   }
   const hashes = options.changed
     ? await Promise.all(
         filesToCopy
           .sort()
-          .map((relPath) => getFileHash(join(copyFromDir, relPath), relPath))
+          .map((relPath) => getFileHash(join(copyFromDir, relPath), relPath)),
       )
     : await copyFilesToStore()
 
@@ -206,7 +206,7 @@ export const copyPackageToStore = async (options: {
 
   const pkgToWrite: PackageManifest = {
     ...resolveDeps(devMod ? modPackageDev(pkg) : pkg),
-    yalcSig: signature,
+    knitSig: signature,
     version: pkg.version + versionPre,
   }
   writePackageManifest(storePackageStoreDir, pkgToWrite)

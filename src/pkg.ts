@@ -13,22 +13,22 @@ export type PackageScripts = Partial<{
   prepublishOnly: string
   publish: string
   postpublish: string
-  preyalcpublish: string
-  preyalc: string
-  postyalcpublish: string
-  postyalc: string
+  preknitpublish: string
+  preknit: string
+  postknitpublish: string
+  postknit: string
 }>
 
 export interface PackageManifest {
   name: string
   version: string
-  yalcSig?: string
+  knitSig?: string
   private?: boolean
   bin?: string | { [name: string]: string }
   dependencies?: { [name: string]: string }
   devDependencies?: { [name: string]: string }
   peerDependencies?: { [name: string]: string }
-  yalc: Partial<{
+  knit: Partial<{
     sig: boolean
     signature: boolean
     noSig: boolean
@@ -63,7 +63,7 @@ export function readPackageManifest(workingDir: string) {
       console.log(
         'Package manifest',
         packagePath,
-        'should contain name and version.'
+        'should contain name and version.',
       )
       return null
     }
@@ -81,7 +81,7 @@ const sortDependencies = (dependencies: { [name: string]: string }) => {
     .sort()
     .reduce(
       (deps, key) => Object.assign(deps, { [key]: dependencies[key] }),
-      {}
+      {},
     )
 }
 

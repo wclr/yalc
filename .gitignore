@@ -4,6 +4,7 @@ tmp
 *.js
 *.d.ts
 *.js.map
-/.yalc
-yalc.lock
+/.knit
+knit.lock
 *.log
+.yarn

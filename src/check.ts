@@ -3,6 +3,7 @@ import { execSync } from 'child_process'
 import * as path from 'path'
 import { join } from 'path'
 import { execLoudOptions, PackageManifest, values } from '.'
+import pkg from '../package.json'
 
 export type CheckOptions = {
   workingDir: string
@@ -19,13 +20,13 @@ export function checkManifest(options: CheckOptions) {
   const findLocalDepsInManifest = (manifestPath: string) => {
     const pkg = fs.readJSONSync(manifestPath) as PackageManifest
     const addresMatch = new RegExp(
-      `^(file|link):(.\\/)?\\${values.yalcPackagesFolder}\\/`
+      `^(file|link):(.\\/)?\\${values.knitPackagesFolder}\\/`,
     )
 
     const findDeps = (depsMap: { [name: string]: string }) =>
       Object.keys(depsMap).filter((name) => depsMap[name].match(addresMatch))
     const localDeps = findDeps(pkg.dependencies || {}).concat(
-      findDeps(pkg.devDependencies || {})
+      findDeps(pkg.devDependencies || {}),
     )
     return localDeps
   }
@@ -50,7 +51,7 @@ export function checkManifest(options: CheckOptions) {
   const manifestPath = join(options.workingDir, 'package.json')
   const localDeps = findLocalDepsInManifest(manifestPath)
   if (localDeps.length) {
-    console.info('Yalc dependencies found:', localDeps)
+    console.info(`${pkg.name} dependencies found: ${localDeps}`)
     process.exit(1)
   }
 }

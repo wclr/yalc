@@ -10,7 +10,7 @@ const validFlags = [
   'files',
 ]
 
-const fileName = '.yalcrc'
+const fileName = '.knitrc'
 
 const readFile = (): Record<string, string | boolean> | null => {
   if (fs.existsSync(fileName)) {
@@ -24,7 +24,7 @@ export const readRcConfig = (): Record<string, string | boolean> => {
   if (!rcOptions) return {}
 
   const unknown = Object.keys(rcOptions).filter(
-    (key) => !validFlags.includes(key)
+    (key) => !validFlags.includes(key),
   )
 
   if (unknown.length) {

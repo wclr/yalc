@@ -6,7 +6,7 @@ import {
   updatePackages,
   publishPackage,
   removePackages,
-  yalcGlobal,
+  knitGlobal,
   readPackageManifest,
 } from '../src'
 
@@ -20,7 +20,7 @@ const values = {
 
   depPackage2: 'dep-package2',
   depPackage2Version: '1.0.0',
-  storeDir: 'yalc-store',
+  storeDir: 'knit-store',
   project: 'project',
 
   wksDepPkg: 'ws-package',
@@ -46,7 +46,7 @@ const tmpDir = join(__dirname, 'tmp')
 const shortSignatureLength = 8
 
 const storeMainDr = join(tmpDir, values.storeDir)
-yalcGlobal.yalcStoreMainDir = storeMainDr
+knitGlobal.knitStoreMainDir = storeMainDr
 
 const depPackageDir = join(tmpDir, values.depPackage)
 const depPackage2Dir = join(tmpDir, values.depPackage2)
@@ -56,14 +56,14 @@ const publishedPackagePath = join(
   storeMainDr,
   'packages',
   values.depPackage,
-  values.depPackageVersion
+  values.depPackageVersion,
 )
 
 const publishedPackage2Path = join(
   storeMainDr,
   'packages',
   values.depPackage2,
-  values.depPackage2Version
+  values.depPackage2Version,
 )
 
 const checkExists = (path: string) =>
@@ -79,8 +79,8 @@ const extractSignature = (lockfile: LockFileConfigV1, packageName: string) => {
       `expected package ${packageName} in lockfile.packages ${JSON.stringify(
         lockfile,
         undefined,
-        2
-      )}`
+        2,
+      )}`,
     )
   }
 
@@ -90,15 +90,15 @@ const extractSignature = (lockfile: LockFileConfigV1, packageName: string) => {
       `expected signature property in lockfile.packages.${packageName} ${JSON.stringify(
         lockfile,
         undefined,
-        2
-      )}`
+        2,
+      )}`,
     )
   }
 
   return signature
 }
 
-describe('Yalc package manager', function () {
+describe('Knit package manager', function () {
   this.timeout(60000)
   before(() => {
     fs.removeSync(tmpDir)
@@ -134,7 +134,7 @@ describe('Yalc package manager', function () {
     })
 
     it('handles "files:" manifest entry correctly', () => {
-      checkExists(join(publishedPackagePath, '.yalc/yalc.txt'))
+      checkExists(join(publishedPackagePath, '.knit/knit.txt'))
       checkExists(join(publishedPackagePath, '.dot/dot.txt'))
       checkExists(join(publishedPackagePath, 'src'))
       checkExists(join(publishedPackagePath, 'dist/file.txt'))
@@ -152,7 +152,7 @@ describe('Yalc package manager', function () {
     })
 
     it('it creates signature file', () => {
-      const sigFileName = join(publishedPackagePath, 'yalc.sig')
+      const sigFileName = join(publishedPackagePath, 'knit.sig')
       checkExists(sigFileName)
       ok(fs.statSync(sigFileName).size === 32, 'signature file size')
     })
@@ -170,7 +170,7 @@ describe('Yalc package manager', function () {
       let expectedSignature: string
       before(() => {
         expectedSignature = fs
-          .readFileSync(join(publishedPackagePath, 'yalc.sig'))
+          .readFileSync(join(publishedPackagePath, 'knit.sig'))
           .toString()
       })
 
@@ -184,7 +184,7 @@ describe('Yalc package manager', function () {
 
       for (let tries = 1; tries <= 5; tries++) {
         it(`should have a consistent signature after every publish (attempt ${tries})`, () => {
-          const sigFileName = join(publishedPackagePath, 'yalc.sig')
+          const sigFileName = join(publishedPackagePath, 'knit.sig')
           const signature = fs.readFileSync(sigFileName).toString()
 
           deepEqual(signature, expectedSignature)
@@ -271,16 +271,16 @@ describe('Yalc package manager', function () {
         workingDir: projectDir,
       })
     })
-    it('copies package to .yalc folder', () => {
-      checkExists(join(projectDir, '.yalc', values.depPackage))
+    it('copies package to .knit folder', () => {
+      checkExists(join(projectDir, '.knit', values.depPackage))
     })
     it('copies remove package to node_modules', () => {
       checkExists(join(projectDir, 'node_modules', values.depPackage))
     })
-    it('creates to yalc.lock', () => {
-      checkExists(join(projectDir, 'yalc.lock'))
+    it('creates to knit.lock', () => {
+      checkExists(join(projectDir, 'knit.lock'))
     })
-    it('places yalc.lock correct info about file', () => {
+    it('places knit.lock correct info about file', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
@@ -293,7 +293,7 @@ describe('Yalc package manager', function () {
     it('updates package.json', () => {
       const pkg = readPackageManifest(projectDir)!
       deepEqual(pkg.dependencies, {
-        [values.depPackage]: 'file:.yalc/' + values.depPackage,
+        [values.depPackage]: 'file:.knit/' + values.depPackage,
       })
     })
     it('create and updates installations file', () => {
@@ -313,7 +313,7 @@ describe('Yalc package manager', function () {
       projectDir,
       'node_modules',
       values.depPackage,
-      'node_modules/file.txt'
+      'node_modules/file.txt',
     )
     before(() => {
       fs.ensureFileSync(innerNodeModulesFile)
@@ -322,7 +322,7 @@ describe('Yalc package manager', function () {
       })
     })
 
-    it('does not change yalc.lock', () => {
+    it('does not change knit.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       console.log('lockFile', lockFile)
       deepEqual(lockFile.packages, {
@@ -344,7 +344,7 @@ describe('Yalc package manager', function () {
         workingDir: projectDir,
       })
     })
-    it('does not updates yalc.lock', () => {
+    it('does not updates knit.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
@@ -364,7 +364,7 @@ describe('Yalc package manager', function () {
       })
     })
 
-    it('does not updates yalc.lock', () => {
+    it('does not updates knit.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
@@ -389,8 +389,8 @@ describe('Yalc package manager', function () {
       })
     })
 
-    it('should not remove package from .yalc', () => {
-      checkExists(join(projectDir, '.yalc', values.depPackage))
+    it('should not remove package from .knit', () => {
+      checkExists(join(projectDir, '.knit', values.depPackage))
     })
 
     it('should remove package from node_modules', () => {
@@ -408,7 +408,7 @@ describe('Yalc package manager', function () {
     it('updates package.json', () => {
       const pkg = readPackageManifest(projectDir)!
       deepEqual(pkg.dependencies, {
-        [values.depPackage]: 'file:.yalc/' + values.depPackage,
+        [values.depPackage]: 'file:.knit/' + values.depPackage,
       })
     })
   })
@@ -420,7 +420,7 @@ describe('Yalc package manager', function () {
       })
     })
 
-    it('updates yalc.lock', () => {
+    it('updates knit.lock', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {})
     })
@@ -436,7 +436,7 @@ describe('Yalc package manager', function () {
       const installtions = readInstallationsFile()
       deepEqual(installtions, {})
     })
-    it('should remove package from .yalc', () => {
+    it('should remove package from .knit', () => {
       checkNotExists(join(projectDir, '.ylc', values.depPackage))
     })
 
@@ -452,16 +452,16 @@ describe('Yalc package manager', function () {
         linkDep: true,
       })
     })
-    it('copies package to .yalc folder', () => {
-      checkExists(join(projectDir, '.yalc', values.depPackage))
+    it('copies package to .knit folder', () => {
+      checkExists(join(projectDir, '.knit', values.depPackage))
     })
     it('copies remove package to node_modules', () => {
       checkExists(join(projectDir, 'node_modules', values.depPackage))
     })
-    it('creates to yalc.lock', () => {
-      checkExists(join(projectDir, 'yalc.lock'))
+    it('creates to knit.lock', () => {
+      checkExists(join(projectDir, 'knit.lock'))
     })
-    it('places yalc.lock correct info about file', () => {
+    it('places knit.lock correct info about file', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
@@ -474,7 +474,7 @@ describe('Yalc package manager', function () {
     it('updates package.json', () => {
       const pkg = readPackageManifest(projectDir)!
       deepEqual(pkg.dependencies, {
-        [values.depPackage]: 'link:.yalc/' + values.depPackage,
+        [values.depPackage]: 'link:.knit/' + values.depPackage,
       })
     })
     it('create and updates installations file', () => {
@@ -491,7 +491,7 @@ describe('Yalc package manager', function () {
         workingDir: projectDir,
       })
     })
-    it('places yalc.lock correct info about file', () => {
+    it('places knit.lock correct info about file', () => {
       const lockFile = readLockfile({ workingDir: projectDir })
       deepEqual(lockFile.packages, {
         [values.depPackage]: {
@@ -504,7 +504,7 @@ describe('Yalc package manager', function () {
     it('updates package.json', () => {
       const pkg = readPackageManifest(projectDir)!
       deepEqual(pkg.dependencies, {
-        [values.depPackage]: 'link:.yalc/' + values.depPackage,
+        [values.depPackage]: 'link:.knit/' + values.depPackage,
       })
     })
     it('create and updates installations file', () => {

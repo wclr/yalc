@@ -58,7 +58,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   if (pkg.private && !options.private) {
     console.log(
       'Will not publish package with `private: true`' +
-        ' use --private flag to force publishing.'
+        ' use --private flag to force publishing.',
     )
     return
   }
@@ -68,7 +68,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
     'prepare',
     'prepublishOnly',
     'prepack',
-    'preyalcpublish',
+    'preknitpublish',
   ]
   preScripts.forEach(runPmScript)
 
@@ -80,7 +80,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   }
 
   const postScripts: (keyof PackageScripts)[] = [
-    'postyalcpublish',
+    'postknitpublish',
     'postpack',
     'publish',
     'postpublish',
@@ -90,7 +90,7 @@ export const publishPackage = async (options: PublishPackageOptions) => {
   const publishedPackageDir = join(getStorePackagesDir(), pkg.name, pkg.version)
   const publishedPkg = readPackageManifest(publishedPackageDir)!
   console.log(
-    `${publishedPkg.name}@${publishedPkg.version} published in store.`
+    `${publishedPkg.name}@${publishedPkg.version} published in store.`,
   )
 
   if (options.push) {

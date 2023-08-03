@@ -21,9 +21,9 @@ export interface RemovePackagesOptions {
   workingDir: string
 }
 
-const isYalcFileAddress = (address: string, name: string) => {
+const isKnitFileAddress = (address: string, name: string) => {
   const regExp = new RegExp(
-    'file|link:' + values.yalcPackagesFolder + '/' + name
+    'file|link:' + values.knitPackagesFolder + '/' + name,
   )
   return regExp.test(address)
 }
@@ -38,7 +38,7 @@ const removeIfEmpty = (folder: string) => {
 
 export const removePackages = async (
   packages: string[],
-  options: RemovePackagesOptions
+  options: RemovePackagesOptions,
 ) => {
   const { workingDir } = options
   const lockFileConfig = readLockfile({ workingDir: workingDir })
@@ -56,7 +56,7 @@ export const removePackages = async (
       } else {
         console.warn(
           `Package ${packageName} not found in ${values.lockfileName}` +
-            `, still will try to remove.`
+            `, still will try to remove.`,
         )
         packagesToRemove.push(name)
       }
@@ -81,7 +81,7 @@ export const removePackages = async (
     if (pkg.devDependencies && pkg.devDependencies[name]) {
       depsWithPackage = pkg.devDependencies
     }
-    if (depsWithPackage && isYalcFileAddress(depsWithPackage[name], name)) {
+    if (depsWithPackage && isKnitFileAddress(depsWithPackage[name], name)) {
       removedPackagedFromManifest.push(name)
       if (lockedPackage && lockedPackage.replaced) {
         depsWithPackage[name] = lockedPackage.replaced
@@ -95,7 +95,7 @@ export const removePackages = async (
     } else {
       console.log(
         `Retreating package ${name} version ==>`,
-        lockedPackage.replaced
+        lockedPackage.replaced,
       )
     }
   })
@@ -113,16 +113,16 @@ export const removePackages = async (
       name,
       version: '',
       path: workingDir,
-    })
+    }),
   )
 
-  const yalcFolder = join(workingDir, values.yalcPackagesFolder)
+  const knitFolder = join(workingDir, values.knitPackagesFolder)
   removedPackagedFromManifest.forEach((name) => {
     fs.removeSync(join(workingDir, 'node_modules', name))
   })
   packagesToRemove.forEach((name) => {
     if (!options.retreat) {
-      fs.removeSync(join(yalcFolder, name))
+      fs.removeSync(join(knitFolder, name))
     }
   })
 
@@ -131,14 +131,14 @@ export const removePackages = async (
   packagesToRemove
     .filter(isScopedPackage)
     .map((name) => name.split('/')[0])
-    .map((name) => join(yalcFolder, name))
+    .map((name) => join(knitFolder, name))
     .map(removeIfEmpty)
 
   const isEmptyLockFile = !Object.keys(lockFileConfig.packages).length
   if (isEmptyLockFile && !options.retreat) {
     removeLockfile({ workingDir })
-    if (!removeIfEmpty(yalcFolder)) {
-      console.warn(yalcFolder, 'is not empty, not removing it.')
+    if (!removeIfEmpty(knitFolder)) {
+      console.warn(knitFolder, 'is not empty, not removing it.')
     }
   }
 

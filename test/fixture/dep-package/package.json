@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "files": [
-    ".yalc",
+    ".knit",
     ".dot/",
     "dist/",
     "src",
