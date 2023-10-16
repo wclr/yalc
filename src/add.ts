@@ -154,6 +154,10 @@ export const addPackages = async (
               defaultPureMsg
           )
         }
+
+        if (localPkg.workspaces || pnpmWorkspace) {
+          console.warn('Please see the workspaces docs to ensure your project is configured correctly https://github.com/wclr/yalc#use-with-yarnpnpm-workspaces.');
+        }
       }
       console.log(
         `${pkg.name}@${pkg.version} added to ${join(
