@@ -148,6 +148,7 @@ export const addPackages = async (
           console.warn(
             'Because of `workspaces` enabled in this package ' + defaultPureMsg
           )
+          console.warn('Please see the workspaces docs to ensure your project is configured correctly https://github.com/wclr/yalc#use-with-yarnpnpm-workspaces.');
         } else if (pnpmWorkspace) {
           console.warn(
             'Because of `pnpm-workspace.yaml` exists in this package ' +
