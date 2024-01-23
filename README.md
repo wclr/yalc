@@ -12,8 +12,7 @@ When developing and authoring multiple packages (private or public), you often f
 - When you run `yalc publish` in the package directory, it grabs only files that should be published to NPM and _puts_ them in a special global store (located, for example, in `~/.yalc`).
 - When you run `yalc add my-package` in your `project` it _pulls_ package content into `.yalc` in the current folder and injects a `file:`/`link:` dependency into `package.json`. Alternatively, you may use `yalc link my-package` which will create a symlink to the package content in `node_modules` and will not touch `package.json` (like `npm/yarn link` does), or you even may use it with **Pnmp/Yarn/Npm workspaces**.
 - `yalc` creates a special `yalc.lock` file in your project (similar to `yarn.lock` and `package-lock.json`) that is used to ensure consistency while performing `yalc`'s routines.
-- `yalc` can be used with projects where `yarn` or `npm` package managers are used
-  for managing `package.json` dependencies.
+- `yalc` can be used with projects where `yarn` or `npm` package managers are used for managing `package.json` dependencies.
 
 ## Installation
 
@@ -47,7 +46,7 @@ Some documented features might not have been published yet, see the [change log]
 - **NB!** Windows users should make sure the `LF` new line symbol is used in published sources; it may be needed for some packages to work correctly (for example, `bin` scripts). `yalc` won't convert line endings for you (because `npm` and `yarn` won't either).
 - **NB!** Note that, if you want to include `.yalc` folder in published package content, you should add `!.yalc` line to `.npmignore`.
 - [Easily propagate package updates everywhere.](#pushing-updates-automatically-to-all-installations)
-- Yalc by default resolve `workspace:` protocol in dependencies, to omit this use `-no-workspace-resolve` flag
+- Yalc by default resolves `workspace:` protocol in dependencies, to omit this use `-no-workspace-resolve` flag
 
 ### Add
 
