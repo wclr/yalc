@@ -59,7 +59,7 @@ export function readPackageManifest(workingDir: string) {
   try {
     const fileData = fs.readFileSync(packagePath, 'utf-8')
     pkg = JSON.parse(fileData) as PackageManifest
-    if (!pkg.name && pkg.version) {
+    if (!pkg.name || !pkg.version) {
       console.log(
         'Package manifest',
         packagePath,
