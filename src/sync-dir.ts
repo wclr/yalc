@@ -67,41 +67,50 @@ export const copyDirSafe = async (
 
   const dirsInDest: { [file: string]: boolean } = {}
 
-  for await (const file of commonFiles) {
-    srcCached[file] = srcCached[file] || {}
-    const srcFilePath = resolve(srcDir, file)
-    const destFilePath = resolve(destDir, file)
-    const srcFileStat = srcCached[file].stat || (await fs.stat(srcFilePath))
-    srcCached[file].stat = srcFileStat
-    const destFileStat = await fs.stat(destFilePath)
+  const commonFilesStats = await Promise.all(
+    commonFiles.map(async (file) => {
+      const srcFilePath = resolve(srcDir, file)
+      const destFilePath = resolve(destDir, file)
+      const srcFileStat = srcCached[file]?.stat || (await fs.stat(srcFilePath))
+      srcCached[file] = srcCached[file] || { stat: srcFileStat, hash: '' }
+      const destFileStat = await fs.stat(destFilePath)
+      return { file, srcFileStat, destFileStat, srcFilePath, destFilePath }
+    })
+  )
 
-    const areDirs = srcFileStat.isDirectory() && destFileStat.isDirectory()
-    dirsInDest[file] = destFileStat.isDirectory()
+  const compareFilesPromises = commonFilesStats.map(
+    async ({ file, srcFileStat, destFileStat, srcFilePath, destFilePath }) => {
+      const areDirs = srcFileStat.isDirectory() && destFileStat.isDirectory()
+      dirsInDest[file] = destFileStat.isDirectory()
 
-    const replacedFileWithDir =
-      srcFileStat.isDirectory() && !destFileStat.isDirectory()
-    const dirReplacedWithFile =
-      !srcFileStat.isDirectory() && destFileStat.isDirectory()
-    if (dirReplacedWithFile || replacedFileWithDir) {
-      filesToRemove.push(file)
-    }
+      const replacedFileWithDir =
+        srcFileStat.isDirectory() && !destFileStat.isDirectory()
+      const dirReplacedWithFile =
+        !srcFileStat.isDirectory() && destFileStat.isDirectory()
+      if (dirReplacedWithFile || replacedFileWithDir) {
+        filesToRemove.push(file)
+      }
 
-    const compareByHash = async () => {
-      const srcHash =
-        srcCached[file].hash || (await getFileHash(srcFilePath, ''))
-      srcCached[file].hash = srcHash
-      const destHash = await getFileHash(destFilePath, '')
-      return srcHash === destHash
+      const compareByHash = async () => {
+        const srcHash =
+          srcCached[file].hash || (await getFileHash(srcFilePath, ''))
+        srcCached[file].hash = srcHash
+        const destHash = await getFileHash(destFilePath, '')
+        return srcHash === destHash
+      }
+
+      if (
+        dirReplacedWithFile ||
+        (!areDirs &&
+          !theSameStats(srcFileStat, destFileStat) &&
+          (!compareContent || !(await compareByHash())))
+      ) {
+        filesToReplace.push(file)
+      }
     }
-    if (
-      dirReplacedWithFile ||
-      (!areDirs &&
-        !theSameStats(srcFileStat, destFileStat) &&
-        (!compareContent || !(await compareByHash())))
-    ) {
-      filesToReplace.push(file)
-    }
-  }
+  )
+
+  await Promise.all(compareFilesPromises)
 
   // console.log('newFiles', newFiles)
   // console.log('filesToRemove', filesToRemove)
